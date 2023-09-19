@@ -1,0 +1,41 @@
+file:
+  dir: /home/appdoc/authentication_image
+server:
+  add:
+    http://49.50.167.217:8080
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: springbank0625@gmail.com
+    password: kmifvgcjnwatbfgk
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+          auth: true
+  datasource:
+    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: Opsueaxqx1578!
+  jpa:
+    hibernate:
+      ddl-auto:  update
+    open-in-view: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        show_sql: true
+
+
+jwt:
+  signing:
+    key: 1920123119201231192012311920123112312321a
