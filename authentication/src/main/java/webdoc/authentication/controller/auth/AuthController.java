@@ -20,6 +20,7 @@ import webdoc.authentication.domain.dto.user.DoctorDto;
 import webdoc.authentication.domain.dto.user.EmailDto;
 import webdoc.authentication.domain.dto.user.PatientCodeDto;
 import webdoc.authentication.domain.dto.user.PatientDto;
+import webdoc.authentication.domain.entity.user.Doctor;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserRepository;
@@ -75,8 +76,15 @@ public class AuthController {
         }
         User user = userRepository.findByEmail(dto.getEmail()).orElse(null);
 
-        // 승인이 거부된 사용자는 제외한다
-        if (user != null && !user.isDenied()){
+        // 의사회원 중 승인이 거부되지 않은 사용자는 제외한다
+        // 환자회원 중 활성화 된 계정은 제외한다
+        // 가독성을 위해 if, else if  분리 유지
+        // 추후 타입을 분리할 필요도 보임
+        if (user != null && !user.isDenied() && user instanceof Doctor){
+            code = 400;
+            message = AuthMessageProvider.DUPLICATED_EMAIL;
+            return new SubCodeMessageResponse(message,401,code);
+        } else if(user != null && user.isActive()){
             code = 400;
             message = AuthMessageProvider.DUPLICATED_EMAIL;
             return new SubCodeMessageResponse(message,401,code);
