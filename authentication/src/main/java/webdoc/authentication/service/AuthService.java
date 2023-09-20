@@ -68,7 +68,7 @@ public class AuthService {
             Patient findPatient = (Patient) findUser;
             String generatedValue = FourDigitsNumberGenerator.generateFourDigitsNumber();
             findPatient.setAuthenticationCode(generatedValue);
-            findPatient.setAuthenticationDue(LocalDateTime.now().minusMinutes(3L));
+            findPatient.setAuthenticationDue(LocalDateTime.now().plusMinutes(3L));
             emailService.sendEmail(findPatient.getEmail(),generatedValue);
             return findPatient;
         }
@@ -78,7 +78,7 @@ public class AuthService {
         patient.setRole("ROLE_PATIENT");
         String generatedValue = FourDigitsNumberGenerator.generateFourDigitsNumber();
         patient.setAuthenticationCode(generatedValue);
-        patient.setAuthenticationDue(LocalDateTime.now().minusMinutes(3L));
+        patient.setAuthenticationDue(LocalDateTime.now().plusMinutes(3L));
         emailService.sendEmail(patient.getEmail(), generatedValue);
         repository.save(patient);
         return patient;
@@ -99,9 +99,9 @@ public class AuthService {
 
         // 정상 인증 프로세스
         if(findUser.getAuthenticationCode().equals(dto.getCode())
-                && findUser.getAuthenticationDue().isBefore(LocalDateTime.now())){
+                && findUser.getAuthenticationDue().isAfter(LocalDateTime.now())){
             findUser.setActive(true);
-        }else if(findUser.getAuthenticationDue().isAfter(LocalDateTime.now())){
+        }else if(findUser.getAuthenticationDue().isBefore(LocalDateTime.now())){
             throw new TimeOutException("인증 시간을 초과하였습니다");
         }else{
             throw new AuthenticationServiceException("잘못된 인증번호 입니다");
