@@ -40,18 +40,9 @@ public class AuthService {
             throw new IllegalStateException("해당 이메일을 가진 유저가 존재합니다");
         }
 
-
         if (findUser instanceof Doctor){
             doctor = (Doctor) findUser;
-            doctor.setPassword(passwordEncoder.encode(dto.getPassword()));
-            doctor.setMedicalSpeciality(dto.getMedicalSpeciality());
-            doctor.setDenied(false);
-            doctor.setName(dto.getName());
-            doctor.setSelfDescription(dto.getSelfDescription());
-            doctor.setContact(dto.getContact());
-            doctor.setCertificateAddress(dto.getCertificateAddress());
-            doctor.setAddress(dto.getAddress());
-
+            doctor.setDoctor(dto);
         }else{
             doctor =  Doctor.createDoctor(
                     dto.getEmail(),passwordEncoder.encode(dto.getPassword()),dto.getName(),dto.getContact(),
@@ -61,7 +52,6 @@ public class AuthService {
             doctor.setRole("ROLE_DOCTOR");
             repository.save(doctor);
         }
-
 
         return doctor;
     }

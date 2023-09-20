@@ -74,7 +74,9 @@ public class AuthController {
             return new SubCodeMessageResponse(message, 400,code);
         }
         User user = userRepository.findByEmail(dto.getEmail()).orElse(null);
-        if (user != null){
+
+        // 승인이 거부된 사용자는 제외한다
+        if (user != null && !user.isDenied()){
             code = 400;
             message = AuthMessageProvider.DUPLICATED_EMAIL;
             return new SubCodeMessageResponse(message,401,code);
