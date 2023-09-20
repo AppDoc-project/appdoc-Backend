@@ -203,6 +203,8 @@ public class AuthController {
             res.setStatus(400);
             return new CodeMessageResponse(CommonMessageProvider.NO_UPLOAD,400);
         }
+        System.out.println(path);
+        System.out.println(address);
         String uuid = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();

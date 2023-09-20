@@ -10,7 +10,6 @@ import webdoc.authentication.domain.dto.response.CodeMessageResponse;
 @Slf4j
 @Controller
 public class TestController {
-
     @ResponseBody
     @GetMapping("/test")
     public CodeMessageResponse testResponse(){

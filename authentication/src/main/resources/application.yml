@@ -1,13 +1,40 @@
+# application-operation.yml
+spring:
+  config:
+    activate:
+      on-profile: operation
+server:
+  add: http://49.50.167.217:8080
+
 file:
   dir: /home/appdoc/authentication_image
+
+---
+
+# application-dev.yml
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+file:
+  dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/src/main/resources/static/authentication_image
+
 server:
-  add:
-    http://49.50.167.217:8080
+  add: http://127.0.0.1:8080
+
+---
+
+# application.yml
+server:
+  port: 8080
+
 spring:
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -19,13 +46,15 @@ spring:
           starttls:
             enable: true
           auth: true
+
   datasource:
     url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
+
   jpa:
     hibernate:
-      ddl-auto:  update
+      ddl-auto: update
     open-in-view: true
     properties:
       hibernate:
@@ -34,7 +63,6 @@ spring:
           lob:
             non_contextual_creation: true
         show_sql: true
-
 
 jwt:
   signing:
