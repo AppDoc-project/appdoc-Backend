@@ -17,6 +17,7 @@ public class Doctor extends User{
                                String certificateAddress, MedicalSpecialities medicalSpeciality,String selfDescription){
         Doctor doctor = new Doctor();
 
+        doctor.setName(name);
         doctor.setEmail(email);
         doctor.setPassword(password);
         doctor.setContact(contact);

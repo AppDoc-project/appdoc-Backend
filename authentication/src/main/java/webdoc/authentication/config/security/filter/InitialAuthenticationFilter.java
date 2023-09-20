@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.authentication.domain.dto.response.CodeMessageResponse;
 import webdoc.authentication.domain.dto.response.SubCodeMessageResponse;
 import webdoc.authentication.domain.entity.user.Doctor;
+import webdoc.authentication.domain.entity.user.Patient;
 import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.repository.UserRepository;
@@ -38,29 +39,44 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
         String password = request.getHeader("password");
 
         User user = userRepository.findByEmail(email).orElse(null);
+
         if(user == null){
+            // 유저가 없는 경우
             response.setStatus(400);
             response.getWriter().write(objectMapper.writeValueAsString(new SubCodeMessageResponse("인증에 실패하였습니다",400,400)));
             return ;
         } else if (!passwordEncoder.matches(password,user.getPassword())) {
+            //  비밀번호가 틀린 경우
+            response.setStatus(400);
+            response.getWriter().write(objectMapper.writeValueAsString(new SubCodeMessageResponse("인증에 실패하였습니다",400,400)));
+            return ;
+
+        } else if(user instanceof Patient && !user.isActive() ){
+            // [환자] 가입 폼은 제출했지만 인증하지 않고 다시 로그인 하는 경우
             response.setStatus(400);
             response.getWriter().write(objectMapper.writeValueAsString(new SubCodeMessageResponse("인증에 실패하였습니다",400,400)));
             return ;
         } else if(user instanceof Doctor && user.isDenied()){
+            // [의사] 심사가 거부된 경우
             response.setStatus(400);
             response.getWriter().write(objectMapper.writeValueAsString(new SubCodeMessageResponse("인증이 거부 되었습니다 적절한 인증수단을 갖고 다시 회원가입 해주세요",401,400)));
             return ;
         } else if(user instanceof Doctor && !user.isActive()){
+            // [의사] 인증절차가 진행 중인 경우
             response.setStatus(400);
             response.getWriter().write(objectMapper.writeValueAsString(new SubCodeMessageResponse("인증절차가 진행 중입니다",402,400)));
             return ;
         }
 
         String type;
+        int subCode;
+
         if (user instanceof Doctor){
             type = "doctor";
+            subCode = 201;
         }else{
             type = "patient";
+            subCode = 200;
         }
 
         SecretKey key = Keys.hmacShaKeyFor(
@@ -80,7 +96,7 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
 
         response.setHeader("Authorization",jwt);
         response.setStatus(200);
-        response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_SUCCESS,200)));
+        response.getWriter().write(objectMapper.writeValueAsString(new SubCodeMessageResponse(AuthMessageProvider.LOGIN_SUCCESS,subCode,200)));
 
     }
 

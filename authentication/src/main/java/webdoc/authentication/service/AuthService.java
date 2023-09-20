@@ -78,7 +78,8 @@ public class AuthService {
             Patient findPatient = (Patient) findUser;
             String generatedValue = FourDigitsNumberGenerator.generateFourDigitsNumber();
             findPatient.setAuthenticationCode(generatedValue);
-            findPatient.setAuthenticationDue(LocalDateTime.now());
+            findPatient.setAuthenticationDue(LocalDateTime.now().minusMinutes(3L));
+            emailService.sendEmail(findPatient.getEmail(),generatedValue);
             return findPatient;
         }
 
