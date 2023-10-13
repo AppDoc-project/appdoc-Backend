@@ -15,8 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.authentication.config.security.token.JwtAuthenticationToken;
-import webdoc.authentication.domain.dto.response.SubCodeMessageResponse;
 import webdoc.authentication.domain.entity.user.User;
+import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             e.printStackTrace();
             response.setCharacterEncoding("UTF-8");
             response.setStatus(400);
-            response.getWriter().write(mapper.writeValueAsString(new SubCodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
+            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
             return ;
         }
 
@@ -68,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(user == null || user.getToken() == null || user.getToken().getExpiredAt().isBefore(LocalDateTime.now())){
             response.setCharacterEncoding("UTF-8");
             response.setStatus(400);
-            response.getWriter().write(mapper.writeValueAsString(new SubCodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
+            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
             return;
         }
 

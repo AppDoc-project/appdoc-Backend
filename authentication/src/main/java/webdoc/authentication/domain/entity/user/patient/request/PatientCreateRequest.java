@@ -1,11 +1,17 @@
-package webdoc.authentication.domain.dto.user;
+package webdoc.authentication.domain.entity.user.patient.request;
 
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
+
 @Getter
 @Setter
-public class PatientDto {
+public class PatientCreateRequest {
+
+    @NotNull
+    private LocalDate dateOfBirth;
     @Email
     @Size(max=50)
     private String email;

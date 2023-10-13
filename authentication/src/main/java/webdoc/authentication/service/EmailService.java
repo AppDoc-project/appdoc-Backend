@@ -16,16 +16,12 @@ import webdoc.authentication.repository.UserRepository;
 @RequiredArgsConstructor
 @EnableAsync
 public class EmailService {
-    private final UserRepository userRepository;
-
     //의존성 주입을 통해서 필요한 객체를 가져온다.
     private final JavaMailSender emailSender;
 
 
     // 타임리프를사용하기 위한 객체를 의존성 주입으로 가져온다
     private final SpringTemplateEngine templateEngine;
-
-
 
 
     //메일 양식 작성 로직

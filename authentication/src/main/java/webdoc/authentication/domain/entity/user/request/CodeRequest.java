@@ -1,14 +1,15 @@
-package webdoc.authentication.domain.dto.user;
+package webdoc.authentication.domain.entity.user.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class EmailDto {
+public class CodeRequest {
+    @NotNull
+    private String email;
     @NotEmpty
-    private  String email;
+    private String code;
 }

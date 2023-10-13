@@ -13,16 +13,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.validation.annotation.Validated;
 import webdoc.authentication.config.security.filter.InitialAuthenticationFilter;
 import webdoc.authentication.config.security.filter.JwtAuthenticationFilter;
-import webdoc.authentication.domain.dto.response.CodeMessageResponse;
+import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 
@@ -79,7 +77,7 @@ public class SecurityConfig {
                         public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
                             response.setCharacterEncoding("UTF-8");
                             response.setStatus(403);
-                            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("권한이 없습니다",403)));
+                            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("권한이 없습니다",403,null)));
                         }
                     });
                    ex.authenticationEntryPoint(new AuthenticationEntryPoint() {
@@ -87,7 +85,7 @@ public class SecurityConfig {
                        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                            response.setCharacterEncoding("UTF-8");
                            response.setStatus(401);
-                           response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증이 필요합니다",400)));
+                           response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증이 필요합니다",400,null)));
 
                        }
                    });

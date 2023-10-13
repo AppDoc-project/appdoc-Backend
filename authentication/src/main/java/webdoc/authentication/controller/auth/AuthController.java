@@ -14,13 +14,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.config.security.token.JwtAuthenticationToken;
-import webdoc.authentication.domain.dto.response.CodeMessageResponse;
-import webdoc.authentication.domain.dto.response.SubCodeMessageResponse;
-import webdoc.authentication.domain.dto.user.DoctorDto;
-import webdoc.authentication.domain.dto.user.EmailDto;
-import webdoc.authentication.domain.dto.user.PatientCodeDto;
-import webdoc.authentication.domain.dto.user.PatientDto;
-import webdoc.authentication.domain.entity.user.Doctor;
+import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
+import webdoc.authentication.domain.response.CodeMessageResponse;
+import webdoc.authentication.domain.entity.user.request.EmailRequest;
+import webdoc.authentication.domain.entity.user.request.CodeRequest;
+import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserRepository;
@@ -38,16 +36,11 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class AuthController {
-
     @Value("${file.dir}")
     private String path;
-
     @Value("${server.add}")
     private String address;
-
-
     private final AuthService authService;
-
     private final UserRepository userRepository;
 
     // 로그아웃
@@ -55,41 +48,31 @@ public class AuthController {
     public CodeMessageResponse logout(){
         Object user = SecurityContextHolder.getContext().getAuthentication();
         if(user == null || user instanceof AnonymousAuthenticationToken){
-            return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200);
+            return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200,null);
         }
         JwtAuthenticationToken token = (JwtAuthenticationToken) user;
         authService.logOut((User)token.getPrincipal());
-        return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200);
+        return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200,null);
     }
 
     // 이메일 중복 검사
     @PostMapping("/join/duplication")
-    public SubCodeMessageResponse emailDuplicatedCheck(HttpServletRequest req, HttpServletResponse res,@RequestBody @Validated EmailDto dto,BindingResult bindingResult){
-        int code = 200;
+    public CodeMessageResponse emailDuplicatedCheck(HttpServletResponse res, @RequestBody @Validated EmailRequest dto, BindingResult bindingResult){
         String message = AuthMessageProvider.NOT_DUPLICATED_EMAIL;
+        // 값 바인딩 실패
         if (bindingResult.hasErrors()){
             log.info("type error={}", bindingResult.getAllErrors());
-            code = 400;
             message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(code);
-            return new SubCodeMessageResponse(message, 400,code);
+            res.setStatus(400);
+            return new CodeMessageResponse(message, 400 ,400);
         }
-        User user = userRepository.findByEmail(dto.getEmail()).orElse(null);
+        boolean isDuplicated = authService.isEmailDuplicated(dto.getEmail());
 
-        // 의사회원 중 승인이 거부되지 않은 사용자는 제외한다
-        // 환자회원 중 활성화 된 계정은 제외한다
-        // 가독성을 위해 if, else if  분리 유지
-        // 추후 타입을 분리할 필요도 보임
-        if (user != null && !user.isDenied() && user instanceof Doctor){
-            code = 400;
-            message = AuthMessageProvider.DUPLICATED_EMAIL;
-            return new SubCodeMessageResponse(message,401,code);
-        } else if(user != null && user.isActive()){
-            code = 400;
-            message = AuthMessageProvider.DUPLICATED_EMAIL;
-            return new SubCodeMessageResponse(message,401,code);
+        if(isDuplicated){
+            message = AuthMessageProvider.EMAIL_EXISTS;
+            return  new CodeMessageResponse(message,400,401);
         }
-        return new SubCodeMessageResponse(message,200,code);
+        return new CodeMessageResponse(message,200,200);
 
     }
 
@@ -97,85 +80,75 @@ public class AuthController {
 
     @PostMapping("/join/doctor")
     public CodeMessageResponse doctorJoin(
-            HttpServletRequest req,
             HttpServletResponse res,
-            @RequestBody @Validated DoctorDto dto,
+            @RequestBody @Validated DoctorCreateRequest dto,
             BindingResult result
-    ) {
-        int code = 201;
+    ){
         String message = AuthMessageProvider.JOIN_SUCCESS;
-
         if (result.hasErrors()) {
             log.info("type error={}", result.getAllErrors());
-            code = 400;
             message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(code);
-            return new CodeMessageResponse(message, code);
+            res.setStatus(400);
+            return new CodeMessageResponse(message, 400,null);
         }
 
         try {
             authService.createDoctorUser(dto);
         } catch (Exception e) {
-            if (!(e instanceof IllegalStateException)) {
-                throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
+            if (e instanceof IllegalStateException) {
+                throw new IllegalStateException(e.getMessage());
             } else {
-                throw e;
+                throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
             }
         }
-
-        return new CodeMessageResponse(message, code);
+        return new CodeMessageResponse(message, 201,null);
     }
 
     // 환자 회원가입
     @PostMapping("/join/patient")
     public CodeMessageResponse patientJoin(
-            HttpServletRequest req,
             HttpServletResponse res,
-            @RequestBody @Validated PatientDto dto,
+            @RequestBody @Validated PatientCreateRequest dto,
             BindingResult result
-    ) throws MessagingException {
-        int code = 201;
+    )  {
         String message = AuthMessageProvider.JOIN_SUCCESS;
 
         if (result.hasErrors()) {
             log.info("type error={}", result.getAllErrors());
-            code = 400;
             message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(code);
-            return new CodeMessageResponse(message, code);
+            res.setStatus(400);
+            return new CodeMessageResponse(message, 400,null);
         }
 
         try {
             authService.createPatientUser(dto);
         } catch (Exception e) {
-            if (!(e instanceof IllegalStateException)) {
-                throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
+            if (e instanceof IllegalStateException) {
+                throw new IllegalStateException(e.getMessage());
             } else {
-                throw e;
+                throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
             }
         }
 
-        return new CodeMessageResponse(message, code);
+        return new CodeMessageResponse(message, 201, null);
     }
 
 
     // 환자 인증
     @PostMapping("/validate/patient")
     public CodeMessageResponse patientValidation(
-            HttpServletRequest req,
             HttpServletResponse res,
-            @RequestBody @Validated PatientCodeDto dto,
+            @RequestBody @Validated CodeRequest dto,
             BindingResult result
     ) {
-        int code = 200;
         String message = AuthMessageProvider.VALIDATION_SUCCESS;
 
         if (result.hasErrors()) {
             log.info("type error={}", result.getAllErrors());
-            code = 400;
             message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(code);
-            return new CodeMessageResponse(message, code);
+            res.setStatus(400);
+            // 값 바인딩 실패
+            return new CodeMessageResponse(message, 400,403);
         }
 
         try {
@@ -191,8 +164,42 @@ public class AuthController {
             }
         }
 
-        res.setStatus(code);
-        return new CodeMessageResponse(message, code);
+        res.setStatus(200);
+        return new CodeMessageResponse(message, 200,null);
+    }
+
+    // 의사 인증
+    @PostMapping("/validate/doctor")
+    public CodeMessageResponse doctorValidation(
+            HttpServletResponse res,
+            @RequestBody @Validated CodeRequest dto,
+            BindingResult result
+    ) {
+        String message = AuthMessageProvider.VALIDATION_SUCCESS;
+
+        if (result.hasErrors()) {
+            log.info("type error={}", result.getAllErrors());
+            message = AuthMessageProvider.BINDING_FAILURE;
+            res.setStatus(400);
+            // 값 바인딩 실패
+            return new CodeMessageResponse(message, 400,403);
+        }
+
+        try {
+            authService.validateDoctor(dto);
+        } catch (Exception e) {
+            if (
+                    e instanceof TimeOutException || e instanceof NoSuchElementException
+                            || e instanceof AuthenticationServiceException
+            ) {
+                throw e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
+
+        res.setStatus(200);
+        return new CodeMessageResponse(message, 200,null);
     }
 
     // 인증용 이미지 업로드
@@ -201,21 +208,19 @@ public class AuthController {
     public CodeMessageResponse authenticationImage(HttpServletResponse res,@RequestParam MultipartFile file) throws IOException {
         if(file.isEmpty()){
             res.setStatus(400);
-            return new CodeMessageResponse(CommonMessageProvider.NO_UPLOAD,400);
+            return new CodeMessageResponse(CommonMessageProvider.NO_UPLOAD,400,null);
         }
-        System.out.println(path);
-        System.out.println(address);
         String uuid = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         if (!extension.equals("jpg") && !extension.equals("png") && !extension.equals("jpeg") && !extension.equals("pdf")) {
-            return new CodeMessageResponse(CommonMessageProvider.NOT_IMAGE,400);
+            return new CodeMessageResponse(CommonMessageProvider.NOT_IMAGE,400,null);
         }
         String fullPath = path + "/" + uuid + "."+ extension;
 
         file.transferTo(new File(fullPath));
 
-        return new CodeMessageResponse(address+"/authentication_image"+"/"+uuid+"."+extension,200);
+        return new CodeMessageResponse(address+"/authentication_image"+"/"+uuid+"."+extension,200,null);
 
     }
 

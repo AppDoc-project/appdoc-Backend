@@ -1,4 +1,4 @@
-package webdoc.authentication.domain.dto.response;
+package webdoc.authentication.domain.response;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CodeMessageResponse {
     private final String message;
-    private final int code;
+    private final int httpStatus;
+    private final Integer code;
 
 }
