@@ -28,6 +28,7 @@ import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -152,7 +153,7 @@ public class AuthController {
         }
 
         try {
-            authService.validatePatient(dto);
+            authService.validatePatient(dto, LocalDateTime.now());
         } catch (Exception e) {
             if (
                     e instanceof TimeOutException || e instanceof NoSuchElementException
@@ -186,7 +187,7 @@ public class AuthController {
         }
 
         try {
-            authService.validateDoctor(dto);
+            authService.validateDoctor(dto,LocalDateTime.now());
         } catch (Exception e) {
             if (
                     e instanceof TimeOutException || e instanceof NoSuchElementException

@@ -30,6 +30,7 @@ public class PatientMail extends UserMail {
                     .name(dto.getName())
                     .password(dto.getPassword())
                     .role(Patient.role)
+                    .contact(dto.getContact())
                     .email(dto.getEmail())
                     .expirationDateTime(expirationDateTime)
                     .code(code)

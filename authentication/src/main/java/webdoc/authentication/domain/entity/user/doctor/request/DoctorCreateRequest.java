@@ -1,11 +1,10 @@
 package webdoc.authentication.domain.entity.user.doctor.request;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import webdoc.authentication.domain.enums.MedicalSpecialities;
+import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
 
 import java.time.LocalDate;
 

@@ -1,6 +1,7 @@
 package webdoc.authentication.domain.entity.user.patient.request;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +31,15 @@ public class PatientCreateRequest {
     @Pattern(regexp = "^[0-9]{11}$")
     private String contact;
 
+    @Builder
+    private PatientCreateRequest(LocalDate dateOfBirth,String email,String name,
+                                 String password, String contact){
+        this.dateOfBirth = dateOfBirth;
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.contact = contact;
+    }
 
 
 }

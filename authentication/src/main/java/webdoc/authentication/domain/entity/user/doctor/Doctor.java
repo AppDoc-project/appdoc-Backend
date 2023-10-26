@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.doctor.enums.AuthenticationProcess;
-import webdoc.authentication.domain.enums.MedicalSpecialities;
+import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
 
 import java.time.LocalDate;
 

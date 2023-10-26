@@ -8,6 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CodeRequest {
+
+    public CodeRequest(String email, String code){
+        this.email = email;
+        this.code = code;
+    }
     @NotNull
     private String email;
     @NotEmpty

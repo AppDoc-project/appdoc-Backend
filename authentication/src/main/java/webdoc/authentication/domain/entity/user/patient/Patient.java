@@ -18,7 +18,7 @@ public class Patient extends User {
                                         String contact, LocalDate dateOfBirth){
         return
                 Patient.builder()
-                        .contact(email)
+                        .email(email)
                         .password(password)
                         .name(name)
                         .contact(contact)

@@ -1,4 +1,4 @@
-package webdoc.authentication.domain.enums;
+package webdoc.authentication.domain.entity.user.doctor.enums;
 
 public enum MedicalSpecialities {
     INTERNAL_MEDICINE("내과"), SURGERY("외과"), ORTHOPEDICS("정형외과"),

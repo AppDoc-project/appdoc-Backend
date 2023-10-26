@@ -52,7 +52,6 @@ public class AuthService{
 
 
 
-
         String code = FourDigitsNumberGenerator.generateFourDigitsNumber();
         LocalDateTime expirationDateTime = LocalDateTime.now().plusMinutes(3L);
 
@@ -102,18 +101,19 @@ public class AuthService{
 
     //환자 인증
     @Transactional
-    public void validatePatient(CodeRequest dto){
+    public void validatePatient(CodeRequest dto,LocalDateTime time){
         PatientMail patientMail = (PatientMail) userMailRepository.findByEmail(dto.getEmail())
                 .stream().filter(e->e instanceof PatientMail)
                 .findFirst()
                 .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
         // 정상 인증 프로세스
         if(patientMail.getCode().equals(dto.getCode())
-                && patientMail.getExpirationDateTime().isAfter(LocalDateTime.now())){
+                && patientMail.getExpirationDateTime().isAfter(time)){
             userMailRepository.delete(patientMail);
-            userRepository.save(Patient.patientMailToPatient(patientMail));
+            Patient patient = Patient.patientMailToPatient(patientMail);
+            userRepository.save(patient);
         // 인증 시간 초과
-        }else if(patientMail.getExpirationDateTime().isBefore(LocalDateTime.now())){
+        }else if(patientMail.getExpirationDateTime().isBefore(time)){
             throw new TimeOutException("인증 시간을 초과하였습니다");
         // 인증 번호 틀림
         }else{
@@ -123,18 +123,18 @@ public class AuthService{
 
     // 의사 인증
     @Transactional
-    public void validateDoctor(CodeRequest dto){
+    public void validateDoctor(CodeRequest dto,LocalDateTime time){
         DoctorMail doctorMail = (DoctorMail) userMailRepository.findByEmail(dto.getEmail())
                 .stream().filter(e->e instanceof DoctorMail)
                 .findFirst()
                 .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
         // 정상 인증 프로세스
         if(doctorMail.getCode().equals(dto.getCode())
-                && doctorMail.getExpirationDateTime().isAfter(LocalDateTime.now())){
+                && doctorMail.getExpirationDateTime().isAfter(time)){
             userMailRepository.delete(doctorMail);
             userRepository.save(Doctor.doctorMailToDoctor(doctorMail));
             // 인증 시간 초과
-        }else if(doctorMail.getExpirationDateTime().isBefore(LocalDateTime.now())){
+        }else if(doctorMail.getExpirationDateTime().isBefore(time)){
             throw new TimeOutException("인증 시간을 초과하였습니다");
             // 인증 번호 틀림
         }else{
