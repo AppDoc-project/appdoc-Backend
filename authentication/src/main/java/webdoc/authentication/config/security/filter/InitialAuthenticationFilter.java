@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.authentication.domain.entity.user.doctor.Doctor;
 import webdoc.authentication.domain.entity.user.doctor.enums.AuthenticationProcess;
-import webdoc.authentication.domain.entity.user.patient.Patient;
 import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.response.CodeMessageResponse;
@@ -94,11 +93,13 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(200);
         response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_SUCCESS,200,subCode)));
 
+
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request){
-        return !request.getServletPath().equals("/auth/login");
+        String path = request.getPathInfo();
+        return !path.equals("/auth/login");
     }
 
 

@@ -1,7 +1,6 @@
 package webdoc.authentication.controller.auth;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
 import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
 import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;

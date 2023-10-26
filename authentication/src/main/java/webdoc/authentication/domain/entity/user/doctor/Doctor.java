@@ -36,6 +36,10 @@ public class Doctor extends User {
 
     }
 
+    public void changeDoctorState(AuthenticationProcess authenticationProcess){
+        this.authenticationProcess = authenticationProcess;
+    }
+
     // Doctor객체를 만드는 팩토리 함수
     public static Doctor createDoctor(String email,String password,String name,String contact ,String address,
                                String certificateAddress, MedicalSpecialities medicalSpeciality,

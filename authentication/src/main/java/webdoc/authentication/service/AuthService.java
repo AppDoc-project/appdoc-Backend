@@ -142,13 +142,14 @@ public class AuthService{
         }
     }
 
-
+    //로그 아웃
     @Transactional
     public void logOut(User user){
         User findUser = userRepository.findByEmail(user.getEmail()).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
         findUser.setToken(null);
     }
 
+    // 토큰 설정
     @Transactional
     public void setToken(User user, Token token){
         User findUser = userRepository.findById(user.getId()).orElse(null);
@@ -160,6 +161,20 @@ public class AuthService{
     public boolean isEmailDuplicated(String email){
         User user = userRepository.findByEmail(email).orElse(null);
         return user != null;
+    }
+
+    // 의사 인증 상태를 ONGOING으로 설정
+    @Transactional
+    public void setDoctorAuthenticationSuccess(Long id){
+        Doctor doctor = userRepository.findDoctorById(id).orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+        doctor.changeDoctorState(AuthenticationProcess.AUTHENTICATION_SUCCESS);
+    }
+
+    // 의사 인증 상태를 DENINED로 설정
+    @Transactional
+    public void setDoctorAuthenticationDenied(Long id){
+        Doctor doctor = userRepository.findDoctorById(id).orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+        doctor.changeDoctorState(AuthenticationProcess.AUTHENTICATION_DENIED);
     }
 
 }

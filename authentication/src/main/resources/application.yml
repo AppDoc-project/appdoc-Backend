@@ -62,6 +62,9 @@ spring:
   config:
     activate:
       on-profile: dev
+  jpa:
+    hibernate:
+      ddl-auto: create
 
 file:
   dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/src/main/resources/static/authentication_image
