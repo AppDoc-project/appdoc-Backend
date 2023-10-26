@@ -1,7 +1,5 @@
 package webdoc.authentication.controller.auth;
 
-import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +68,7 @@ public class AuthController {
         boolean isDuplicated = authService.isEmailDuplicated(dto.getEmail());
 
         if(isDuplicated){
+            res.setStatus(400);
             message = AuthMessageProvider.EMAIL_EXISTS;
             return  new CodeMessageResponse(message,400,401);
         }
@@ -102,6 +101,7 @@ public class AuthController {
                 throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
             }
         }
+        res.setStatus(201);
         return new CodeMessageResponse(message, 201,null);
     }
 

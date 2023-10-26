@@ -10,7 +10,6 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-
 public class DoctorCreateRequest {
 
     public DoctorCreateRequest (){}
@@ -19,6 +18,7 @@ public class DoctorCreateRequest {
     private LocalDate dateOfBirth;
     @Email
     @Size(max=50)
+    @NotEmpty
     private String email;
 
     @NotEmpty

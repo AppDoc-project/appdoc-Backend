@@ -61,8 +61,7 @@ public class SecurityConfig {
                 .addFilterAt(initialAuthenticationFilter(http), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(jwtAuthenticationFilter(), InitialAuthenticationFilter.class)
                 .authorizeHttpRequests(auth->{
-                    auth.requestMatchers("/auth/join/**")
-                            .permitAll()
+                    auth
                             .requestMatchers("/test")
                             .authenticated()
                             .anyRequest()

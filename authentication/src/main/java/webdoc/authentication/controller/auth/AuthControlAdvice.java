@@ -52,7 +52,7 @@ public class AuthControlAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse timeOut(TimeOutException e){
         e.printStackTrace();
-        return new CodeMessageResponse(AuthMessageProvider.VALIDATION_EXPIRED,401,400);
+        return new CodeMessageResponse(AuthMessageProvider.VALIDATION_EXPIRED,400,401);
     }
 
     // 인증 코드가 틑릴 경우
