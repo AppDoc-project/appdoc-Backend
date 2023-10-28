@@ -7,7 +7,7 @@ import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.user.User;
 
-@Entity
+@Entity(name = "love")
 @EqualsAndHashCode(of = "id")
 @Getter
 public class Like extends BaseEntity {

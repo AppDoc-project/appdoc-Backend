@@ -57,7 +57,7 @@ spring:
       on-profile: dev
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
 
 file:
   dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/src/main/resources/static/media
@@ -74,7 +74,7 @@ spring:
       on-profile: test
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
 
 
 
