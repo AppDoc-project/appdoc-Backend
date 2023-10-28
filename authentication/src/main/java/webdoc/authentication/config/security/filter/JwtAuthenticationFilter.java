@@ -21,6 +21,7 @@ import webdoc.authentication.repository.UserRepository;
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
@@ -47,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try{
-            System.out.println(jwt);
             claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
@@ -64,8 +64,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String email = claims.get("email",String.class);
         User user =  repository.findByEmail(email).orElse(null);
-
-        if(user == null || user.getToken() == null || user.getToken().getExpiredAt().isBefore(LocalDateTime.now())){
+        String tokenExpiredAt = claims.get("expireAt",String.class);
+        if(user == null || user.getToken() == null || user.getToken().getExpiredAt().isBefore(LocalDateTime.now()) || !tokenExpiredAt.equals(user.getToken().getExpiredAt().toString())){
             response.setCharacterEncoding("UTF-8");
             response.setStatus(400);
             response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));

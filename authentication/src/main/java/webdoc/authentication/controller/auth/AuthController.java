@@ -98,7 +98,7 @@ public class AuthController {
             if (e instanceof IllegalStateException) {
                 throw new IllegalStateException(e.getMessage());
             } else {
-                throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
+                throw new RuntimeException(CommonMessageProvider.INTERNAL_SERVER_ERROR, e);
             }
         }
         res.setStatus(201);
@@ -214,7 +214,7 @@ public class AuthController {
         String uuid = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-        if (!extension.equals("jpg") && !extension.equals("png") && !extension.equals("jpeg") && !extension.equals("pdf")) {
+        if ( !extension.equals("pdf")) {
             return new CodeMessageResponse(CommonMessageProvider.NOT_IMAGE,400,null);
         }
         String fullPath = path + "/" + uuid + "."+ extension;

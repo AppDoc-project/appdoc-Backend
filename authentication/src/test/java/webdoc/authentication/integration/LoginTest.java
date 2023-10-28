@@ -1,7 +1,7 @@
 package webdoc.authentication.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -246,9 +246,58 @@ public class LoginTest {
                 .isEqualTo("김민교");
 
 
-
-
     }
+
+    @DisplayName("중복 로그인을 허용하지 않는다")
+    @Test
+    void noDuplicatedLogin() throws Exception {
+        DoctorCreateRequest doctorRequest
+                = doctorCreateRequest();
+        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
+        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
+        authService.setDoctorAuthenticationSuccess(user.getId());
+
+        // 첫 번째 로그인 성공
+        MvcResult result = mockMvc.perform(post("/auth/login")
+                        .header("email",doctorMail.getEmail())
+                        .header("password","dntjrdn78"))
+                .andReturn();
+
+        String jwt1 = result.getResponse().getHeader("Authorization");
+
+        // 첫 번째 엔드포인트 접근
+        mockMvc.perform(get("/test")
+                        .header("authorization",jwt1))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // 두 번째 로그인 성공
+        result = mockMvc.perform(post("/auth/login")
+                        .header("email",doctorMail.getEmail())
+                        .header("password","dntjrdn78"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jwt2 = result.getResponse().getHeader("Authorization");
+
+
+        assertThat(jwt2).isNotEqualTo(jwt1);
+        System.out.println(jwt1);
+        System.out.println(jwt2);
+        //기존의 jwt1으로 엔드포인트 접근 시 실패
+        mockMvc.perform(get("/test")
+                        .header("authorization",jwt1))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        //기존의 jwt2으로 엔드포인트 접근 시 성공
+        mockMvc.perform(get("/test")
+                        .header("authorization",jwt2))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful());
+
+     }
 
     private DoctorCreateRequest doctorCreateRequest(){
         return DoctorCreateRequest

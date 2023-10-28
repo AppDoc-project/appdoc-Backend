@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.authentication.domain.entity.user.doctor.Doctor;
@@ -30,6 +31,8 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
@@ -98,8 +101,8 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request){
-        String path = request.getPathInfo();
-        return !path.equals("/auth/login");
+        String requestPath = request.getRequestURI();
+        return !requestPath.equals("/auth/login");
     }
 
 

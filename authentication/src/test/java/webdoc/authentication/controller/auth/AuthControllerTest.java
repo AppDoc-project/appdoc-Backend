@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
 import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
 import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
@@ -23,8 +22,6 @@ import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
 import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
-
-import java.sql.SQLException;
 import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;

@@ -49,11 +49,16 @@ spring:
   config:
     activate:
       on-profile: operation
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
 server:
   add: http://49.50.167.217:8080
 
 file:
   dir: /home/appdoc/authentication_image
+
+
 
 ---
 
@@ -95,3 +100,4 @@ file:
 
 server:
   add: http://127.0.0.1:8080
+

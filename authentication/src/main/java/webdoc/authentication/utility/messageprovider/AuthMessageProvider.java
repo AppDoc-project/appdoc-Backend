@@ -1,7 +1,7 @@
 package webdoc.authentication.utility.messageprovider;
 
 public class AuthMessageProvider {
-    public final static String JOIN_SUCCESS = "회원가입을 성공하였습니다";
+    public final static String JOIN_SUCCESS = "폼 제출을 성공하였습니다";
     public final static String BINDING_FAILURE = "값 검증에 실패하였습니다";
     public final static String EMAIL_EXISTS = "이미 존재하는 이메일입니다";
     public final static String VALIDATION_SUCCESS = "인증에 성공하였습니다";
