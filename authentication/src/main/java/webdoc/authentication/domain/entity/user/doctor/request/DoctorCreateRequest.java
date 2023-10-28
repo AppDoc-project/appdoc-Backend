@@ -36,6 +36,7 @@ public class DoctorCreateRequest {
 
 
     @Size(max=100)
+    @NotEmpty
     private String hospitalName;
 
     @NotEmpty

@@ -30,7 +30,7 @@ public class Doctor extends User {
 
 
     private String selfDescription;
-
+    @Column(nullable = false)
     private String hospitalName;
     protected Doctor(){
 
