@@ -26,6 +26,7 @@ public class DoctorMail extends UserMail {
     private MedicalSpecialities medicalSpeciality;
 
 
+    @Column(nullable = false)
     private String hospitalName;
     private String selfDescription;
     @Builder
