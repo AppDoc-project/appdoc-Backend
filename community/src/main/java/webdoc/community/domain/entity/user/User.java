@@ -3,8 +3,12 @@ package webdoc.community.domain.entity.user;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import webdoc.community.domain.BaseEntity;
+import webdoc.community.domain.entity.user.doctor.Doctor;
+import webdoc.community.domain.entity.user.patient.Patient;
 
+import javax.print.Doc;
 import java.time.LocalDate;
 
 @Entity
@@ -27,6 +31,15 @@ public abstract class User extends BaseEntity {
         this.dateOfBirth = dateOfBirth;
     }
 
+    public String getNickName(){
+        if (this instanceof Doctor) return getName();
+        return ((Patient) this).getNickName();
+    }
+
+    public boolean isDoctor(){
+        return this instanceof Doctor;
+    }
+
 
 
     // token setter
@@ -38,7 +51,6 @@ public abstract class User extends BaseEntity {
     public void setRole(String role){
         this.role = role;
     }
-
 
 
     @Id
@@ -62,5 +74,9 @@ public abstract class User extends BaseEntity {
     private String contact;
     @Column(nullable = false)
     private String role;
+    @Value("${basic.image}")
+    private String profile;
+
+
 
 }

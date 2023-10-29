@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.community.Community;
+import webdoc.community.domain.entity.like.Bookmark;
+import webdoc.community.domain.entity.like.Like;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.domain.entity.user.User;
 
@@ -14,22 +17,24 @@ import java.util.List;
 @Entity
 @Getter
 @EqualsAndHashCode(of = "id")
-public class Post {
+public class Post extends BaseEntity {
 
     protected Post(){}
 
     @Builder
-    private Post(User user, String text, Community community){
+    private Post(User user, String title,String text, Community community){
         this.user = user;
         this.text = text;
+        this.title = title;
         this.community = community;
     }
 
-    public static Post CreatePost(User user, String text, Community community){
+    public static Post CreatePost(User user,String title, String text, Community community){
         return
                 Post.builder()
                         .user(user)
                         .text(text)
+                        .title(title)
                         .community(community)
                         .build();
     }
@@ -47,6 +52,9 @@ public class Post {
     @Column(nullable = false, length = 3000)
     private String text;
 
+    @Column(nullable = false)
+    private String title;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "community_id")
     private Community community;
@@ -54,9 +62,35 @@ public class Post {
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "post",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Picture> pictures = new ArrayList<>();
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Thread> threads = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
+
+
     public void addPictures(Picture picture){
         picture.setPost(this);
         pictures.add(picture);
+    }
+
+    public void addThreads(Thread thread){
+        thread.setPost(this);
+        threads.add(thread);
+    }
+
+    public void addBookmakrs(Bookmark bookmark){
+        bookmark.setPost(this);
+        bookmarks.add(bookmark);
+    }
+
+    public void addLikes(Like like){
+        like.setPost(this);
+        likes.add(like);
     }
 
 

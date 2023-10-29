@@ -13,7 +13,7 @@ import webdoc.community.domain.BaseEntity;
 @EqualsAndHashCode(of = "id")
 public class Picture extends BaseEntity {
 
-    public static Picture createPicture(String address, Long priority){
+    public static Picture createPicture(String address, Integer priority){
         Picture picture = new Picture();
         picture.setAddress(address);
         picture.setPriority(priority);
@@ -31,7 +31,7 @@ public class Picture extends BaseEntity {
     private Post post;
 
     @Column(nullable = false)
-    private Long priority;
+    private Integer priority;
 
 
 }

@@ -14,6 +14,10 @@ import java.util.List;
 @Getter
 @Setter
 public class PostCreateRequest {
+
+    @NotEmpty
+    @Max(20)
+    private String title;
     @NotEmpty
     @Max(3000)
     private String text;
@@ -24,12 +28,12 @@ public class PostCreateRequest {
     @Getter
     @Setter
     public static class AddressAndPriority {
-        public AddressAndPriority(String address, Long priority){
+        public AddressAndPriority(String address, Integer priority){
             this.address = address;
             this.priority = priority;
         }
         private String address;
-        private Long priority;
+        private Integer priority;
     }
 
 }

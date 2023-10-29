@@ -14,6 +14,7 @@ import webdoc.community.domain.response.CodeMessageResponse;
 import webdoc.community.domain.response.DataResponse;
 import webdoc.community.service.CommunityService;
 import webdoc.community.utility.messageprovider.CommonMessageProvider;
+import webdoc.community.utility.messageprovider.ResponseCodeProvider;
 
 import java.util.List;
 
@@ -34,9 +35,7 @@ public class CommunityController {
     public CodeMessageResponse createPost(SecurityContext securityContext,HttpServletResponse res, @RequestBody @Validated PostCreateRequest request,
                                           BindingResult result){
         if(result.hasErrors()){
-            log.info("type error={}",result.getAllErrors());
-            res.setStatus(400);
-            return new CodeMessageResponse(CommonMessageProvider.BINDING_FAILURE,400,null);
+            throw new IllegalArgumentException("바인딩 실패");
         }
 
         try{
@@ -53,7 +52,7 @@ public class CommunityController {
             }
         }
 
-        return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,null);
+        return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
 
 
     }

@@ -29,7 +29,8 @@ jwt:
   signing:
     key: 1920123119201231192012311920123112312321a
 
-
+basic:
+  image: http://127.0.0.1:8081/static/image/basic.png
 ---
 
 # application-operation.yml
@@ -46,7 +47,8 @@ server:
 file:
   dir: /home/appdoc/media
 
-
+basic:
+  image:
 
 ---
 
@@ -65,6 +67,8 @@ file:
 server:
   add: http://127.0.0.1:8081
 
+basic:
+  image: http://127.0.0.1:8081/static/image/basic.png
 ---
 
 # application-test.yml
