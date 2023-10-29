@@ -26,4 +26,13 @@ public class CommunityControlAdvice {
         e.printStackTrace();
         return new CodeMessageResponse(CommonMessageProvider.INVALID_ACCESS,400,400);
     }
+
+    // 바인딩 실패
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CodeMessageResponse bindingFailure(NoSuchElementException e){
+        e.printStackTrace();
+        return new CodeMessageResponse(CommonMessageProvider.BINDING_FAILURE,400,400);
+    }
+
 }

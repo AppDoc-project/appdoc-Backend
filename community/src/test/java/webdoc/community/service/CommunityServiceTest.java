@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
+import webdoc.community.domain.entity.post.Picture;
 import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.domain.entity.user.User;
@@ -20,10 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 class CommunityServiceTest {
     @Autowired
     CommunityService communityService;
@@ -85,12 +90,14 @@ class CommunityServiceTest {
 
          User user = patientCreate();
 
-
-
          userRepository.save(user);
          communityRepository.save(com1);
 
-         PostCreateRequest request = postCreateRequest(com1.getId(),"안녕하세요");
+         List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
+         list.add(new PostCreateRequest.AddressAndPriority("www",1L));
+         list.add(new PostCreateRequest.AddressAndPriority("wwwt",2L));
+
+         PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요");
 
 
 
@@ -98,11 +105,48 @@ class CommunityServiceTest {
          //when
          Post post = communityService.createPost(request,user.getId());
 
+         List<Picture> pictures = post.getPictures();
+
 
          //then
-         assertThat(post).isNotNull();
+         assertThat(post).isNotNull()
+                         .extracting("community","text","user")
+                                 .contains(com1,"안녕하세요",user);
+
+         // 사진이 올바르게 저장됨
+         assertThat(pictures).extracting("address","priority")
+                 .containsExactlyInAnyOrder(
+                         tuple("www",1L),
+                         tuple("wwwt",2L)
+                 );
 
       }
+
+      @DisplayName("우선 순위또는 주소가 없으면 게시글 등록에 실패한다")
+      @Test
+      void createPostWithoutAddressOrPriority(){
+          //given
+          Community com1 = Community
+                  .builder()
+                  .name("외과")
+                  .build();
+
+          User user = patientCreate();
+
+          userRepository.save(user);
+          communityRepository.save(com1);
+
+          List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
+          list.add(new PostCreateRequest.AddressAndPriority(null,1L));
+          list.add(new PostCreateRequest.AddressAndPriority("wwwt",2L));
+
+          PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요");
+
+
+          //when + then
+          assertThatThrownBy(()->communityService.createPost(request,user.getId()))
+                  .isInstanceOf(IllegalArgumentException.class);
+       }
 
     private Patient patientCreate(){
         return Patient.createPatient(
@@ -110,13 +154,10 @@ class CommunityServiceTest {
         );
     }
 
-    private PostCreateRequest postCreateRequest(Long communityId,String text){
+    private PostCreateRequest postCreateRequest(Long communityId, List<PostCreateRequest.AddressAndPriority> list,String text){
         PostCreateRequest request = new PostCreateRequest();
         request.setCommunityId(communityId);
         request.setText(text);
-        List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
-        list.add(new PostCreateRequest.AddressAndPriority("www",1L));
-        list.add(new PostCreateRequest.AddressAndPriority("wwwt",2L));
         request.setAddresses(list);
         return  request;
     }
