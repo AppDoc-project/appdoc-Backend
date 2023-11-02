@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import webdoc.community.domain.entity.community.CommunityResponse;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
+import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.user.User;
 import webdoc.community.domain.response.CodeMessageResponse;
 import webdoc.community.domain.response.DataResponse;
@@ -17,6 +18,7 @@ import webdoc.community.utility.messageprovider.CommonMessageProvider;
 import webdoc.community.utility.messageprovider.ResponseCodeProvider;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/community")
@@ -43,17 +45,31 @@ public class CommunityController {
             User user = (User) securityContext.getAuthentication().getPrincipal();
             communityService.createPost(request,user.getId());
 
+        }catch(IllegalArgumentException e){
+            throw e;
         }catch(Exception e){
-            if (e instanceof IllegalArgumentException){
-                throw e;
-            }
-            else{
-                throw new RuntimeException(e);
-            }
+            throw new RuntimeException(e);
         }
 
         return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
 
+
+    }
+
+    @GetMapping("/post")
+    public DataResponse<PostResponse> getPosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId,
+                         @RequestParam(required = true) int limit, @RequestParam Long communityId){
+        try{
+            if (!scroll){
+                return DataResponse.of(communityService.getPostsWithLimit(communityId, limit),200);
+            }else{
+                return DataResponse.of(communityService.getPostsWithLimitAndIdAfter(communityId,postId,limit),200);
+            }
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
 
     }
 

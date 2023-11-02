@@ -23,7 +23,6 @@ import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
-import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import java.io.File;
@@ -89,13 +88,10 @@ public class AuthController {
 
         try {
             authService.createDoctorUser(dto);
-        } catch (Exception e) {
-            if (e instanceof EmailDuplicationException) {
-                throw new EmailDuplicationException(e.getMessage());
-            } else {
-                throw new RuntimeException(CommonMessageProvider.INTERNAL_SERVER_ERROR, e);
-            }
         }
+        catch(EmailDuplicationException e){throw e;}
+        catch(Exception e){throw new RuntimeException(e);}
+
         res.setStatus(201);
         return new CodeMessageResponse(message, 201,ResponseCodeProvider.SUCCESS);
     }
@@ -115,13 +111,10 @@ public class AuthController {
 
         try {
             authService.createPatientUser(dto);
-        } catch (Exception e) {
-            if (e instanceof EmailDuplicationException) {
-                throw new EmailDuplicationException(e.getMessage());
-            } else {
-                throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
-            }
         }
+        catch(EmailDuplicationException e){throw e;}
+        catch(Exception e){throw new RuntimeException(e);}
+
 
         return new CodeMessageResponse(message, 201, ResponseCodeProvider.SUCCESS);
     }
@@ -142,16 +135,9 @@ public class AuthController {
 
         try {
             authService.validatePatient(dto, LocalDateTime.now());
-        } catch (Exception e) {
-            if (
-                    e instanceof TimeOutException || e instanceof NoSuchElementException
-                    || e instanceof AuthenticationServiceException
-            ) {
-                throw e;
-            } else {
-                throw new RuntimeException(e);
-            }
         }
+        catch(TimeOutException | NoSuchElementException | AuthenticationServiceException e) {throw e;}
+        catch(Exception e){ throw new RuntimeException(e);}
 
         res.setStatus(200);
         return new CodeMessageResponse(message, 200,ResponseCodeProvider.SUCCESS);
@@ -172,16 +158,10 @@ public class AuthController {
 
         try {
             authService.validateDoctor(dto,LocalDateTime.now());
-        } catch (Exception e) {
-            if (
-                    e instanceof TimeOutException || e instanceof NoSuchElementException
-                            || e instanceof AuthenticationServiceException
-            ) {
-                throw e;
-            } else {
-                throw new RuntimeException(e);
-            }
         }
+        catch(TimeOutException | NoSuchElementException | AuthenticationServiceException e) {throw e;}
+        catch(Exception e){ throw new RuntimeException(e);}
+
 
         res.setStatus(200);
         return new CodeMessageResponse(message, 200,ResponseCodeProvider.SUCCESS);
