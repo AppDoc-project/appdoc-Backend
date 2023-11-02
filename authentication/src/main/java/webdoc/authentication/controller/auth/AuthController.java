@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.config.security.token.JwtAuthenticationToken;
 import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
+import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.entity.user.request.EmailRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
@@ -23,6 +24,7 @@ import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
 import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
+import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,11 +49,11 @@ public class AuthController {
     public CodeMessageResponse logout(){
         Object user = SecurityContextHolder.getContext().getAuthentication();
         if(user == null || user instanceof AnonymousAuthenticationToken){
-            return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200,null);
+            return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200, ResponseCodeProvider.SUCCESS);
         }
         JwtAuthenticationToken token = (JwtAuthenticationToken) user;
         authService.logOut((User)token.getPrincipal());
-        return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200,null);
+        return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200,ResponseCodeProvider.SUCCESS);
     }
 
     // 이메일 중복 검사
@@ -60,19 +62,15 @@ public class AuthController {
         String message = AuthMessageProvider.NOT_DUPLICATED_EMAIL;
         // 값 바인딩 실패
         if (bindingResult.hasErrors()){
-            log.info("type error={}", bindingResult.getAllErrors());
-            message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(400);
-            return new CodeMessageResponse(message, 400 ,400);
+            throw new IllegalArgumentException("바인딩 실패");
         }
+
         boolean isDuplicated = authService.isEmailDuplicated(dto.getEmail());
 
         if(isDuplicated){
-            res.setStatus(400);
-            message = AuthMessageProvider.EMAIL_EXISTS;
-            return  new CodeMessageResponse(message,400,401);
+            throw new EmailDuplicationException("해당 이메일을 가진 유저가 존재합니다");
         }
-        return new CodeMessageResponse(message,200,200);
+        return new CodeMessageResponse(message,200,ResponseCodeProvider.SUCCESS);
 
     }
 
@@ -86,23 +84,20 @@ public class AuthController {
     ){
         String message = AuthMessageProvider.JOIN_SUCCESS;
         if (result.hasErrors()) {
-            log.info("type error={}", result.getAllErrors());
-            message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(400);
-            return new CodeMessageResponse(message, 400,null);
+            throw new IllegalArgumentException("바인딩 실패");
         }
 
         try {
             authService.createDoctorUser(dto);
         } catch (Exception e) {
-            if (e instanceof IllegalStateException) {
-                throw new IllegalStateException(e.getMessage());
+            if (e instanceof EmailDuplicationException) {
+                throw new EmailDuplicationException(e.getMessage());
             } else {
                 throw new RuntimeException(CommonMessageProvider.INTERNAL_SERVER_ERROR, e);
             }
         }
         res.setStatus(201);
-        return new CodeMessageResponse(message, 201,null);
+        return new CodeMessageResponse(message, 201,ResponseCodeProvider.SUCCESS);
     }
 
     // 환자 회원가입
@@ -115,23 +110,20 @@ public class AuthController {
         String message = AuthMessageProvider.JOIN_SUCCESS;
 
         if (result.hasErrors()) {
-            log.info("type error={}", result.getAllErrors());
-            message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(400);
-            return new CodeMessageResponse(message, 400,null);
+            throw new IllegalArgumentException("바인딩 실패");
         }
 
         try {
             authService.createPatientUser(dto);
         } catch (Exception e) {
-            if (e instanceof IllegalStateException) {
-                throw new IllegalStateException(e.getMessage());
+            if (e instanceof EmailDuplicationException) {
+                throw new EmailDuplicationException(e.getMessage());
             } else {
                 throw new RuntimeException("서버 내부 에러가 발생하였습니다", e);
             }
         }
 
-        return new CodeMessageResponse(message, 201, null);
+        return new CodeMessageResponse(message, 201, ResponseCodeProvider.SUCCESS);
     }
 
 
@@ -145,11 +137,7 @@ public class AuthController {
         String message = AuthMessageProvider.VALIDATION_SUCCESS;
 
         if (result.hasErrors()) {
-            log.info("type error={}", result.getAllErrors());
-            message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(400);
-            // 값 바인딩 실패
-            return new CodeMessageResponse(message, 400,403);
+            throw new IllegalArgumentException("바인딩 실패");
         }
 
         try {
@@ -166,7 +154,7 @@ public class AuthController {
         }
 
         res.setStatus(200);
-        return new CodeMessageResponse(message, 200,null);
+        return new CodeMessageResponse(message, 200,ResponseCodeProvider.SUCCESS);
     }
 
     // 의사 인증
@@ -179,11 +167,7 @@ public class AuthController {
         String message = AuthMessageProvider.VALIDATION_SUCCESS;
 
         if (result.hasErrors()) {
-            log.info("type error={}", result.getAllErrors());
-            message = AuthMessageProvider.BINDING_FAILURE;
-            res.setStatus(400);
-            // 값 바인딩 실패
-            return new CodeMessageResponse(message, 400,403);
+            throw new IllegalArgumentException("바인딩 실패");
         }
 
         try {
@@ -200,7 +184,7 @@ public class AuthController {
         }
 
         res.setStatus(200);
-        return new CodeMessageResponse(message, 200,null);
+        return new CodeMessageResponse(message, 200,ResponseCodeProvider.SUCCESS);
     }
 
     // 인증용 이미지 업로드
@@ -208,20 +192,19 @@ public class AuthController {
     @PostMapping("/image")
     public CodeMessageResponse authenticationImage(HttpServletResponse res,@RequestParam MultipartFile file) throws IOException {
         if(file.isEmpty()){
-            res.setStatus(400);
-            return new CodeMessageResponse(CommonMessageProvider.NO_UPLOAD,400,null);
+            throw new IllegalArgumentException("바인딩 실패");
         }
         String uuid = UUID.randomUUID().toString();
         String fileName = file.getOriginalFilename();
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         if ( !extension.equals("pdf")) {
-            return new CodeMessageResponse(CommonMessageProvider.NOT_IMAGE,400,null);
+            throw new IllegalArgumentException("바인딩 실패");
         }
         String fullPath = path + "/" + uuid + "."+ extension;
 
         file.transferTo(new File(fullPath));
 
-        return new CodeMessageResponse(address+"/authentication_image"+"/"+uuid+"."+extension,200,null);
+        return new CodeMessageResponse(address+"/authentication_image"+"/"+uuid+"."+extension,201,ResponseCodeProvider.SUCCESS);
 
     }
 

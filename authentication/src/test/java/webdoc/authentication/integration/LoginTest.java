@@ -23,6 +23,7 @@ import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.service.EmailService;
+import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -188,7 +189,7 @@ public class LoginTest {
 
     }
 
-    @DisplayName("의사가 자격인증이 진행 중인 상태에서 로그인 하면 402코드를 반환한다")
+    @DisplayName("의사가 자격인증이 진행 중인 상태에서 로그인 하면 그에 맞는 코드를 반환한다")
     @Test
     void doctorLoginProcessOngoing() throws Exception {
         DoctorCreateRequest doctorRequest
@@ -204,11 +205,11 @@ public class LoginTest {
                         .header("password","dntjrdn78"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.code").value(402));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.AUTHENTICATION_ONGOING));
 
     }
 
-    @DisplayName("의사가 자격인증이 거부된 상태에서 로그인 하면 401코드를 반환한다")
+    @DisplayName("의사가 자격인증이 거부된 상태에서 로그인 하면 그에 맞는 코드를 반환한다")
     @Test
     void doctorLoginProcessDenied() throws Exception {
         DoctorCreateRequest doctorRequest
@@ -224,7 +225,7 @@ public class LoginTest {
                         .header("password","dntjrdn78"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.code").value(401));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.AUTHENTICATION_DENIED));
 
     }
 

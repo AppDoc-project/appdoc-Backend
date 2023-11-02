@@ -18,10 +18,7 @@ import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
-import webdoc.community.domain.entity.post.response.ThreadResponse;
 import webdoc.community.domain.entity.user.User;
-import webdoc.community.domain.entity.user.doctor.Doctor;
-import webdoc.community.domain.entity.user.patient.Patient;
 import webdoc.community.repository.*;
 
 import java.util.*;
@@ -98,13 +95,13 @@ public class CommunityService {
     @Transactional
     public List<PostResponse> getPostsWithLimit(Long communityId,Integer limit){
 
-        Community community = communityRepository.findById(communityId)
+        communityRepository.findById(communityId)
                 .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
 
         PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
                 "id"));
 
-        Slice<Post> page = postRepository.getPostByCommunityAndLimit(community,pageRequest);
+        Slice<Post> page = postRepository.getPostByCommunityAndLimit(communityId,pageRequest);
 
         return mapToPostResponse(page.getContent());
     }
@@ -113,13 +110,14 @@ public class CommunityService {
     @Transactional
     public List<PostResponse> getPostsWithLimitAndIdAfter(Long communityId,Long postId,Integer limit){
 
-        Community community = communityRepository.findById(communityId)
+        communityRepository.findById(communityId)
                 .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
 
-        PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
-                "id"));
+        PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(
+                Sort.Order.desc("id")
+        ));
 
-        Slice<Post> page = postRepository.getPostByCommunityAndLimitAndId(community,postId,pageRequest);
+        Slice<Post> page = postRepository.getPostByCommunityAndLimitAndId(communityId,postId,pageRequest);
 
         return mapToPostResponse(page.getContent());
     }
@@ -127,12 +125,13 @@ public class CommunityService {
     // 특정 글 불러오기
     public PostDetailResponse getCertainPost(Long postId,Long userId){
         Post post = postRepository.getCertainPost(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시물이 없습니다"));
-        User user = userRepository.findById(userId).orElseThrow(()-> new NoSuchElementException("해당하는 유저가 없습니다"));
-        boolean bookmarkYN = bookmarkRepository.findBookmarkByPostAndUser(post, user).size() > 0;
+        userRepository.findById(userId).orElseThrow(()-> new NoSuchElementException("해당하는 유저가 없습니다"));
+        boolean bookmarkYN = bookmarkRepository.findBookmarkByPostIdAndUserId(postId, userId).size() > 0;
         return mapToPostDetail(post,bookmarkYN);
     }
 
 
+    // 게시글 만들기
     @Transactional
     public Post createPost(PostCreateRequest request, Long userId){
         User user = userRepository.findById(userId)
@@ -160,11 +159,13 @@ public class CommunityService {
 
     }
 
+    // 불러온 게시물 리스트를 응답객체로 변환하기
+
     private List<PostResponse> mapToPostResponse(List<Post> list){
         return
                 list.stream()
                         .map(s->{
-                            List<Integer> bltp = getBLTP(s);
+                            List<Integer> bltp = getBLTP(s.getId());
                             return new PostResponse(
                                     s.getId(),s.getUser().getId(),s.getTitle(),
                                     s.getUser().getNickName(),s.getUser().getProfile(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
@@ -173,8 +174,10 @@ public class CommunityService {
                         }).collect(Collectors.toList());
     }
 
+    // 불러온 게시물을 응답객체로 반환하기
+
     private PostDetailResponse mapToPostDetail(Post post,boolean myBookmark){
-        List<Integer> bltp = getBLTP(post);
+        List<Integer> bltp = getBLTP(post.getId());
         List<String> pictures = post.getPictures()
                 .stream().sorted(Comparator.comparingInt(Picture::getPriority)
                 ).map(Picture::getAddress).toList();
@@ -189,11 +192,12 @@ public class CommunityService {
         );
     }
 
-    private List<Integer> getBLTP(Post post){
-        int bookmark = bookmarkRepository.countBookmarkByPost(post);
-        int like = likeRepository.countLikeByPost(post);
-        int thread = threadRepository.countThreadByPost(post);
-        int picture = pictureRepository.countPictureByPost(post);
+    // 게시글의 북마크, 좋아요, 댓글, 사진 수를 가져오기
+    private List<Integer> getBLTP(Long postId){
+        int bookmark = bookmarkRepository.countBookmarkByPostId(postId);
+        int like = likeRepository.countLikeByPostId(postId);
+        int thread = threadRepository.countThreadByPostId(postId);
+        int picture = pictureRepository.countPictureByPostId(postId);
 
         return List.of(bookmark,like,thread,picture);
 

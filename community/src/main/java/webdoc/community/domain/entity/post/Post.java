@@ -1,14 +1,11 @@
 package webdoc.community.domain.entity.post;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.like.Bookmark;
 import webdoc.community.domain.entity.like.Like;
-import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.domain.entity.user.User;
 
 import java.util.ArrayList;
@@ -16,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id")
 public class Post extends BaseEntity {
 
@@ -83,7 +81,7 @@ public class Post extends BaseEntity {
         threads.add(thread);
     }
 
-    public void addBookmakrs(Bookmark bookmark){
+    public void addBookmark(Bookmark bookmark){
         bookmark.setPost(this);
         bookmarks.add(bookmark);
     }

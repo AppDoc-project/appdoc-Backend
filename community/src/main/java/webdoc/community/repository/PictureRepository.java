@@ -5,5 +5,5 @@ import webdoc.community.domain.entity.post.Picture;
 import webdoc.community.domain.entity.post.Post;
 
 public interface PictureRepository extends JpaRepository<Picture,Long> {
-    int countPictureByPost(Post post);
+    int countPictureByPostId(Long postId);
 }

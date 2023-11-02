@@ -17,6 +17,7 @@ import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities
 import webdoc.authentication.domain.entity.user.patient.PatientMail;
 import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
+import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
@@ -174,7 +175,7 @@ class AuthServiceTest {
         //when and then
         assertThatThrownBy(()->{
             authService.createDoctorUser(dto2);
-        }).isInstanceOf(IllegalStateException.class)
+        }).isInstanceOf(EmailDuplicationException.class)
                 .hasMessage("해당 이메일을 가진 유저가 존재합니다");
 
      }
@@ -319,7 +320,7 @@ class AuthServiceTest {
         //when and then
         assertThatThrownBy(()->{
             authService.createPatientUser(dto2);
-        }).isInstanceOf(IllegalStateException.class)
+        }).isInstanceOf(EmailDuplicationException.class)
                 .hasMessage("해당 이메일을 가진 유저가 존재합니다");
 
     }

@@ -17,11 +17,14 @@ import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateReque
 import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
 import webdoc.authentication.domain.entity.user.request.EmailRequest;
+import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
 import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
+import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
+
 import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -77,21 +80,21 @@ class AuthControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @DisplayName("의사회원가입에서 이메일이 중복된 경우 상태코드 400을 반환한다")
+    @DisplayName("의사회원가입에서 이메일이 중복된 경우 상태코드 그에 맞는 코드를 반환한다")
     @Test
     void doctorJoinEmailDuplication() throws Exception {
         DoctorCreateRequest doctorRequest =
                 doctorCreateRequest();
-        doctorRequest.setName("우");
 
-        when(authService.createDoctorUser(any())).thenThrow(new IllegalStateException());
+
+        when(authService.createDoctorUser(any())).thenThrow(new EmailDuplicationException("이메일 중복"));
 
         mockMvc.perform(post("/auth/join/doctor")
                         .content(objectMapper.writeValueAsString(doctorRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value(AuthMessageProvider.BINDING_FAILURE));
+                .andExpect(jsonPath("$.message").value(AuthMessageProvider.EMAIL_EXISTS));
     }
 
     @DisplayName("의사회원가입에서 서버에러가 발생할 경우 상태코드 500을 반환한다")
@@ -127,7 +130,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.httpStatus").value(200));
     }
 
-    @DisplayName("의사회원이 이메일 인증할 때 시간이 초과하면 401코드를 반환한다")
+    @DisplayName("의사회원이 이메일 인증할 때 시간이 초과하면 그에 맞는 코드를 반환한다")
     @Test
     void validateDoctorTimeout() throws Exception {
 
@@ -140,10 +143,10 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.httpStatus").value(400))
-                .andExpect(jsonPath("$.code").value(401));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.VALIDATION_EXPIRED));
     }
 
-    @DisplayName("의사회원이 이메일 인증할 때 코드가 잘못되면 402코드를 반환한다")
+    @DisplayName("의사회원이 이메일 인증할 때 코드가 잘못되면 그에 맞는 코드를 반환한다")
     @Test
     void validateDoctorWrongCode() throws Exception {
 
@@ -156,7 +159,7 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.httpStatus").value(400))
-                .andExpect(jsonPath("$.code").value(402));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.WRONG_CODE));
     }
 
 
@@ -193,16 +196,15 @@ class AuthControllerTest {
     void patientJoinEmailDuplication() throws Exception {
         PatientCreateRequest patientRequest =
                 patientCreateRequest();
-        patientRequest.setName("우");
 
-        when(authService.createPatientUser(any())).thenThrow(new IllegalStateException());
+        when(authService.createPatientUser(any())).thenThrow(new EmailDuplicationException("중복된 이메일"));
 
         mockMvc.perform(post("/auth/join/patient")
                         .content(objectMapper.writeValueAsString(patientRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value(AuthMessageProvider.BINDING_FAILURE));
+                .andExpect(jsonPath("$.message").value(AuthMessageProvider.EMAIL_EXISTS));
     }
 
     @DisplayName("환자회원가입에서 서버에러가 발생할 경우 상태코드 500을 반환한다")
@@ -222,7 +224,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value(CommonMessageProvider.INTERNAL_SERVER_ERROR));
     }
 
-    @DisplayName("환자회원이 이메일 인증할 때 시간이 초과하면 401코드를 반환한다")
+    @DisplayName("환자회원이 이메일 인증할 때 시간이 초과하면 그에 맞는 코드를 반환한다")
     @Test
     void validatePatientTimeout() throws Exception {
 
@@ -235,10 +237,10 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.httpStatus").value(400))
-                .andExpect(jsonPath("$.code").value(401));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.VALIDATION_EXPIRED));
     }
 
-    @DisplayName("환자회원이 이메일 인증할 때 코드가 잘못되면 402코드를 반환한다")
+    @DisplayName("환자회원이 이메일 인증할 때 코드가 잘못되면 그에 맞는 코드를 반환한다")
     @Test
     void validatePateintWrongCode() throws Exception {
 
@@ -251,7 +253,7 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.httpStatus").value(400))
-                .andExpect(jsonPath("$.code").value(402));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.WRONG_CODE));
     }
 
     @DisplayName("이메일 중복을 검사한다")
@@ -266,11 +268,11 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(jsonPath("$.httpStatus").value(200))
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.SUCCESS));
 
      }
 
-    @DisplayName("이메일 중복을 검사할 때 적절한 이메일을 보내지 않으면 400코드를 반환한다")
+    @DisplayName("이메일 중복을 검사할 때 적절한 이메일을 보내지 않으면 그에 맞는 코드를 반환한다")
     @Test
     void emailInvalid() throws Exception {
         EmailRequest emailRequest = new EmailRequest();
@@ -282,11 +284,11 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.httpStatus").value(400))
-                .andExpect(jsonPath("$.code").value(400));
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.BINDING_FAILURE));
 
     }
 
-    @DisplayName("이메일 중복을 검사할 때 중복된 이메일일 겨우 401코드를 반환한다")
+    @DisplayName("이메일 중복을 검사할 때 중복된 이메일일 경우 그에 맞는 코드를 반환한다")
     @Test
     void duplicatedEmail() throws Exception {
         EmailRequest emailRequest = new EmailRequest();
@@ -300,7 +302,7 @@ class AuthControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.httpStatus").value(400))
-                .andExpect(jsonPath("$.code").value(401))
+                .andExpect(jsonPath("$.code").value(ResponseCodeProvider.EMAIL_EXISTS))
                 .andExpect(jsonPath("$.message").value(AuthMessageProvider.EMAIL_EXISTS));
 
     }

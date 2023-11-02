@@ -1,20 +1,19 @@
 package webdoc.community.domain.entity.post;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.user.User;
 
 @Entity
 @Getter
-@Setter
+@Setter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id")
 public class Thread extends BaseEntity {
-
     protected Thread(){}
+    public void setPost(Post post){
+        this.post = post;
+    }
     @Builder
     private Thread(String text,Thread parent, Post post,User user){
         this.text = text;

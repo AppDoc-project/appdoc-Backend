@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Value;
 import webdoc.authentication.domain.BaseEntity;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(of = "id")
 @DiscriminatorColumn(name="dtype")
 public abstract class User extends BaseEntity {
+
 
     protected User(){}
 
@@ -64,6 +66,9 @@ public abstract class User extends BaseEntity {
     private String contact;
     @Column(nullable = false)
     private String role;
+
+    @Column
+    private String profile;
 
 
 

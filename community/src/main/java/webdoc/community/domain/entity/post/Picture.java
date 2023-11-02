@@ -1,6 +1,7 @@
 package webdoc.community.domain.entity.post;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import webdoc.community.domain.BaseEntity;
 
 @Entity
 @Getter
-@Setter
+@Setter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id")
 public class Picture extends BaseEntity {
 
@@ -18,6 +19,10 @@ public class Picture extends BaseEntity {
         picture.setAddress(address);
         picture.setPriority(priority);
         return picture;
+    }
+
+    public void setPost(Post post){
+        this.post = post;
     }
     @Id
     @GeneratedValue
@@ -32,6 +37,8 @@ public class Picture extends BaseEntity {
 
     @Column(nullable = false)
     private Integer priority;
+
+
 
 
 }

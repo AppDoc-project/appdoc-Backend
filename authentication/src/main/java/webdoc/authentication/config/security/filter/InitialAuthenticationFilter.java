@@ -18,6 +18,8 @@ import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
+import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
+
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,25 +46,25 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
         if(user == null){
             // 유저가 없는 경우
             response.setStatus(400);
-            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증에 실패하였습니다",400,400)));
+            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_FAIL,400, ResponseCodeProvider.LOGIN_FAIL)));
             return ;
         } else if (!passwordEncoder.matches(password,user.getPassword())) {
             //  비밀번호가 틀린 경우
             response.setStatus(400);
-            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증에 실패하였습니다",400,400)));
+            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_FAIL,400, ResponseCodeProvider.LOGIN_FAIL)));
             return ;
 
         }else if(user instanceof Doctor &&
                 ((Doctor) user).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_DENIED)){
             // [의사] 심사가 거부된 경우
             response.setStatus(400);
-            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증이 거부 되었습니다 적절한 인증수단을 갖고 다시 회원가입 해주세요",400,401)));
+            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.AUTHENTICATION_DENIED,400,ResponseCodeProvider.AUTHENTICATION_DENIED)));
             return ;
         } else if(user instanceof Doctor &&
                 ((Doctor) user).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_ONGOING)){
             // [의사] 인증절차가 진행 중인 경우
             response.setStatus(400);
-            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증절차가 진행 중입니다",400,402)));
+            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.AUTHENTICATION_ONGOING,400,ResponseCodeProvider.AUTHENTICATION_ONGOING)));
             return ;
         }
 
@@ -71,10 +73,12 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
 
         if (user instanceof Doctor){
             type = "doctor";
-            subCode = 201;
+            subCode = ResponseCodeProvider.DOCTOR_LOGIN;
+
         }else{
             type = "patient";
-            subCode = 200;
+            subCode = ResponseCodeProvider.PATIENT_LOGIN;
+
         }
 
         SecretKey key = Keys.hmacShaKeyFor(
@@ -95,6 +99,7 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
         response.setHeader("Authorization",jwt);
         response.setStatus(200);
         response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_SUCCESS,200,subCode)));
+
 
 
     }

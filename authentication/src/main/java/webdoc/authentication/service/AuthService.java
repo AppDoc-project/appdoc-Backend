@@ -17,6 +17,7 @@ import webdoc.authentication.domain.entity.user.patient.request.PatientCreateReq
 import webdoc.authentication.domain.entity.user.patient.Patient;
 import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
+import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
@@ -47,7 +48,7 @@ public class AuthService{
                     && ((Doctor)findUser).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_DENIED)){
                 userRepository.delete(findUser);
             }
-            else{throw new IllegalStateException("해당 이메일을 가진 유저가 존재합니다");}
+            else{throw new EmailDuplicationException("해당 이메일을 가진 유저가 존재합니다");}
         }
 
 
@@ -79,7 +80,7 @@ public class AuthService{
 
 
         if (findUser != null){
-            throw new IllegalStateException("해당 이메일을 가진 유저가 존재합니다");
+            throw new EmailDuplicationException("해당 이메일을 가진 유저가 존재합니다");
         }
 
         String code = FourDigitsNumberGenerator.generateFourDigitsNumber();

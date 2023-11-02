@@ -10,4 +10,6 @@ public class CommonMessageProvider {
     public final static String NOT_IMAGE = "이미지 파일이 아닙니다";
 
     public final static String REQUEST_SUCCESS = "요청이 성공하였습니다";
+
+    public final static String BINDING_FAILURE = "값 검증에 실패하였습니다";
 }

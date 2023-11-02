@@ -5,5 +5,5 @@ import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.post.Thread;
 
 public interface ThreadRepository extends JpaRepository<Thread,Long> {
-    int countThreadByPost(Post post);
+    int countThreadByPostId(Long postId);
 }

@@ -8,6 +8,6 @@ import webdoc.community.domain.entity.user.User;
 import java.util.List;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark,Long> {
-    int countBookmarkByPost(Post post);
-    List<Bookmark> findBookmarkByPostAndUser(Post post, User user);
+    int countBookmarkByPostId(Long postId);
+    List<Bookmark> findBookmarkByPostIdAndUserId(Long postId, Long userId);
 }

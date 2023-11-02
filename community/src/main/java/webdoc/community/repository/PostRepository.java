@@ -13,12 +13,12 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("select distinct p from Post p join fetch p.user " +
-            " where p.community = :community")
-    Slice<Post> getPostByCommunityAndLimit(Community community, PageRequest pageRequest);
+            " where p.community.id = :communityId")
+    Slice<Post> getPostByCommunityAndLimit(Long communityId, PageRequest pageRequest);
 
     @Query("select distinct p from Post p join fetch p.user " +
-            " where p.community = :community and p.id < :postId")
-    Slice<Post> getPostByCommunityAndLimitAndId(Community community,Long postId, PageRequest pageRequest);
+            " where p.community.id = :communityId and p.id < :postId")
+    Slice<Post> getPostByCommunityAndLimitAndId(Long communityId,Long postId, PageRequest pageRequest);
 
     @Query("select p from Post p join fetch p.user " +
             " left join fetch p.pictures where p.id = :id")

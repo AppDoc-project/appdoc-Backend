@@ -1,6 +1,7 @@
 package webdoc.community.domain.entity.like;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +12,11 @@ import webdoc.community.domain.entity.user.User;
 @Entity(name = "love")
 @EqualsAndHashCode(of = "id")
 @Getter
-@Setter
+@Setter(value = AccessLevel.PRIVATE)
 public class Like extends BaseEntity {
+    public void setPost(Post post){
+        this.post = post;
+    }
     @GeneratedValue
     @Id
     private Long id;

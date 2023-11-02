@@ -5,5 +5,5 @@ import webdoc.community.domain.entity.like.Like;
 import webdoc.community.domain.entity.post.Post;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {
-    int countLikeByPost(Post post);
+    int countLikeByPostId(Long postId);
 }
