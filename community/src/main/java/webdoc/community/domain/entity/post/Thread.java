@@ -2,8 +2,12 @@ package webdoc.community.domain.entity.post;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.user.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,20 +34,20 @@ public class Thread extends BaseEntity {
                         .post(post)
                         .user(user)
                         .build();
-
     }
 
     public void setThisAsParent(Thread childThread){
         childThread.setParent(this);
+        childs.add(childThread);
     }
     @GeneratedValue
     @Id
     private Long id;
-
     @Column(nullable = false)
     private String text;
-
-
+    @BatchSize(size = 1000)
+    @OneToMany(mappedBy = "parent",orphanRemoval = true,cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Thread> childs = new ArrayList<>();
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Thread parent;

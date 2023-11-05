@@ -21,15 +21,14 @@ public class PostDetailResponse {
     private final Integer likeCount;
     private final Integer threadCount;
     private final Integer mediaCount;
-
     private final LocalDateTime createdAt;
     private final Boolean isDoctor;
 
     // 내가 북마크 눌렀는 지 여부
-    private final Boolean bookMarkYN;
+    private final Boolean bookmarkYN;
 
     private final String text;
-
+    private final Long view;
     // 사진 리스트
     private final List<String> pictures;
 

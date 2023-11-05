@@ -29,9 +29,6 @@ import java.io.IOException;
 public class SecurityConfig {
     @Autowired
     UserRepository userRepository;
-
-
-
     @Autowired
     ObjectMapper objectMapper;
 
@@ -56,8 +53,11 @@ public class SecurityConfig {
                 .addFilterAt(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth->{
                     auth
-                            .anyRequest()
-                            .authenticated();
+                            .requestMatchers("/media/**")
+                            .permitAll()
+                            .requestMatchers("/community/images")
+                            .permitAll()
+                            .anyRequest().authenticated();
                 })
                 .csrf(csrf->{
                     csrf.disable();
@@ -68,7 +68,7 @@ public class SecurityConfig {
                         public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
                             response.setCharacterEncoding("UTF-8");
                             response.setStatus(403);
-                            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("권한이 없습니다",403,null)));
+                            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("권한이 없습니다",403,409)));
                         }
                     });
                    ex.authenticationEntryPoint(new AuthenticationEntryPoint() {
@@ -76,7 +76,7 @@ public class SecurityConfig {
                        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                            response.setCharacterEncoding("UTF-8");
                            response.setStatus(401);
-                           response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증이 필요합니다",400,null)));
+                           response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("로그인이 필요 합니다",401,408)));
 
                        }
                    });

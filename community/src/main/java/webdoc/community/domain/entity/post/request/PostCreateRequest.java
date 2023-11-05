@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,10 +17,10 @@ import java.util.List;
 public class PostCreateRequest {
 
     @NotEmpty
-    @Max(20)
+    @Size(max = 20)
     private String title;
     @NotEmpty
-    @Max(3000)
+    @Size(max = 3000)
     private String text;
     @NotNull
     private Long communityId;
@@ -34,6 +35,14 @@ public class PostCreateRequest {
         }
         private String address;
         private Integer priority;
+    }
+
+    @Builder
+    private PostCreateRequest(String title,String text,Long communityId,List<AddressAndPriority> addressAndPriorities){
+        this.title = title;
+        this.text = text;
+        this.communityId = communityId;
+        this.addresses = addressAndPriorities;
     }
 
 }

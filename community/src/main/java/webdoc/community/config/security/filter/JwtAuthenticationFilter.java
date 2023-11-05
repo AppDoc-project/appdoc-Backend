@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final String signingKey;
     private final ObjectMapper mapper;
-
     private final UserRepository repository;
 
     @Override
@@ -55,10 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getBody();
 
         }catch (RuntimeException e){
-            e.printStackTrace();
-            response.setCharacterEncoding("UTF-8");
-            response.setStatus(400);
-            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
+            filterChain.doFilter(request,response);
             return ;
         }
 
@@ -66,9 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         User user =  repository.findByEmail(email).orElse(null);
         String tokenExpiredAt = claims.get("expireAt",String.class);
         if(user == null || user.getToken() == null || user.getToken().getExpiredAt().isBefore(LocalDateTime.now()) || !tokenExpiredAt.equals(user.getToken().getExpiredAt().toString())){
-            response.setCharacterEncoding("UTF-8");
-            response.setStatus(400);
-            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
+            filterChain.doFilter(request,response);
             return;
         }
 

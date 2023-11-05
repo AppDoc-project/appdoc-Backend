@@ -34,9 +34,9 @@ public class AuthControlAdvice {
     }
 
     // 서버에러
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public CodeMessageResponse serverError(RuntimeException e){
+    public CodeMessageResponse serverError(Exception e){
         e.printStackTrace();
         return new CodeMessageResponse(CommonMessageProvider.INTERNAL_SERVER_ERROR,500,ResponseCodeProvider.INTERNAL_SERVER_ERROR);
     }

@@ -3,6 +3,7 @@ package webdoc.community.domain.entity.user;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.hibernate.annotations.BatchSize;
 import org.springframework.beans.factory.annotation.Value;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.user.doctor.Doctor;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EqualsAndHashCode(of = "id")
 @DiscriminatorColumn(name="dtype")
+@BatchSize(size = 1000)
 public abstract class User extends BaseEntity {
 
     protected User(){}

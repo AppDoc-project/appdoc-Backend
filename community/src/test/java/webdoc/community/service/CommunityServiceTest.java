@@ -10,13 +10,18 @@ import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
 import webdoc.community.domain.entity.post.Picture;
 import webdoc.community.domain.entity.post.Post;
+import webdoc.community.domain.entity.post.Thread;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
+import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
+import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
+import webdoc.community.domain.entity.post.response.ThreadResponse;
 import webdoc.community.domain.entity.user.User;
 import webdoc.community.domain.entity.user.patient.Patient;
 import webdoc.community.repository.CommunityRepository;
 import webdoc.community.repository.PostRepository;
+import webdoc.community.repository.ThreadRepository;
 import webdoc.community.repository.UserRepository;
 
 import java.time.LocalDate;
@@ -39,6 +44,9 @@ class CommunityServiceTest {
     CommunityRepository communityRepository;
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    ThreadRepository threadRepository;
 
 
     @Autowired
@@ -126,7 +134,7 @@ class CommunityServiceTest {
 
       @DisplayName("존재하지 않는 게시판에 게시글을 등록하면 실패한다")
       @Test
-      void test(){
+      void createPostWithInvalidCommunity(){
           User user = patientCreate();
 
           userRepository.save(user);
@@ -242,10 +250,158 @@ class CommunityServiceTest {
 
 
             //then
-            System.out.println(response);
             assertThat(response).isNotNull();
+            assertThat(response)
+                    .extracting(
+                            "id","userId","title",
+                            "nickName","profile","bookmarkCount",
+                            "likeCount","threadCount","mediaCount",
+                            "createdAt","isDoctor","bookmarkYN","text","view")
+                    .containsExactly(
+                        post.getId(),post.getUser().getId(),post.getTitle(),
+                            post.getUser().getNickName(),post.getUser().getProfile(),
+                            post.getBookmarks().size(), post.getLikes().size(), post.getThreads().size(),
+                            post.getPictures().size(), post.getCreatedAt(),post.getUser().isDoctor(),
+                            false,post.getText(),1L
+                    );
          }
 
+         @DisplayName("댓글을 작성한다")
+         @Test
+         void createThread(){
+             //given
+             Community com1 = Community
+                     .builder()
+                     .name("외과")
+                     .build();
+
+             User user = patientCreate();
+             userRepository.save(user);
+             communityRepository.save(com1);
+             PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+             Post post = communityService.createPost(request,user.getId());
+             ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+
+             //when
+             Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+
+             //then
+             assertThat(thread).extracting("text","parent","user","post")
+                     .containsExactly(threadCreateRequest.getText(),null,
+                     user,post);
+             assertThat(thread.getId()).isNotNull();
+          }
+
+          @DisplayName("유효하지 않은 게시글 아이디로 댓글을 등록할 수 없다")
+          @Test
+          void createThreadWithWrongPostId(){
+              //given
+              User user = patientCreate();
+              userRepository.save(user);
+              ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",5L);
+
+              //when + then
+              assertThatThrownBy(()->{
+                  communityService.createThread(user.getId(),threadCreateRequest);
+              }).isInstanceOf(NoSuchElementException.class);
+
+           }
+           @DisplayName("대댓글을 작성한다")
+           @Test
+           void createThreadOfThread(){
+               //given
+               Community com1 = Community
+                       .builder()
+                       .name("외과")
+                       .build();
+
+               User user = patientCreate();
+               userRepository.save(user);
+               communityRepository.save(com1);
+               PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+               Post post = communityService.createPost(request,user.getId());
+               ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+               Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+
+
+               ThreadOfThreadCreateRequest threadOfThreadCreateRequest = threadOfThreadCreateRequest("안녕", post.getId(), thread.getId());
+
+
+               //when
+               Thread child = communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest);
+
+               //then
+               assertThat(child).extracting("text","parent","user","post")
+                       .containsExactly(threadOfThreadCreateRequest.getText(),thread,
+                               user,post);
+               assertThat(thread.getId()).isNotNull();
+
+            }
+
+            @DisplayName("유효하지 않은 parentId로 대댓글을 작성할 수 없다")
+            @Test
+            void createThreadOfThreadWithInvalidParentId(){
+                //given
+                Community com1 = Community
+                        .builder()
+                        .name("외과")
+                        .build();
+
+                User user = patientCreate();
+                userRepository.save(user);
+                communityRepository.save(com1);
+                PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+                Post post = communityService.createPost(request,user.getId());
+                ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+                communityService.createThread(user.getId(),threadCreateRequest);
+
+
+                ThreadOfThreadCreateRequest threadOfThreadCreateRequest = threadOfThreadCreateRequest("안녕", post.getId(), 1000L);
+
+
+                //when
+                assertThatThrownBy(()->{
+                    communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest);
+                }).isInstanceOf(NoSuchElementException.class);
+             }
+             @DisplayName("특정 게시물의 댓글리스트를 불러온다")
+             @Test
+             void fetchThreadList(){
+                 //given
+                 Community com1 = Community
+                         .builder()
+                         .name("외과")
+                         .build();
+
+                 User user = patientCreate();
+                 userRepository.save(user);
+                 communityRepository.save(com1);
+                 PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+                 Post post = communityService.createPost(request,user.getId());
+
+
+                 ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+                 ThreadCreateRequest threadCreateRequest2 = threadCreateRequest("안녕하",post.getId());
+                 ThreadCreateRequest threadCreateRequest3 = threadCreateRequest("안녕하세요",post.getId());
+
+                 Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+                 Thread thread2 = communityService.createThread(user.getId(),threadCreateRequest2);
+                 Thread thread3 = communityService.createThread(user.getId(),threadCreateRequest3);
+
+                 ThreadOfThreadCreateRequest threadOfThreadCreateRequest = threadOfThreadCreateRequest("안녕", post.getId(), thread.getId());
+                 ThreadOfThreadCreateRequest threadOfThreadCreateRequest2 = threadOfThreadCreateRequest("안녕ㅇㅇ", post.getId(), thread.getId());
+                 ThreadOfThreadCreateRequest threadOfThreadCreateRequest3 = threadOfThreadCreateRequest("안녕ㅇㅇㅇ", post.getId(), thread2.getId());
+
+                 Thread child = communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest);
+                 Thread child2 =  communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest2);
+                 Thread child3 =  communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest3);
+
+
+                 //when
+                 List<ThreadResponse> threadResponses = communityService.getThreadByPostId(post.getId());
+                 //then
+                 assertThat(threadResponses).hasSize(3);
+              }
 
 
     private Patient patientCreate(){
@@ -254,13 +410,33 @@ class CommunityServiceTest {
         );
     }
 
+    private ThreadCreateRequest threadCreateRequest(String text,Long postId){
+        return ThreadCreateRequest.builder()
+                .text(text)
+                .postId(postId)
+                .build();
+
+    }
+
+    private ThreadOfThreadCreateRequest threadOfThreadCreateRequest(String text,Long postId, Long parentId){
+        return ThreadOfThreadCreateRequest.builder()
+                .parentThreadId(parentId)
+                .postId(postId)
+                .text(text)
+                .build();
+    }
+
+
 
     private PostCreateRequest postCreateRequest(Long communityId, List<PostCreateRequest.AddressAndPriority> list,String text,String title){
-        PostCreateRequest request = new PostCreateRequest();
-        request.setCommunityId(communityId);
-        request.setText(text);
-        request.setTitle(title);
-        request.setAddresses(list);
+        PostCreateRequest request =
+                PostCreateRequest.builder()
+                        .communityId(communityId)
+                        .text(text)
+                        .title(title)
+                        .addressAndPriorities(list)
+                        .build();
+
         return  request;
     }
 

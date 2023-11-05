@@ -36,12 +36,9 @@ public class Post extends BaseEntity {
                         .community(community)
                         .build();
     }
-
-
     @Id
     @GeneratedValue
     private Long id;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false,name = "user_id")
@@ -50,6 +47,8 @@ public class Post extends BaseEntity {
     @Column(nullable = false, length = 3000)
     private String text;
 
+    @Column(nullable = false)
+    private Long view = 0L;
     @Column(nullable = false)
     private String title;
 
@@ -89,6 +88,10 @@ public class Post extends BaseEntity {
     public void addLikes(Like like){
         like.setPost(this);
         likes.add(like);
+    }
+
+    public void viewPlus(){
+        this.view++;
     }
 
 

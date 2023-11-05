@@ -1,10 +1,7 @@
 package webdoc.community.domain.entity.like;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.user.User;
@@ -14,6 +11,20 @@ import webdoc.community.domain.entity.user.User;
 @Getter
 @Setter(value = AccessLevel.PRIVATE)
 public class Like extends BaseEntity {
+    protected Like(){}
+
+    public static Like createLike(User user,Post post){
+        return Like.builder()
+                .user(user)
+                .post(post)
+                .build();
+    }
+    @Builder
+    private Like(User user,Post post){
+        this.user = user;
+        this.post = post;
+        post.addLikes(this);
+    }
     public void setPost(Post post){
         this.post = post;
     }
