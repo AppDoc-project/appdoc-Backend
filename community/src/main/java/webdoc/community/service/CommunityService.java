@@ -32,8 +32,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CommunityService {
 
-    @Value("${basic.image}")
-    String basicImage;
+
 
     private final CommunityRepository communityRepository;
     private final UserRepository userRepository;

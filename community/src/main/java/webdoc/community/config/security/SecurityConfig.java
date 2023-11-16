@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .addFilterAt(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth->{
                     auth
-                            .requestMatchers("/media/**")
+                            .requestMatchers("/community/image/**")
                             .permitAll()
                             .requestMatchers("/community/images")
                             .permitAll()

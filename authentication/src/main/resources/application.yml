@@ -19,12 +19,6 @@ spring:
           starttls:
             enable: true
           auth: true
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
-    username: root
-    password: Opsueaxqx1578!
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -51,12 +45,15 @@ spring:
       on-profile: operation
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: root
 server:
-  add: http://49.50.167.217:8080
-
+  add: http://127.0.0.1/auth/image
 file:
-  dir: /home/appdoc/authentication_image
+  dir: /usr/src/app/authentication/upload/image
 
 
 
@@ -70,12 +67,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-
+  datasource:
+    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: Opsueaxqx1578!
 file:
-  dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/src/main/resources/static/authentication_image
+  dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/upload/image
 
 server:
-  add: http://127.0.0.1:8080
+  add: http://127.0.0.1:8080/auth/image
 
 ---
 
@@ -87,17 +87,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-
-
-
   datasource:
     url: jdbc:mysql://localhost:3306/webdoc_test?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
 
 file:
-  dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/src/main/resources/static/authentication_image
+  dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/upload/image
 
 server:
-  add: http://127.0.0.1:8080
+  add: http://127.0.0.1:8080/auth/image
 

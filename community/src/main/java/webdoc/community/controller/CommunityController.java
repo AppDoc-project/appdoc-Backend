@@ -185,7 +185,7 @@ public class CommunityController {
 
             try {
                 file.transferTo(new File(fullPath));
-                String imageUrl = address + "/media/" + uuid + "." + extension;
+                String imageUrl = address + "/" + uuid + "." + extension;
                 addresses.add(imageUrl);
             } catch (IOException e) {
                 // 파일 전송 중 오류 처리

@@ -184,7 +184,7 @@ public class AuthController {
 
         file.transferTo(new File(fullPath));
 
-        return new CodeMessageResponse(address+"/authentication_image"+"/"+uuid+"."+extension,201,ResponseCodeProvider.SUCCESS);
+        return new CodeMessageResponse(address+"/"+uuid+"."+extension,201,ResponseCodeProvider.SUCCESS);
 
     }
 

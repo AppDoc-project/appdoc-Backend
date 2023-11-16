@@ -8,11 +8,6 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
-    username: root
-    password: Opsueaxqx1578!
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -29,8 +24,7 @@ jwt:
   signing:
     key: 1920123119201231192012311920123112312321a
 
-basic:
-  image: http://127.0.0.1:8081/static/image/basic.png
+
 ---
 
 # application-operation.yml
@@ -41,14 +35,17 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  datasource:
+    url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: root
 server:
-  add: http://49.50.167.217:8081
+  add: http://127.0.0.1/community/image
 
 file:
-  dir: /home/appdoc/media
+  dir: /usr/src/app/community/upload/image
 
-basic:
-  image:
+
 
 ---
 
@@ -60,15 +57,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+  datasource:
+    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: Opsueaxqx1578!
 
 file:
-  dir: /Users/woo/Desktop/code/appdoc-Backend/community/src/main/resources/static/media
+  dir: /Users/woo/Desktop/code/appdoc-Backend/community/upload/image
 
 server:
-  add: http://127.0.0.1:8081
+  add: http://127.0.0.1:8081/community/image
 
-basic:
-  image: http://127.0.0.1:8081/static/media/basic.png
+
 ---
 
 # application-test.yml
@@ -93,8 +93,8 @@ spring:
     password: Opsueaxqx1578!
 
 file:
-  dir: /Users/woo/Desktop/code/appdoc-Backend/community/src/main/resources/static/media
+  dir: /Users/woo/Desktop/code/appdoc-Backend/community/upload/image
 
 server:
-  add: http://127.0.0.1:8081
+  add: http://127.0.0.1:8081/community/image
 
