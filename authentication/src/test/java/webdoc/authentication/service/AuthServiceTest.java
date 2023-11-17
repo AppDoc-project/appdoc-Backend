@@ -11,11 +11,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.UserMail;
-import webdoc.authentication.domain.entity.user.doctor.DoctorMail;
-import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
-import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
-import webdoc.authentication.domain.entity.user.patient.PatientMail;
-import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.Tutor;
+import webdoc.authentication.domain.entity.user.tutor.TutorMail;
+import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
+import webdoc.authentication.domain.entity.user.tutee.TuteeMail;
+import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.exceptions.TimeOutException;
@@ -24,6 +25,7 @@ import webdoc.authentication.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,77 +49,77 @@ class AuthServiceTest {
     @MockBean
     EmailService emailService;
 
-    @DisplayName("의사 회원가입을 테스트 한다")
+    @DisplayName("튜터 회원가입을 테스트 한다")
     @Test
-    void createDoctorUserTest() throws MessagingException {
+    void createTutorUserTest() throws MessagingException {
         //given
-        DoctorCreateRequest dto =
-                doctorCreateRequest();
+        TutorCreateRequest dto =
+                tutorCreateRequest();
 
         //when
-        authService.createDoctorUser(dto);
-        DoctorMail userMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(DoctorMail)e).findAny().get();
+        authService.createTutorUser(dto);
+        TutorMail userMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TutorMail)e).findAny().get();
 
         //then
         assertThat(userMail).isNotNull();
         assertThat(userMail)
-                .extracting(
-                        "address", "certificateAddress", "contact", "dateOfBirth", "email",
-                        "hospitalName", "medicalSpeciality", "password", "selfDescription", "name"
+                .extracting("authenticationAddress", "contact", "email"
+                      ,"specialities", "password", "selfDescription", "name"
                 )
                 .contains(
-                        dto.getAddress(), dto.getCertificateAddress(), dto.getContact(),
-                        dto.getDateOfBirth(), dto.getEmail(), dto.getHospitalName(),
-                        dto.getMedicalSpeciality(), dto.getPassword(), dto.getSelfDescription(),
+                        dto.getAuthenticationAddress(), dto.getContact(),
+                        dto.getEmail(), Specialities.enumToString(dto.getSpecialities()),
+                        dto.getPassword(), dto.getSelfDescription(),
                         dto.getName()
                 );
      }
 
-    @DisplayName("의사 이메일 인증 번호가 올바르고 3분이내의 경우를 테스트 한다")
+    @DisplayName("튜터 이메일 인증 번호가 올바르고 3분이내의 경우를 테스트 한다")
     @Test
-    void validateDoctorSuccessTest() throws MessagingException {
+    void validateTutorSuccessTest() throws MessagingException {
         //given
-        DoctorCreateRequest dto =
-                doctorCreateRequest();
+        TutorCreateRequest dto =
+                tutorCreateRequest();
 
-        authService.createDoctorUser(dto);
+        authService.createTutorUser(dto);
 
-        DoctorMail doctorMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(DoctorMail)e).findAny().get();
+        TutorMail tutorMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TutorMail)e).findAny().get();
 
 
         //when
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()), LocalDateTime.now());
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()), LocalDateTime.now());
 
         //then
-        User user = userRepository
+        Tutor tutor = (Tutor) userRepository
                 .findByEmail(dto.getEmail()).orElseThrow(
                         ()->
                             new IllegalStateException("해당하는 유저가 없습니다")
                 );
-        UserMail userMail = userMailRepository.findByEmail(user.getEmail()).orElse(null);
+        UserMail userMail = userMailRepository.findByEmail(tutor.getEmail()).orElse(null);
         assertThat(userMail).isNull();
+        assertThat(tutor.getSpecialities()).hasSize(2);
 
 
      }
 
-     @DisplayName("의사 인증번호가 틀린경우를 테스트한다")
+     @DisplayName("튜터 인증번호가 틀린경우를 테스트한다")
      @Test
-     void validateDoctorWithWrongCode() throws MessagingException {
+     void validateTutorWithWrongCode() throws MessagingException {
          //given
-         DoctorCreateRequest dto =
-                 doctorCreateRequest();
+         TutorCreateRequest dto =
+                tutorCreateRequest();
 
-         authService.createDoctorUser(dto);
+         authService.createTutorUser(dto);
 
-         DoctorMail doctorMail = userMailRepository.findByEmail(dto.getEmail())
-                 .stream().map(e->(DoctorMail)e).findAny().get();
+         TutorMail tutorMail = userMailRepository.findByEmail(dto.getEmail())
+                 .stream().map(e->(TutorMail)e).findAny().get();
 
 
          //when and then
          assertThatThrownBy(()->{
-             authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),"21321413"), LocalDateTime.now());
+             authService.validateTutor(new CodeRequest(tutorMail.getEmail(),"21321413"), LocalDateTime.now());
          }).isInstanceOf(AuthenticationServiceException.class);
 
          User user = userRepository
@@ -129,22 +131,22 @@ class AuthServiceTest {
 
      }
 
-    @DisplayName("의사 인증번호가 시간이 지난 경우를 테스트한다")
+    @DisplayName("튜터 인증번호가 시간이 지난 경우를 테스트한다")
     @Test
-    void validateDoctorTimeOut() throws MessagingException {
+    void validateTutorTimeOut() throws MessagingException {
         //given
-        DoctorCreateRequest dto =
-                doctorCreateRequest();
+        TutorCreateRequest dto =
+              tutorCreateRequest();
 
-        authService.createDoctorUser(dto);
+        authService.createTutorUser(dto);
 
-        DoctorMail doctorMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(DoctorMail)e).findAny().get();
+        TutorMail tutorMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TutorMail)e).findAny().get();
 
 
         //when and then
         assertThatThrownBy(()->{
-            authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()), LocalDateTime.now().plusMinutes(4L));
+            authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()), LocalDateTime.now().plusMinutes(4L));
         }).isInstanceOf(TimeOutException.class).hasMessage("인증 시간을 초과하였습니다");
 
         User user = userRepository
@@ -155,88 +157,88 @@ class AuthServiceTest {
 
     }
 
-    @DisplayName("이메일이 중복된 의사 회원가입을 테스트한다")
+    @DisplayName("이메일이 중복된 튜터 회원가입을 테스트한다")
     @Test
-    void createDuplicateDoctor() throws MessagingException {
+    void createDuplicateTutor() throws MessagingException {
         //given
-        DoctorCreateRequest dto =
-                doctorCreateRequest();
+        TutorCreateRequest dto =
+                tutorCreateRequest();
 
-        DoctorCreateRequest dto2 =
-                doctorCreateRequest();
+        TutorCreateRequest dto2 =
+                tutorCreateRequest();
 
-        authService.createDoctorUser(dto);
+        authService.createTutorUser(dto);
 
-        DoctorMail doctorMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(DoctorMail)e).findAny().get();
+        TutorMail tutorMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TutorMail)e).findAny().get();
 
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()), LocalDateTime.now());
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()), LocalDateTime.now());
 
         //when and then
         assertThatThrownBy(()->{
-            authService.createDoctorUser(dto2);
+            authService.createTutorUser(dto2);
         }).isInstanceOf(EmailDuplicationException.class)
                 .hasMessage("해당 이메일을 가진 유저가 존재합니다");
 
      }
 
-     @DisplayName("회원가입을 하지 않은 의사회원의 메일을 인증한다")
+     @DisplayName("회원가입을 하지 않은 튜터회원의 메일을 인증한다")
      @Test
-     void validateDoctorNotRegistered(){
+     void validateTutorNotRegistered(){
 
          assertThatThrownBy(
                  ()->{
-                     authService.validateDoctor(new CodeRequest("1sdad@naver.com","1123"), LocalDateTime.now());
+                     authService.validateTutor(new CodeRequest("1sdad@naver.com","1123"), LocalDateTime.now());
                  }
          ).isInstanceOf(NoSuchElementException.class).hasMessage("id에 해당하는 회원이 없습니다");
 
       }
 
 
-    @DisplayName("환자 회원가입을 테스트 한다")
+    @DisplayName("튜티 회원가입을 테스트 한다")
     @Test
-    void createPatientUserTest() throws MessagingException {
+    void createTuteeTest() throws MessagingException {
         //given
-        PatientCreateRequest dto =
-                patientCreateRequest();
+        TuteeCreateRequest dto =
+                tuteeCreateRequest();
 
         //when
-        authService.createPatientUser(dto);
-        PatientMail userMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(PatientMail)e).findAny().get();
+        authService.createTuteeUser(dto);
+        TuteeMail userMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TuteeMail)e).findAny().get();
 
         //then
         assertThat(userMail).isNotNull();
         assertThat(userMail)
                 .extracting(
-                        "contact","dateOfBirth","email","name","password"
+                        "contact","email","name","password"
                 )
                 .contains(
-                       dto.getContact(),dto.getDateOfBirth(),dto.getEmail(),dto.getName(),
+                       dto.getContact(),dto.getEmail(),dto.getName(),
                         dto.getPassword()
                 );
     }
 
-    @DisplayName("환자 이메일 인증 번호가 올바르고 3분이내의 경우를 테스트 한다")
+    @DisplayName("튜티 이메일 인증 번호가 올바르고 3분이내의 경우를 테스트 한다")
     @Test
-    void validatePatientSuccessTest() throws MessagingException {
+    void validateTuteeSuccessTest() throws MessagingException {
         //given
-        PatientCreateRequest dto =
-                patientCreateRequest();
+        TuteeCreateRequest dto =
+                tuteeCreateRequest();
 
-        authService.createPatientUser(dto);
+        authService.createTuteeUser(dto);
 
-        PatientMail patientMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(PatientMail)e).findAny().get();
+        TuteeMail tuteeMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TuteeMail)e).findAny().get();
 
 
         //when
-        authService.validatePatient(new CodeRequest(patientMail.getEmail(),patientMail.getCode()), LocalDateTime.now());
+        authService.validateTutee(new CodeRequest(tuteeMail.getEmail(),tuteeMail.getCode()), LocalDateTime.now());
 
 
         //then
         User user = userRepository
-                .findByEmail(patientMail.getEmail()).orElseThrow(
+                .findByEmail(tuteeMail.getEmail()).orElseThrow(
                         ()->
                                 new IllegalStateException("해당하는 유저가 없습니다")
                 );
@@ -247,22 +249,22 @@ class AuthServiceTest {
 
     }
 
-    @DisplayName("환자 인증번호가 틀린경우를 테스트한다")
+    @DisplayName("튜티 인증번호가 틀린경우를 테스트한다")
     @Test
-    void validatePatientWithWrongCode() throws MessagingException {
+    void validateTuteeWithWrongCode() throws MessagingException {
         //given
-        PatientCreateRequest dto =
-                patientCreateRequest();
+        TuteeCreateRequest dto =
+               tuteeCreateRequest();
 
-        authService.createPatientUser(dto);
+        authService.createTuteeUser(dto);
 
-        PatientMail patientMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(PatientMail)e).findAny().get();
+        TuteeMail tuteeMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TuteeMail)e).findAny().get();
 
 
         //when and then
         assertThatThrownBy(()->{
-            authService.validatePatient(new CodeRequest(patientMail.getEmail(),"21321413"), LocalDateTime.now());
+            authService.validateTutee(new CodeRequest(tuteeMail.getEmail(),"21321413"), LocalDateTime.now());
         }).isInstanceOf(AuthenticationServiceException.class);
 
         User user = userRepository
@@ -274,22 +276,22 @@ class AuthServiceTest {
 
     }
 
-    @DisplayName("환자 인증번호가 시간이 지난 경우를 테스트한다")
+    @DisplayName("튜티 인증번호가 시간이 지난 경우를 테스트한다")
     @Test
-    void validatePatientTimeOut() throws MessagingException {
+    void validateTuteeTimeOut() throws MessagingException {
         //given
-        PatientCreateRequest dto =
-                patientCreateRequest();
+        TuteeCreateRequest dto =
+                tuteeCreateRequest();
 
-        authService.createPatientUser(dto);
+        authService.createTuteeUser(dto);
 
-        PatientMail patientMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(PatientMail)e).findAny().get();
+        TuteeMail tuteeMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TuteeMail)e).findAny().get();
 
 
         //when and then
         assertThatThrownBy(()->{
-            authService.validatePatient(new CodeRequest(patientMail.getEmail(),patientMail.getCode()), LocalDateTime.now().plusMinutes(4L));
+            authService.validateTutee(new CodeRequest(tuteeMail.getEmail(),tuteeMail.getCode()), LocalDateTime.now().plusMinutes(4L));
         }).isInstanceOf(TimeOutException.class).hasMessage("인증 시간을 초과하였습니다");
 
         User user = userRepository
@@ -300,38 +302,38 @@ class AuthServiceTest {
 
     }
 
-    @DisplayName("이메일이 중복된 환자 회원가입을 테스트한다")
+    @DisplayName("이메일이 중복된 튜티 회원가입을 테스트한다")
     @Test
-    void createDuplicatePatient() throws MessagingException {
+    void createDuplicateTutee() throws MessagingException {
         //given
-        DoctorCreateRequest dto =
-                doctorCreateRequest();
+        TutorCreateRequest dto =
+                tutorCreateRequest();
 
-        PatientCreateRequest dto2 =
-                patientCreateRequest();
+        TuteeCreateRequest dto2 =
+                tuteeCreateRequest();
 
-        authService.createDoctorUser(dto);
+        authService.createTutorUser(dto);
 
-        DoctorMail doctorMail = userMailRepository.findByEmail(dto.getEmail())
-                .stream().map(e->(DoctorMail)e).findAny().get();
+        TutorMail tutorMail = userMailRepository.findByEmail(dto.getEmail())
+                .stream().map(e->(TutorMail)e).findAny().get();
 
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()), LocalDateTime.now());
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()), LocalDateTime.now());
 
         //when and then
         assertThatThrownBy(()->{
-            authService.createPatientUser(dto2);
+            authService.createTuteeUser(dto2);
         }).isInstanceOf(EmailDuplicationException.class)
                 .hasMessage("해당 이메일을 가진 유저가 존재합니다");
 
     }
 
-    @DisplayName("회원가입을 하지 않은 환자의 메일을 인증한다")
+    @DisplayName("회원가입을 하지 않은 튜티의 메일을 인증한다")
     @Test
-    void validatePatientNotRegistered(){
+    void validateTuteeNotRegistered(){
 
         assertThatThrownBy(
                 ()->{
-                    authService.validatePatient(new CodeRequest("1sdad@naver.com","1123"), LocalDateTime.now());
+                    authService.validateTutee(new CodeRequest("1sdad@naver.com","1123"), LocalDateTime.now());
                 }
         ).isInstanceOf(NoSuchElementException.class).hasMessage("id에 해당하는 회원이 없습니다");
 
@@ -344,27 +346,23 @@ class AuthServiceTest {
 
 
 
-    private DoctorCreateRequest doctorCreateRequest(){
-        return DoctorCreateRequest
+    private TutorCreateRequest tutorCreateRequest(){
+        return TutorCreateRequest
                 .builder()
-                .address("서울시 마포구 서교동")
-                .certificateAddress("http://localhost:8080")
+                .authenticationAddress("http://localhost:8080")
                 .contact("01025045779")
-                .dateOfBirth(LocalDate.now())
                 .email("1dilumn0@gmail.com")
-                .hospitalName("서울대학병원")
-                .medicalSpeciality(MedicalSpecialities.DENTISTRY)
+                .specialities(List.of(Specialities.KEYBOARD_INSTRUMENT,Specialities.BASS))
                 .password("dntjrdn78")
-                .selfDescription("좋은 의사입니다")
+                .selfDescription("좋은 튜터입니다")
                 .name("우석우")
                 .build();
     }
 
-    private PatientCreateRequest patientCreateRequest(){
-        return PatientCreateRequest
+    private TuteeCreateRequest tuteeCreateRequest(){
+        return TuteeCreateRequest
                 .builder()
                 .contact("01025045779")
-                .dateOfBirth(LocalDate.now())
                 .email("1dilumn0@gmail.com")
                 .name("우석우")
                 .password("dntjrdn78")

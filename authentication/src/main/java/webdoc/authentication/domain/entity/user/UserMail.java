@@ -22,13 +22,12 @@ public abstract class UserMail extends BaseEntity {
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
-    private LocalDate dateOfBirth;
-    @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     private String contact;
     @Column(nullable = false)
     private String role;
+
     @Column(nullable = false)
     protected String code;
     @Column(nullable = false)
@@ -37,14 +36,13 @@ public abstract class UserMail extends BaseEntity {
     protected UserMail(){}
     protected UserMail(String name, String email,
                        String password, String contact,
-                       String role, LocalDate dateOfBirth,
+                       String role,
                        String code, LocalDateTime expirationDateTime){
         this.name = name;
         this.email = email;
         this.password = password;
         this.contact = contact;
         this.role = role;
-        this.dateOfBirth = dateOfBirth;
         this.code = code;
         this.expirationDateTime = expirationDateTime;
     }

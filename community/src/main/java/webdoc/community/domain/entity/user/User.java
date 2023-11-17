@@ -4,12 +4,11 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.hibernate.annotations.BatchSize;
-import org.springframework.beans.factory.annotation.Value;
 import webdoc.community.domain.BaseEntity;
-import webdoc.community.domain.entity.user.doctor.Doctor;
-import webdoc.community.domain.entity.user.patient.Patient;
+import webdoc.community.domain.entity.user.tutee.Tutee;
+import webdoc.community.domain.entity.user.tutor.Tutor;
 
-import javax.print.Doc;
+
 import java.time.LocalDate;
 
 @Entity
@@ -24,22 +23,21 @@ public abstract class User extends BaseEntity {
 
     protected User(String name, String email,
                    String password,String contact,
-                   String role,LocalDate dateOfBirth){
+                   String role){
         this.name = name;
         this.email = email;
         this.password = password;
         this.contact = contact;
         this.role = role;
-        this.dateOfBirth = dateOfBirth;
     }
 
     public String getNickName(){
-        if (this instanceof Doctor) return getName();
-        return ((Patient) this).getNickName();
+        if (this instanceof Tutor) return getName();
+        return ((Tutee) this).getNickName();
     }
 
-    public boolean isDoctor(){
-        return this instanceof Doctor;
+    public boolean isTutor(){
+        return this instanceof Tutor;
     }
 
 
@@ -67,8 +65,6 @@ public abstract class User extends BaseEntity {
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
-    private LocalDate dateOfBirth;
-    @Column(nullable = false)
     private String password;
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "user",orphanRemoval = true,cascade = CascadeType.ALL)
     private Token token;
@@ -76,7 +72,6 @@ public abstract class User extends BaseEntity {
     private String contact;
     @Column(nullable = false)
     private String role;
-    @Value("${basic.image}")
     private String profile;
 
 

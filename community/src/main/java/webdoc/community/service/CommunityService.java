@@ -165,7 +165,7 @@ public class CommunityService {
                         e.getCreatedAt(),
                         e.getText(),
                         e.getUser().getNickName(),
-                        e.getUser().isDoctor(),
+                        e.getUser().isTutor(),
                         e.getUser().getProfile()
                 )).collect(Collectors.toList());
     }
@@ -179,7 +179,7 @@ public class CommunityService {
                         e.getCreatedAt(),
                         e.getText(),
                         e.getUser().getNickName(),
-                        e.getUser().isDoctor(),
+                        e.getUser().isTutor(),
                         e.getUser().getProfile()
                 )).collect(Collectors.toList());
     }
@@ -196,7 +196,7 @@ public class CommunityService {
                             return new PostResponse(
                                     s.getId(),s.getUser().getId(),s.getTitle(),
                                     s.getUser().getNickName(),s.getUser().getProfile(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                                    s.getCreatedAt(),s.getUser().isDoctor(),s.getView()
+                                    s.getCreatedAt(),s.getUser().isTutor(),s.getView()
                             );
                         }).collect(Collectors.toList());
     }
@@ -213,7 +213,7 @@ public class CommunityService {
                 post.getId(),post.getUser().getId(),post.getTitle(),
                 post.getUser().getNickName(),post.getUser().getProfile(),
                 bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                post.getCreatedAt(),post.getUser().isDoctor(),myBookmark,post.getText()
+                post.getCreatedAt(),post.getUser().isTutor(),myBookmark,post.getText()
                 ,post.getView(),pictures
 
         );

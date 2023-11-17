@@ -7,11 +7,11 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
-import webdoc.authentication.domain.entity.user.doctor.Doctor;
-import webdoc.authentication.domain.entity.user.doctor.enums.AuthenticationProcess;
+
+import webdoc.authentication.domain.entity.user.tutor.Tutor;
+import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
 import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.response.CodeMessageResponse;
@@ -54,15 +54,15 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
             response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_FAIL,400, ResponseCodeProvider.LOGIN_FAIL)));
             return ;
 
-        }else if(user instanceof Doctor &&
-                ((Doctor) user).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_DENIED)){
-            // [의사] 심사가 거부된 경우
+        }else if(user instanceof Tutor &&
+                ((Tutor) user).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_DENIED)){
+            // [튜터] 심사가 거부된 경우
             response.setStatus(400);
             response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.AUTHENTICATION_DENIED,400,ResponseCodeProvider.AUTHENTICATION_DENIED)));
             return ;
-        } else if(user instanceof Doctor &&
-                ((Doctor) user).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_ONGOING)){
-            // [의사] 인증절차가 진행 중인 경우
+        } else if(user instanceof Tutor &&
+                ((Tutor) user).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_ONGOING)){
+            // [튜터] 인증절차가 진행 중인 경우
             response.setStatus(400);
             response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.AUTHENTICATION_ONGOING,400,ResponseCodeProvider.AUTHENTICATION_ONGOING)));
             return ;
@@ -71,13 +71,13 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
         String type;
         int subCode;
 
-        if (user instanceof Doctor){
-            type = "doctor";
-            subCode = ResponseCodeProvider.DOCTOR_LOGIN;
+        if (user instanceof Tutor){
+            type = "tutor";
+            subCode = ResponseCodeProvider.TUTOR_LOGIN;
 
         }else{
-            type = "patient";
-            subCode = ResponseCodeProvider.PATIENT_LOGIN;
+            type = "tutee";
+            subCode = ResponseCodeProvider.TUTEE_LOGIN;
 
         }
 

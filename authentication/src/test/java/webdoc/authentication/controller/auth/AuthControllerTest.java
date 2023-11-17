@@ -12,9 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
-import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
-import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
+import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
+import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
 import webdoc.authentication.domain.entity.user.request.EmailRequest;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
@@ -25,7 +25,7 @@ import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
 import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
-import java.time.LocalDate;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -52,77 +52,77 @@ class AuthControllerTest {
     UserRepository userRepository;
 
 
-    @DisplayName("의사회원가입을 테스트 한다")
+    @DisplayName("튜터회원가입을 테스트 한다")
     @Test
-    void doctorJoinTest() throws Exception {
+    void tutorJoinTest() throws Exception {
         //given
-        DoctorCreateRequest doctorRequest =
-                doctorCreateRequest();
+        TutorCreateRequest tutorRequest =
+                tutorCreateRequest();
 
-        mockMvc.perform(post("/auth/join/doctor")
-                        .content(objectMapper.writeValueAsString(doctorRequest))
+        mockMvc.perform(post("/auth/join/tutor")
+                        .content(objectMapper.writeValueAsString(tutorRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful());
     }
 
-    @DisplayName("의사회원가입은 값검증을 수행한다")
+    @DisplayName("튜터회원가입은 값검증을 수행한다")
     @Test
-    void doctorJoinTestWithInvalidValues() throws Exception {
-        DoctorCreateRequest doctorRequest =
-                doctorCreateRequest();
-        doctorRequest.setName("우");
+    void tutorJoinTestWithInvalidValues() throws Exception {
+        TutorCreateRequest tutorRequest =
+                tutorCreateRequest();
+        tutorRequest.setName("우");
 
-        mockMvc.perform(post("/auth/join/doctor")
-                        .content(objectMapper.writeValueAsString(doctorRequest))
+        mockMvc.perform(post("/auth/join/tutor")
+                        .content(objectMapper.writeValueAsString(tutorRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
     }
 
-    @DisplayName("의사회원가입에서 이메일이 중복된 경우 상태코드 그에 맞는 코드를 반환한다")
+    @DisplayName("튜터회원가입에서 이메일이 중복된 경우 상태코드 그에 맞는 코드를 반환한다")
     @Test
-    void doctorJoinEmailDuplication() throws Exception {
-        DoctorCreateRequest doctorRequest =
-                doctorCreateRequest();
+    void tutorJoinEmailDuplication() throws Exception {
+        TutorCreateRequest tutorRequest =
+                tutorCreateRequest();
 
 
-        when(authService.createDoctorUser(any())).thenThrow(new EmailDuplicationException("이메일 중복"));
+        when(authService.createTutorUser(any())).thenThrow(new EmailDuplicationException("이메일 중복"));
 
-        mockMvc.perform(post("/auth/join/doctor")
-                        .content(objectMapper.writeValueAsString(doctorRequest))
+        mockMvc.perform(post("/auth/join/tutor")
+                        .content(objectMapper.writeValueAsString(tutorRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.message").value(AuthMessageProvider.EMAIL_EXISTS));
     }
 
-    @DisplayName("의사회원가입에서 서버에러가 발생할 경우 상태코드 500을 반환한다")
+    @DisplayName("튜터회원가입에서 서버에러가 발생할 경우 상태코드 500을 반환한다")
     @Test
-    void doctorJoinInternalServerError() throws Exception {
-        DoctorCreateRequest doctorRequest =
-                doctorCreateRequest();
+    void tutorJoinInternalServerError() throws Exception {
+        TutorCreateRequest tutorRequest =
+                tutorCreateRequest();
 
 
-        when(authService.createDoctorUser(any())).thenThrow(new RuntimeException());
+        when(authService.createTutorUser(any())).thenThrow(new RuntimeException());
 
-        mockMvc.perform(post("/auth/join/doctor")
-                        .content(objectMapper.writeValueAsString(doctorRequest))
+        mockMvc.perform(post("/auth/join/tutor")
+                        .content(objectMapper.writeValueAsString(tutorRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is5xxServerError())
                 .andExpect(jsonPath("$.message").value(CommonMessageProvider.INTERNAL_SERVER_ERROR));
     }
 
-    @DisplayName("의사회원이 이메일 인증을 수행한다")
+    @DisplayName("튜터회원이 이메일 인증을 수행한다")
     @Test
-    void validateDoctor() throws Exception {
+    void validateTutor() throws Exception {
 
         CodeRequest codeRequest = new CodeRequest("1dilumn0@gmail.com","4123");
 
 
 
-        mockMvc.perform(post("/auth/validate/doctor")
+        mockMvc.perform(post("/auth/validate/tutor")
                         .content(objectMapper.writeValueAsString(codeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -130,14 +130,14 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.httpStatus").value(200));
     }
 
-    @DisplayName("의사회원이 이메일 인증할 때 시간이 초과하면 그에 맞는 코드를 반환한다")
+    @DisplayName("튜터회원이 이메일 인증할 때 시간이 초과하면 그에 맞는 코드를 반환한다")
     @Test
-    void validateDoctorTimeout() throws Exception {
+    void validateTutorTimeout() throws Exception {
 
         CodeRequest codeRequest = new CodeRequest("1dilumn0@gmail.com","4123");
 
-        doThrow(new TimeOutException("시간초과")).when(authService).validateDoctor(any(),any());
-        mockMvc.perform(post("/auth/validate/doctor")
+        doThrow(new TimeOutException("시간초과")).when(authService).validateTutor(any(),any());
+        mockMvc.perform(post("/auth/validate/tutor")
                         .content(objectMapper.writeValueAsString(codeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -146,14 +146,14 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.code").value(ResponseCodeProvider.VALIDATION_EXPIRED));
     }
 
-    @DisplayName("의사회원이 이메일 인증할 때 코드가 잘못되면 그에 맞는 코드를 반환한다")
+    @DisplayName("튜터회원이 이메일 인증할 때 코드가 잘못되면 그에 맞는 코드를 반환한다")
     @Test
-    void validateDoctorWrongCode() throws Exception {
+    void validateTutorWrongCode() throws Exception {
 
         CodeRequest codeRequest = new CodeRequest("1dilumn0@gmail.com","4123");
 
-        doThrow(new AuthenticationServiceException("인증번호 틀림")).when(authService).validateDoctor(any(),any());
-        mockMvc.perform(post("/auth/validate/doctor")
+        doThrow(new AuthenticationServiceException("인증번호 틀림")).when(authService).validateTutor(any(),any());
+        mockMvc.perform(post("/auth/validate/tutor")
                         .content(objectMapper.writeValueAsString(codeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -163,75 +163,75 @@ class AuthControllerTest {
     }
 
 
-    @DisplayName("환자회원가입을 테스트 한다")
+    @DisplayName("튜티회원가입을 테스트 한다")
     @Test
-    void patientJoinTest() throws Exception {
+    void tuteeJoinTest() throws Exception {
 
-        PatientCreateRequest patientRequest =
-                patientCreateRequest();
+        TuteeCreateRequest tuteeRequest =
+                tuteeCreateRequest();
 
-        mockMvc.perform(post("/auth/join/patient")
-                        .content(objectMapper.writeValueAsString(patientRequest))
+        mockMvc.perform(post("/auth/join/tutee")
+                        .content(objectMapper.writeValueAsString(tuteeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful());
     }
 
-    @DisplayName("환자회원가입은 값검증을 수행한다")
+    @DisplayName("튜티회원가입은 값검증을 수행한다")
     @Test
-    void patientJoinTestWithInvalidValues() throws Exception {
-        PatientCreateRequest patientRequest =
-                patientCreateRequest();
-        patientRequest.setContact("01013");
+    void tuteeJoinTestWithInvalidValues() throws Exception {
+        TuteeCreateRequest tuteeRequest =
+                tuteeCreateRequest();
+        tuteeRequest.setContact("01013");
 
-        mockMvc.perform(post("/auth/join/patient")
-                        .content(objectMapper.writeValueAsString(patientRequest))
+        mockMvc.perform(post("/auth/join/tutee")
+                        .content(objectMapper.writeValueAsString(tuteeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
     }
 
-    @DisplayName("환자회원가입에서 이메일이 중복된 경우 상태코드 400을 반환한다")
+    @DisplayName("튜티회원가입에서 이메일이 중복된 경우 상태코드 400을 반환한다")
     @Test
-    void patientJoinEmailDuplication() throws Exception {
-        PatientCreateRequest patientRequest =
-                patientCreateRequest();
+    void tuteeJoinEmailDuplication() throws Exception {
+        TuteeCreateRequest tuteeRequest =
+                tuteeCreateRequest();
 
-        when(authService.createPatientUser(any())).thenThrow(new EmailDuplicationException("중복된 이메일"));
+        when(authService.createTuteeUser(any())).thenThrow(new EmailDuplicationException("중복된 이메일"));
 
-        mockMvc.perform(post("/auth/join/patient")
-                        .content(objectMapper.writeValueAsString(patientRequest))
+        mockMvc.perform(post("/auth/join/tutee")
+                        .content(objectMapper.writeValueAsString(tuteeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.message").value(AuthMessageProvider.EMAIL_EXISTS));
     }
 
-    @DisplayName("환자회원가입에서 서버에러가 발생할 경우 상태코드 500을 반환한다")
+    @DisplayName("튜티회원가입에서 서버에러가 발생할 경우 상태코드 500을 반환한다")
     @Test
-    void patientJoinInternalServerError() throws Exception {
-        PatientCreateRequest patientRequest =
-                patientCreateRequest();
+    void tuteeJoinInternalServerError() throws Exception {
+        TuteeCreateRequest tuteeRequest =
+                tuteeCreateRequest();
 
 
-        when(authService.createPatientUser(any())).thenThrow(new RuntimeException());
+        when(authService.createTuteeUser(any())).thenThrow(new RuntimeException());
 
-        mockMvc.perform(post("/auth/join/patient")
-                        .content(objectMapper.writeValueAsString(patientRequest))
+        mockMvc.perform(post("/auth/join/tutee")
+                        .content(objectMapper.writeValueAsString(tuteeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().is5xxServerError())
                 .andExpect(jsonPath("$.message").value(CommonMessageProvider.INTERNAL_SERVER_ERROR));
     }
 
-    @DisplayName("환자회원이 이메일 인증할 때 시간이 초과하면 그에 맞는 코드를 반환한다")
+    @DisplayName("튜티회원이 이메일 인증할 때 시간이 초과하면 그에 맞는 코드를 반환한다")
     @Test
-    void validatePatientTimeout() throws Exception {
+    void validateTuteeTimeout() throws Exception {
 
         CodeRequest codeRequest = new CodeRequest("1dilumn0@gmail.com","4123");
 
-        doThrow(new TimeOutException("시간초과")).when(authService).validatePatient(any(),any());
-        mockMvc.perform(post("/auth/validate/patient")
+        doThrow(new TimeOutException("시간초과")).when(authService).validateTutee(any(),any());
+        mockMvc.perform(post("/auth/validate/tutee")
                         .content(objectMapper.writeValueAsString(codeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -240,14 +240,14 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.code").value(ResponseCodeProvider.VALIDATION_EXPIRED));
     }
 
-    @DisplayName("환자회원이 이메일 인증할 때 코드가 잘못되면 그에 맞는 코드를 반환한다")
+    @DisplayName("튜티회원이 이메일 인증할 때 코드가 잘못되면 그에 맞는 코드를 반환한다")
     @Test
     void validatePateintWrongCode() throws Exception {
 
         CodeRequest codeRequest = new CodeRequest("1dilumn0@gmail.com","4123");
 
-        doThrow(new AuthenticationServiceException("인증번호 틀림")).when(authService).validatePatient(any(),any());
-        mockMvc.perform(post("/auth/validate/patient")
+        doThrow(new AuthenticationServiceException("인증번호 틀림")).when(authService).validateTutee(any(),any());
+        mockMvc.perform(post("/auth/validate/tutee")
                         .content(objectMapper.writeValueAsString(codeRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -307,33 +307,30 @@ class AuthControllerTest {
 
     }
 
-
-
-    private DoctorCreateRequest doctorCreateRequest(){
-        return DoctorCreateRequest
+    private TutorCreateRequest tutorCreateRequest(){
+        return TutorCreateRequest
                 .builder()
-                .address("서울시 마포구 서교동")
-                .certificateAddress("http://localhost:8080")
+                .authenticationAddress("http://localhost:8080")
                 .contact("01025045779")
-                .dateOfBirth(LocalDate.now())
                 .email("1dilumn0@gmail.com")
-                .hospitalName("서울대학병원")
-                .medicalSpeciality(MedicalSpecialities.DENTISTRY)
+                .specialities(List.of(Specialities.KEYBOARD_INSTRUMENT,Specialities.BASS))
                 .password("dntjrdn78")
-                .selfDescription("좋은 의사입니다")
+                .selfDescription("좋은 튜터입니다")
                 .name("우석우")
                 .build();
     }
 
-    private PatientCreateRequest patientCreateRequest(){
-        return PatientCreateRequest
+    private TuteeCreateRequest tuteeCreateRequest(){
+        return TuteeCreateRequest
                 .builder()
                 .contact("01025045779")
-                .dateOfBirth(LocalDate.now())
                 .email("1dilumn0@gmail.com")
                 .name("우석우")
                 .password("dntjrdn78")
                 .build();
     }
+
+
+
 
 }

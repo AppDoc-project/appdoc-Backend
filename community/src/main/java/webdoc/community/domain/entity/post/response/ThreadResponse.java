@@ -18,7 +18,7 @@ public class ThreadResponse {
     private final LocalDateTime createdAt;
     private final String text;
     private final String nickName;
-    private final Boolean isDoctor;
+    private final Boolean isTutor;
     private final String profile;
 
 }

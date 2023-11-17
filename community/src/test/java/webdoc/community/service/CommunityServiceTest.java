@@ -18,7 +18,7 @@ import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
 import webdoc.community.domain.entity.user.User;
-import webdoc.community.domain.entity.user.patient.Patient;
+import webdoc.community.domain.entity.user.tutee.Tutee;
 import webdoc.community.repository.CommunityRepository;
 import webdoc.community.repository.PostRepository;
 import webdoc.community.repository.ThreadRepository;
@@ -98,7 +98,7 @@ class CommunityServiceTest {
                  .name("외과")
                  .build();
 
-         User user = patientCreate();
+         User user = tuteeCreate();
 
          userRepository.save(user);
          communityRepository.save(com1);
@@ -135,7 +135,7 @@ class CommunityServiceTest {
       @DisplayName("존재하지 않는 게시판에 게시글을 등록하면 실패한다")
       @Test
       void createPostWithInvalidCommunity(){
-          User user = patientCreate();
+          User user = tuteeCreate();
 
           userRepository.save(user);
 
@@ -160,7 +160,7 @@ class CommunityServiceTest {
                   .name("외과")
                   .build();
 
-          User user = patientCreate();
+          User user = tuteeCreate();
 
           userRepository.save(user);
           communityRepository.save(com1);
@@ -186,7 +186,7 @@ class CommunityServiceTest {
                    .name("외과")
                    .build();
 
-           User user = patientCreate();
+           User user = tuteeCreate();
 
            userRepository.save(user);
            communityRepository.save(com1);
@@ -231,7 +231,7 @@ class CommunityServiceTest {
                     .name("외과")
                     .build();
 
-            User user = patientCreate();
+            User user = tuteeCreate();
 
             userRepository.save(user);
             communityRepository.save(com1);
@@ -256,12 +256,12 @@ class CommunityServiceTest {
                             "id","userId","title",
                             "nickName","profile","bookmarkCount",
                             "likeCount","threadCount","mediaCount",
-                            "createdAt","isDoctor","bookmarkYN","text","view")
+                            "createdAt","isTutor","bookmarkYN","text","view")
                     .containsExactly(
                         post.getId(),post.getUser().getId(),post.getTitle(),
                             post.getUser().getNickName(),post.getUser().getProfile(),
                             post.getBookmarks().size(), post.getLikes().size(), post.getThreads().size(),
-                            post.getPictures().size(), post.getCreatedAt(),post.getUser().isDoctor(),
+                            post.getPictures().size(), post.getCreatedAt(),post.getUser().isTutor(),
                             false,post.getText(),1L
                     );
          }
@@ -275,7 +275,7 @@ class CommunityServiceTest {
                      .name("외과")
                      .build();
 
-             User user = patientCreate();
+             User user = tuteeCreate();
              userRepository.save(user);
              communityRepository.save(com1);
              PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
@@ -296,7 +296,7 @@ class CommunityServiceTest {
           @Test
           void createThreadWithWrongPostId(){
               //given
-              User user = patientCreate();
+              User user = tuteeCreate();
               userRepository.save(user);
               ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",5L);
 
@@ -315,7 +315,7 @@ class CommunityServiceTest {
                        .name("외과")
                        .build();
 
-               User user = patientCreate();
+               User user = tuteeCreate();
                userRepository.save(user);
                communityRepository.save(com1);
                PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
@@ -347,7 +347,7 @@ class CommunityServiceTest {
                         .name("외과")
                         .build();
 
-                User user = patientCreate();
+                User user = tuteeCreate();
                 userRepository.save(user);
                 communityRepository.save(com1);
                 PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
@@ -373,7 +373,7 @@ class CommunityServiceTest {
                          .name("외과")
                          .build();
 
-                 User user = patientCreate();
+                 User user = tuteeCreate();
                  userRepository.save(user);
                  communityRepository.save(com1);
                  PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
@@ -404,9 +404,9 @@ class CommunityServiceTest {
               }
 
 
-    private Patient patientCreate(){
-        return Patient.createPatient(
-                "1dilumn0@gmail.com","dntjrdn78","우석우","01025045779",LocalDate.now()
+    private Tutee tuteeCreate(){
+        return Tutee.createTutee(
+                "1dilumn0@gmail.com","dntjrdn78","우석우","01025045779"
         );
     }
 

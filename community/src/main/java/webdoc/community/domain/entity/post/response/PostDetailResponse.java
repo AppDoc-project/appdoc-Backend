@@ -22,7 +22,7 @@ public class PostDetailResponse {
     private final Integer threadCount;
     private final Integer mediaCount;
     private final LocalDateTime createdAt;
-    private final Boolean isDoctor;
+    private final Boolean isTutor;
 
     // 내가 북마크 눌렀는 지 여부
     private final Boolean bookmarkYN;

@@ -1,7 +1,6 @@
 package webdoc.authentication.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +12,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.User;
-import webdoc.authentication.domain.entity.user.doctor.DoctorMail;
-import webdoc.authentication.domain.entity.user.doctor.enums.MedicalSpecialities;
-import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
-import webdoc.authentication.domain.entity.user.patient.PatientMail;
-import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.TutorMail;
+import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
+import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
+import webdoc.authentication.domain.entity.user.tutee.TuteeMail;
+import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
 import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
@@ -31,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -63,19 +63,19 @@ public class LoginTest {
     @Autowired
     UserMailRepository userMailRepository;
 
-    @DisplayName("환자 로그인이 성공하였을 경우에 200상태를 반환한다")
+    @DisplayName("튜티 로그인이 성공하였을 경우에 200상태를 반환한다")
     @Test
-    void patientLogin() throws Exception {
-        PatientCreateRequest patientRequest
-                = patientCreateRequest();
+    void tuteeLogin() throws Exception {
+        TuteeCreateRequest request
+                = tuteeCreateRequest();
 
-        PatientMail patientMail = authService.createPatientUser(patientRequest);
-        authService.validatePatient(new CodeRequest(patientMail.getEmail(),patientMail.getCode()),LocalDateTime.now());
+        TuteeMail tuteeMail = authService.createTuteeUser(request);
+        authService.validateTutee(new CodeRequest(tuteeMail.getEmail(),tuteeMail.getCode()),LocalDateTime.now());
 
 
 
         mockMvc.perform(post("/auth/login")
-                .header("email",patientMail.getEmail())
+                .header("email",tuteeMail.getEmail())
                 .header("password","dntjrdn78"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -83,36 +83,36 @@ public class LoginTest {
 
      }
 
-    @DisplayName("환자 로그인이 성공실패하였을 경우 400상태를 반환한다")
+    @DisplayName("튜티 로그인이 성공실패하였을 경우 400상태를 반환한다")
     @Test
-    void patientLoginFail() throws Exception {
-        PatientCreateRequest patientRequest
-                = patientCreateRequest();
+    void tuteeLoginFail() throws Exception {
+        TuteeCreateRequest request
+                = tuteeCreateRequest();
 
-        PatientMail patientMail = authService.createPatientUser(patientRequest);
-        authService.validatePatient(new CodeRequest(patientMail.getEmail(),patientMail.getCode()),LocalDateTime.now());
+        TuteeMail tuteeMail = authService.createTuteeUser(request);
+        authService.validateTutee(new CodeRequest(tuteeMail.getEmail(),tuteeMail.getCode()),LocalDateTime.now());
 
 
         mockMvc.perform(post("/auth/login")
-                        .header("email",patientMail.getEmail())
+                        .header("email",tuteeMail.getEmail())
                         .header("password","dntjrn78"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
     }
 
-    @DisplayName("환자 로그인이 성공하였을 경우에 제한된 url을 접근할 수 있다")
+    @DisplayName("튜티 로그인이 성공하였을 경우에 제한된 url을 접근할 수 있다")
     @Test
-    void patientAccessLimitResource() throws Exception {
-        PatientCreateRequest patientRequest
-                = patientCreateRequest();
+    void tuteeAccessLimitResource() throws Exception {
+        TuteeCreateRequest request
+                = tuteeCreateRequest();
 
-        PatientMail patientMail = authService.createPatientUser(patientRequest);
-        authService.validatePatient(new CodeRequest(patientMail.getEmail(),patientMail.getCode()),LocalDateTime.now());
+        TuteeMail tuteeMail = authService.createTuteeUser(request);
+        authService.validateTutee(new CodeRequest(tuteeMail.getEmail(),tuteeMail.getCode()),LocalDateTime.now());
 
 
         MvcResult result = mockMvc.perform(post("/auth/login")
-                        .header("email",patientMail.getEmail())
+                        .header("email",tuteeMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andReturn();
 
@@ -126,18 +126,18 @@ public class LoginTest {
 
      }
 
-    @DisplayName("의사 로그인이 성공하였을 경우에 200상태를 반환한다")
+    @DisplayName("튜터 로그인이 성공하였을 경우에 200상태를 반환한다")
     @Test
-    void doctortLogin() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
-        authService.setDoctorAuthenticationSuccess(user.getId());
+    void tutorLogin() throws Exception {
+        TutorCreateRequest request
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(request);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
+        authService.setTutorAuthenticationSuccess(user.getId());
 
         mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -145,37 +145,37 @@ public class LoginTest {
 
     }
 
-    @DisplayName("의사 로그인이 성공실패하였을 경우 400상태를 반환한다")
+    @DisplayName("튜터 로그인이 성공실패하였을 경우 400상태를 반환한다")
     @Test
-    void doctorLoginFail() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
-        authService.setDoctorAuthenticationSuccess(user.getId());
+    void tutorLoginFail() throws Exception {
+        TutorCreateRequest tutorRequest
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(tutorRequest);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
+        authService.setTutorAuthenticationSuccess(user.getId());
 
 
         mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrn78"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
     }
 
-    @DisplayName("의사 로그인이 성공하였을 경우에 제한된 url을 접근할 수 있다")
+    @DisplayName("튜터 로그인이 성공하였을 경우에 제한된 url을 접근할 수 있다")
     @Test
-    void doctorAccessLimitResource() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
-        authService.setDoctorAuthenticationSuccess(user.getId());
+    void tutorAccessLimitResource() throws Exception {
+        TutorCreateRequest request
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(request);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
+        authService.setTutorAuthenticationSuccess(user.getId());
 
         MvcResult result = mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andReturn();
 
@@ -189,19 +189,19 @@ public class LoginTest {
 
     }
 
-    @DisplayName("의사가 자격인증이 진행 중인 상태에서 로그인 하면 그에 맞는 코드를 반환한다")
+    @DisplayName("튜터가 자격인증이 진행 중인 상태에서 로그인 하면 그에 맞는 코드를 반환한다")
     @Test
-    void doctorLoginProcessOngoing() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
+    void tutorLoginProcessOngoing() throws Exception {
+        TutorCreateRequest tutorRequest
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(tutorRequest);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
 
 
 
         mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
@@ -209,19 +209,19 @@ public class LoginTest {
 
     }
 
-    @DisplayName("의사가 자격인증이 거부된 상태에서 로그인 하면 그에 맞는 코드를 반환한다")
+    @DisplayName("튜터가 자격인증이 거부된 상태에서 로그인 하면 그에 맞는 코드를 반환한다")
     @Test
-    void doctorLoginProcessDenied() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
-        authService.setDoctorAuthenticationDenied(user.getId());
+    void tutorLoginProcessDenied() throws Exception {
+        TutorCreateRequest tutorRequest
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(tutorRequest);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
+        authService.setTutorAuthenticationDenied(user.getId());
 
 
         mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
@@ -229,20 +229,20 @@ public class LoginTest {
 
     }
 
-    @DisplayName("의사가 자격인증이 거부된 상태에서 다시 회원가입을 할 수 있다")
+    @DisplayName("튜터가 자격인증이 거부된 상태에서 다시 회원가입을 할 수 있다")
     @Test
-    void doctorLoginProcessDeniedAndJoin() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
-        authService.setDoctorAuthenticationDenied(user.getId());
+    void tutorLoginProcessDeniedAndJoin() throws Exception {
+        TutorCreateRequest tutorRequest
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(tutorRequest);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
+        authService.setTutorAuthenticationDenied(user.getId());
 
-        doctorRequest.setName("김민교");
-        authService.createDoctorUser(doctorRequest);
+        tutorRequest.setName("김민교");
+        authService.createTutorUser(tutorRequest);
 
-        assertThat(userMailRepository.findByEmail(doctorMail.getEmail()).orElse(null))
+        assertThat(userMailRepository.findByEmail(tutorMail.getEmail()).orElse(null))
                 .extracting("name")
                 .isEqualTo("김민교");
 
@@ -252,16 +252,16 @@ public class LoginTest {
     @DisplayName("중복 로그인을 허용하지 않는다")
     @Test
     void noDuplicatedLogin() throws Exception {
-        DoctorCreateRequest doctorRequest
-                = doctorCreateRequest();
-        DoctorMail doctorMail = authService.createDoctorUser(doctorRequest);
-        authService.validateDoctor(new CodeRequest(doctorMail.getEmail(),doctorMail.getCode()),LocalDateTime.now());
-        User user = userRepository.findByEmail(doctorMail.getEmail()).orElse(null);
-        authService.setDoctorAuthenticationSuccess(user.getId());
+        TutorCreateRequest tutorRequest
+                = tutorCreateRequest();
+        TutorMail tutorMail = authService.createTutorUser(tutorRequest);
+        authService.validateTutor(new CodeRequest(tutorMail.getEmail(),tutorMail.getCode()),LocalDateTime.now());
+        User user = userRepository.findByEmail(tutorMail.getEmail()).orElse(null);
+        authService.setTutorAuthenticationSuccess(user.getId());
 
         // 첫 번째 로그인 성공
         MvcResult result = mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andReturn();
 
@@ -275,7 +275,7 @@ public class LoginTest {
 
         // 두 번째 로그인 성공
         result = mockMvc.perform(post("/auth/login")
-                        .header("email",doctorMail.getEmail())
+                        .header("email",tutorMail.getEmail())
                         .header("password","dntjrdn78"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -300,27 +300,23 @@ public class LoginTest {
 
      }
 
-    private DoctorCreateRequest doctorCreateRequest(){
-        return DoctorCreateRequest
+    private TutorCreateRequest tutorCreateRequest(){
+        return TutorCreateRequest
                 .builder()
-                .address("서울시 마포구 서교동")
-                .certificateAddress("http://localhost:8080")
+                .authenticationAddress("http://localhost:8080")
                 .contact("01025045779")
-                .dateOfBirth(LocalDate.now())
                 .email("1dilumn0@gmail.com")
-                .hospitalName("서울대학병원")
-                .medicalSpeciality(MedicalSpecialities.DENTISTRY)
+                .specialities(List.of(Specialities.KEYBOARD_INSTRUMENT,Specialities.BASS))
                 .password("dntjrdn78")
-                .selfDescription("좋은 의사입니다")
+                .selfDescription("좋은 튜터입니다")
                 .name("우석우")
                 .build();
     }
 
-    private PatientCreateRequest patientCreateRequest(){
-        return PatientCreateRequest
+    private TuteeCreateRequest tuteeCreateRequest(){
+        return TuteeCreateRequest
                 .builder()
                 .contact("01025045779")
-                .dateOfBirth(LocalDate.now())
                 .email("1dilumn0@gmail.com")
                 .name("우석우")
                 .password("dntjrdn78")

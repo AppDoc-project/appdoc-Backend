@@ -68,7 +68,7 @@ spring:
     hibernate:
       ddl-auto: create
   datasource:
-    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
 file:
@@ -86,9 +86,9 @@ spring:
       on-profile: test
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
   datasource:
-    url: jdbc:mysql://localhost:3306/webdoc_test?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/myapp_test?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
 

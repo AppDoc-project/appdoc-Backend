@@ -12,12 +12,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.config.security.token.JwtAuthenticationToken;
-import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.entity.user.request.EmailRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
-import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
+import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserRepository;
@@ -73,12 +73,12 @@ public class AuthController {
 
     }
 
-    // 의사 회원가입
+    // 튜터 회원가입
 
-    @PostMapping("/join/doctor")
-    public CodeMessageResponse doctorJoin(
+    @PostMapping("/join/tutor")
+    public CodeMessageResponse tutorJoin(
             HttpServletResponse res,
-            @RequestBody @Validated DoctorCreateRequest dto,
+            @RequestBody @Validated TutorCreateRequest dto,
             BindingResult result
     ){
         String message = AuthMessageProvider.JOIN_SUCCESS;
@@ -87,7 +87,7 @@ public class AuthController {
         }
 
         try {
-            authService.createDoctorUser(dto);
+            authService.createTutorUser(dto);
         }
         catch(EmailDuplicationException e){throw e;}
         catch(Exception e){throw new RuntimeException(e);}
@@ -96,11 +96,11 @@ public class AuthController {
         return new CodeMessageResponse(message, 201,ResponseCodeProvider.SUCCESS);
     }
 
-    // 환자 회원가입
-    @PostMapping("/join/patient")
-    public CodeMessageResponse patientJoin(
+    // 튜티 회원가입
+    @PostMapping("/join/tutee")
+    public CodeMessageResponse tuteeJoin(
             HttpServletResponse res,
-            @RequestBody @Validated PatientCreateRequest dto,
+            @RequestBody @Validated TuteeCreateRequest dto,
             BindingResult result
     )  {
         String message = AuthMessageProvider.JOIN_SUCCESS;
@@ -110,7 +110,7 @@ public class AuthController {
         }
 
         try {
-            authService.createPatientUser(dto);
+            authService.createTuteeUser(dto);
         }
         catch(EmailDuplicationException e){throw e;}
         catch(Exception e){throw new RuntimeException(e);}
@@ -120,9 +120,9 @@ public class AuthController {
     }
 
 
-    // 환자 인증
-    @PostMapping("/validate/patient")
-    public CodeMessageResponse patientValidation(
+    // 튜티 인증
+    @PostMapping("/validate/tutee")
+    public CodeMessageResponse tuteeValidation(
             HttpServletResponse res,
             @RequestBody @Validated CodeRequest dto,
             BindingResult result
@@ -134,7 +134,7 @@ public class AuthController {
         }
 
         try {
-            authService.validatePatient(dto, LocalDateTime.now());
+            authService.validateTutee(dto, LocalDateTime.now());
         }
         catch(TimeOutException | NoSuchElementException | AuthenticationServiceException e) {throw e;}
         catch(Exception e){ throw new RuntimeException(e);}
@@ -143,9 +143,9 @@ public class AuthController {
         return new CodeMessageResponse(message, 200,ResponseCodeProvider.SUCCESS);
     }
 
-    // 의사 인증
-    @PostMapping("/validate/doctor")
-    public CodeMessageResponse doctorValidation(
+    // 튜터 인증
+    @PostMapping("/validate/tutor")
+    public CodeMessageResponse tutorValidation(
             HttpServletResponse res,
             @RequestBody @Validated CodeRequest dto,
             BindingResult result
@@ -157,7 +157,7 @@ public class AuthController {
         }
 
         try {
-            authService.validateDoctor(dto,LocalDateTime.now());
+            authService.validateTutor(dto,LocalDateTime.now());
         }
         catch(TimeOutException | NoSuchElementException | AuthenticationServiceException e) {throw e;}
         catch(Exception e){ throw new RuntimeException(e);}

@@ -4,9 +4,9 @@ public class ResponseCodeProvider {
 
     public static final Integer SUCCESS = 200;
 
-    public static final Integer PATIENT_LOGIN = 201;
+    public static final Integer TUTEE_LOGIN = 201;
 
-    public static final Integer DOCTOR_LOGIN = 202;
+    public static final Integer TUTOR_LOGIN = 202;
     public static final Integer BINDING_FAILURE = 400;
 
     public static final Integer VALIDATION_EXPIRED = 401;

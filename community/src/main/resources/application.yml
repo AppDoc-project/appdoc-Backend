@@ -34,7 +34,7 @@ spring:
       on-profile: operation
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
   datasource:
     url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
@@ -58,7 +58,7 @@ spring:
     hibernate:
       ddl-auto: create
   datasource:
-    url: jdbc:mysql://localhost:3306/webdoc?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
 
@@ -88,7 +88,7 @@ spring:
 
 
   datasource:
-    url: jdbc:mysql://localhost:3306/webdoc_test?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/myapp_test?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
 

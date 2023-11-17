@@ -7,14 +7,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.UserMail;
-import webdoc.authentication.domain.entity.user.doctor.Doctor;
-import webdoc.authentication.domain.entity.user.doctor.DoctorMail;
-import webdoc.authentication.domain.entity.user.doctor.enums.AuthenticationProcess;
-import webdoc.authentication.domain.entity.user.doctor.request.DoctorCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.Tutor;
+import webdoc.authentication.domain.entity.user.tutor.TutorMail;
+import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
+import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
-import webdoc.authentication.domain.entity.user.patient.PatientMail;
-import webdoc.authentication.domain.entity.user.patient.request.PatientCreateRequest;
-import webdoc.authentication.domain.entity.user.patient.Patient;
+import webdoc.authentication.domain.entity.user.tutee.TuteeMail;
+import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
+import webdoc.authentication.domain.entity.user.tutee.Tutee;
 import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
@@ -35,22 +35,20 @@ public class AuthService{
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    // 의사 계정 생성
+    // 튜터 계정 생성
     @Transactional
-    public DoctorMail createDoctorUser(DoctorCreateRequest dto) throws MessagingException {
+    public TutorMail createTutorUser(TutorCreateRequest dto) throws MessagingException {
         User findUser = userRepository.findByEmail(dto.getEmail()).orElse(null);
         UserMail findUserMail = userMailRepository.findByEmail(dto.getEmail()).orElse(null);
-        DoctorMail doctor;
-
+        TutorMail tutor;
 
         if (findUser != null){
-            if (findUser instanceof Doctor
-                    && ((Doctor)findUser).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_DENIED)){
+            if (findUser instanceof Tutor
+                    && ((Tutor)findUser).getAuthenticationProcess().equals(AuthenticationProcess.AUTHENTICATION_DENIED)){
                 userRepository.delete(findUser);
             }
             else{throw new EmailDuplicationException("해당 이메일을 가진 유저가 존재합니다");}
         }
-
 
 
         String code = FourDigitsNumberGenerator.generateFourDigitsNumber();
@@ -58,26 +56,24 @@ public class AuthService{
 
         // 비밀번호 암호화
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-        doctor = DoctorMail.dtoToMail(dto,code,expirationDateTime);
+        tutor = TutorMail.dtoToMail(dto,code,expirationDateTime);
 
         if(findUserMail != null){
             userMailRepository.delete(findUserMail);
         }
 
-        userMailRepository.save(doctor);
+        userMailRepository.save(tutor);
         emailService.sendEmail(dto.getEmail(),code);
 
-        return doctor;
+        return tutor;
     }
 
-
-    // 환자 계정 생성
+    // 튜티 계정 생성
     @Transactional
-    public PatientMail createPatientUser(PatientCreateRequest dto) throws MessagingException {
+    public TuteeMail createTuteeUser(TuteeCreateRequest dto) throws MessagingException {
         User findUser = userRepository.findByEmail(dto.getEmail()).orElse(null);
         UserMail findUserMail = userMailRepository.findByEmail(dto.getEmail()).orElse(null);
-        PatientMail patient;
-
+        TuteeMail tutee;
 
         if (findUser != null){
             throw new EmailDuplicationException("해당 이메일을 가진 유저가 존재합니다");
@@ -88,33 +84,33 @@ public class AuthService{
 
         // 비밀번호 암호화
         dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-        patient = PatientMail.dtoToMail(dto,code,expirationDateTime);
+        tutee = TuteeMail.dtoToMail(dto,code,expirationDateTime);
 
         if(findUserMail != null){
             userMailRepository.delete(findUserMail);
         }
 
-        userMailRepository.save(patient);
+        userMailRepository.save(tutee);
         emailService.sendEmail(dto.getEmail(),code);
 
-        return patient;
+        return tutee;
     }
 
-    //환자 인증
+    // 튜티 계정 인증
     @Transactional
-    public void validatePatient(CodeRequest dto,LocalDateTime time){
-        PatientMail patientMail = (PatientMail) userMailRepository.findByEmail(dto.getEmail())
-                .stream().filter(e->e instanceof PatientMail)
+    public void validateTutee(CodeRequest dto,LocalDateTime time){
+        TuteeMail tuteeMail = (TuteeMail) userMailRepository.findByEmail(dto.getEmail())
+                .stream().filter(e->e instanceof TuteeMail)
                 .findFirst()
                 .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
         // 정상 인증 프로세스
-        if(patientMail.getCode().equals(dto.getCode())
-                && patientMail.getExpirationDateTime().isAfter(time)){
-            userMailRepository.delete(patientMail);
-            Patient patient = Patient.patientMailToPatient(patientMail);
-            userRepository.save(patient);
+        if(tuteeMail.getCode().equals(dto.getCode())
+                && tuteeMail.getExpirationDateTime().isAfter(time)){
+            userMailRepository.delete(tuteeMail);
+            Tutee tutee = Tutee.tuteeMailToTutee(tuteeMail);
+            userRepository.save(tutee);
         // 인증 시간 초과
-        }else if(patientMail.getExpirationDateTime().isBefore(time)){
+        }else if(tuteeMail.getExpirationDateTime().isBefore(time)){
             throw new TimeOutException("인증 시간을 초과하였습니다");
         // 인증 번호 틀림
         }else{
@@ -122,20 +118,20 @@ public class AuthService{
         }
     }
 
-    // 의사 인증
+    // 튜터 인증
     @Transactional
-    public void validateDoctor(CodeRequest dto,LocalDateTime time){
-        DoctorMail doctorMail = (DoctorMail) userMailRepository.findByEmail(dto.getEmail())
-                .stream().filter(e->e instanceof DoctorMail)
+    public void validateTutor(CodeRequest dto,LocalDateTime time){
+        TutorMail tutorMail = (TutorMail) userMailRepository.findByEmail(dto.getEmail())
+                .stream().filter(e->e instanceof TutorMail)
                 .findFirst()
                 .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
         // 정상 인증 프로세스
-        if(doctorMail.getCode().equals(dto.getCode())
-                && doctorMail.getExpirationDateTime().isAfter(time)){
-            userMailRepository.delete(doctorMail);
-            userRepository.save(Doctor.doctorMailToDoctor(doctorMail));
+        if(tutorMail.getCode().equals(dto.getCode())
+                && tutorMail.getExpirationDateTime().isAfter(time)){
+            userMailRepository.delete(tutorMail);
+            userRepository.save(Tutor.tutorMailToTutor(tutorMail));
             // 인증 시간 초과
-        }else if(doctorMail.getExpirationDateTime().isBefore(time)){
+        }else if(tutorMail.getExpirationDateTime().isBefore(time)){
             throw new TimeOutException("인증 시간을 초과하였습니다");
             // 인증 번호 틀림
         }else{
@@ -164,18 +160,18 @@ public class AuthService{
         return user != null;
     }
 
-    // 의사 인증 상태를 ONGOING으로 설정
+    // 튜터 인증 상태를 ONGOING으로 설정
     @Transactional
-    public void setDoctorAuthenticationSuccess(Long id){
-        Doctor doctor = userRepository.findDoctorById(id).orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
-        doctor.changeDoctorState(AuthenticationProcess.AUTHENTICATION_SUCCESS);
+    public void setTutorAuthenticationSuccess(Long id){
+        Tutor tutor = userRepository.findTutorById(id).orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+        tutor.changeTutorState(AuthenticationProcess.AUTHENTICATION_SUCCESS);
     }
 
-    // 의사 인증 상태를 DENINED로 설정
+    // 튜터 인증 상태를 DENINED로 설정
     @Transactional
-    public void setDoctorAuthenticationDenied(Long id){
-        Doctor doctor = userRepository.findDoctorById(id).orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
-        doctor.changeDoctorState(AuthenticationProcess.AUTHENTICATION_DENIED);
+    public void setTutorAuthenticationDenied(Long id){
+        Tutor tutor = userRepository.findTutorById(id).orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+        tutor.changeTutorState(AuthenticationProcess.AUTHENTICATION_DENIED);
     }
 
 }
