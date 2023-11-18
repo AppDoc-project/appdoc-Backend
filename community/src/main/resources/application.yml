@@ -36,11 +36,11 @@ spring:
     hibernate:
       ddl-auto: create
   datasource:
-    url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://database-1.codehjwdlrgz.ap-northeast-2.rds.amazonaws.com:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
-    password: root
+    password: rootroot
 server:
-  add: http://127.0.0.1/community/image
+  add: http://Docker-spring-env.eba-a3d2ew9y.ap-northeast-2.elasticbeanstalk.com/community/image
 
 file:
   dir: /usr/src/app/community/upload/image
@@ -60,14 +60,32 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
-    password: Opsueaxqx1578!
+    password: root
 
 file:
-  dir: /Users/woo/Desktop/code/appdoc-Backend/community/upload/image
+  dir: /usr/src/app/community/upload/image
 
 server:
   add: http://127.0.0.1:8081/community/image
+---
 
+# application-local.dev.yml
+spring:
+  config:
+    activate:
+      on-profile: local-dev
+  jpa:
+    hibernate:
+      ddl-auto: create
+  datasource:
+    url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: Opsueaxqx1578!
+file:
+  dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/upload/image
+
+server:
+  add: http://127.0.0.1:8080/auth/image
 
 ---
 

@@ -47,6 +47,25 @@ spring:
     hibernate:
       ddl-auto: update
   datasource:
+    url: jdbc:mysql://database-1.codehjwdlrgz.ap-northeast-2.rds.amazonaws.com:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: rootroot
+server:
+  add: http://Docker-spring-env.eba-a3d2ew9y.ap-northeast-2.elasticbeanstalk.com/auth/image
+file:
+  dir: /usr/src/app/authentication/upload/image
+
+---
+
+# application-dev.yml
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
     url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: root
@@ -56,14 +75,13 @@ file:
   dir: /usr/src/app/authentication/upload/image
 
 
-
 ---
 
-# application-dev.yml
+# application-local.dev.yml
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: local-dev
   jpa:
     hibernate:
       ddl-auto: create
@@ -86,7 +104,7 @@ spring:
       on-profile: test
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
   datasource:
     url: jdbc:mysql://localhost:3306/myapp_test?useUnicode=true&characterEncoding=UTF-8
     username: root
