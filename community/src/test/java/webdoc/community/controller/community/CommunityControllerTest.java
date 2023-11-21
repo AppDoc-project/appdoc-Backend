@@ -17,6 +17,8 @@ import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.securityConfig.WithMockCustomUser;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.service.CommunityService;
+import webdoc.community.service.UserService;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 public class CommunityControllerTest {
+
+
     @Autowired
     MockMvc mockMvc;
     @Autowired
@@ -60,7 +64,7 @@ public class CommunityControllerTest {
     @Test
     @WithMockCustomUser
     void fetchPostsWithInvalidCommunityId() throws Exception {
-        when(communityService.getPostsWithLimit(any(),any())).thenThrow(new NoSuchElementException(""));
+        when(communityService.getPostsWithLimit(any(),any(),any())).thenThrow(new NoSuchElementException(""));
         mockMvc.perform(get("/community/post?limit=5&communityId=1"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
@@ -147,7 +151,7 @@ public class CommunityControllerTest {
      @Test
      @WithMockCustomUser
      void fetchCertainPostWithInvalidPostId() throws Exception {
-         when(communityService.getCertainPost(any(),any())).thenThrow(new NoSuchElementException(""));
+         when(communityService.getCertainPost(any(),any(),any())).thenThrow(new NoSuchElementException(""));
          mockMvc.perform(get("/community/post/4"))
                  .andDo(print())
                  .andExpect(status().is4xxClientError());

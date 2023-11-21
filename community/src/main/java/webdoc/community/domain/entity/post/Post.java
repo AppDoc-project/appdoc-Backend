@@ -6,7 +6,6 @@ import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.like.Bookmark;
 import webdoc.community.domain.entity.like.Like;
-import webdoc.community.domain.entity.user.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +19,17 @@ public class Post extends BaseEntity {
     protected Post(){}
 
     @Builder
-    private Post(User user, String title,String text, Community community){
-        this.user = user;
+    private Post(Long userId, String title,String text, Community community){
+        this.userId = userId;
         this.text = text;
         this.title = title;
         this.community = community;
     }
 
-    public static Post CreatePost(User user,String title, String text, Community community){
+    public static Post CreatePost(Long userId,String title, String text, Community community){
         return
                 Post.builder()
-                        .user(user)
+                        .userId(userId)
                         .text(text)
                         .title(title)
                         .community(community)
@@ -40,9 +39,7 @@ public class Post extends BaseEntity {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false,name = "user_id")
-    private User user;
+    private Long userId;
 
     @Column(nullable = false, length = 3000)
     private String text;

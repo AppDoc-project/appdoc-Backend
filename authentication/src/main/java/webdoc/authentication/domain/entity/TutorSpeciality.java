@@ -1,6 +1,7 @@
 package webdoc.authentication.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import webdoc.authentication.domain.entity.user.tutor.Tutor;
 import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
+@Getter
 public class TutorSpeciality {
     protected TutorSpeciality(){}
 

@@ -15,20 +15,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.community.config.security.token.JwtAuthenticationToken;
-import webdoc.community.domain.entity.user.User;
+import webdoc.community.domain.entity.user.UserResponse;
 import webdoc.community.domain.response.CodeMessageResponse;
-import webdoc.community.repository.UserRepository;
+import webdoc.community.utility.messageprovider.CommonMessageProvider;
+import webdoc.community.utility.messageprovider.ResponseCodeProvider;
+import webdoc.community.service.UserService;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
+
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final String signingKey;
     private final ObjectMapper mapper;
-    private final UserRepository repository;
+    private final String authServer;
+
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -58,10 +63,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return ;
         }
 
+
+
         String email = claims.get("email",String.class);
-        User user =  repository.findByEmail(email).orElse(null);
-        String tokenExpiredAt = claims.get("expireAt",String.class);
-        if(user == null || user.getToken() == null || user.getToken().getExpiredAt().isBefore(LocalDateTime.now()) || !tokenExpiredAt.equals(user.getToken().getExpiredAt().toString())){
+        String expiredAt = claims.get("expireAt",String.class);
+        LocalDateTime tokenExpiredAt = LocalDateTime.parse(expiredAt);
+
+
+        UserResponse user;
+        try{
+            user = userService.fetchUserResponseFromAuthServer(authServer+"/server/user/email/"+email,jwt,10_000,10_000).get();
+        }catch(Exception e){
+            e.printStackTrace();
+            response.setStatus(500);
+            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse(CommonMessageProvider.INTERNAL_SERVER_ERROR,500,ResponseCodeProvider.INTERNAL_SERVER_ERROR)));
+            return;
+        }
+
+
+        if(user == null || tokenExpiredAt.isBefore(LocalDateTime.now())){
             filterChain.doFilter(request,response);
             return;
         }
@@ -76,4 +96,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     }
+
+
 }

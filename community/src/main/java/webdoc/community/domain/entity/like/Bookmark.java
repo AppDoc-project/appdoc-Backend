@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
-import webdoc.community.domain.entity.user.User;
 
 @Entity
 @EqualsAndHashCode(of = "id")
@@ -22,9 +21,8 @@ public class Bookmark extends BaseEntity {
     @Id
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")

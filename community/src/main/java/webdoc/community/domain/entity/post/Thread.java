@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
 import webdoc.community.domain.BaseEntity;
-import webdoc.community.domain.entity.user.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,20 +18,20 @@ public class Thread extends BaseEntity {
         this.post = post;
     }
     @Builder
-    private Thread(String text,Thread parent, Post post,User user){
+    private Thread(String text,Thread parent, Post post,Long userId){
         this.text = text;
         this.parent = parent;
         this.post = post;
-        this.user = user;
+        this.userId = userId;
 
     }
 
-    public static Thread createThread(String text,Post post,User user){
+    public static Thread createThread(String text,Post post,Long userId){
         return
                 Thread.builder()
                         .text(text)
                         .post(post)
-                        .user(user)
+                        .userId(userId)
                         .build();
     }
 
@@ -56,7 +55,6 @@ public class Thread extends BaseEntity {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 }

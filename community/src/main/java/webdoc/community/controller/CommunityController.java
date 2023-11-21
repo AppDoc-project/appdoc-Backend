@@ -1,5 +1,6 @@
 package webdoc.community.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
-import webdoc.community.domain.entity.user.User;
+import webdoc.community.domain.entity.user.UserResponse;
 import webdoc.community.domain.response.CodeMessageResponse;
 import webdoc.community.domain.response.ArrayResponse;
 import webdoc.community.domain.response.ObjectResponse;
@@ -54,15 +55,17 @@ public class CommunityController {
 
     // 게시판에 글 작성
     @PostMapping("/post")
-    public CodeMessageResponse createPost(HttpServletResponse res, @RequestBody @Validated PostCreateRequest request,
+    public CodeMessageResponse createPost(HttpServletRequest req,HttpServletResponse res, @RequestBody @Validated PostCreateRequest request,
                                           BindingResult result){
         if(result.hasErrors()){
             throw new IllegalArgumentException("바인딩 실패");
         }
 
+        String jwt = req.getHeader("Authorization");
+
         try{
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            communityService.createPost(request,user.getId());
+            UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            communityService.createPost(request,user.getId(),jwt);
 
         }catch(IllegalArgumentException e){
             throw e;
@@ -78,12 +81,13 @@ public class CommunityController {
     // 게시판에 글 첫번째로 불러오기
     @GetMapping("/post")
     public ArrayResponse<PostResponse> getPosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId,
-                                                @RequestParam(required = true) int limit, @RequestParam Long communityId){
+                                                @RequestParam(required = true) int limit, @RequestParam Long communityId,HttpServletRequest req){
         try{
+            String jwt = req.getHeader("Authorization");
             if (!scroll){
-                return ArrayResponse.of(communityService.getPostsWithLimit(communityId, limit),200);
+                return ArrayResponse.of(communityService.getPostsWithLimit(communityId, limit,jwt),200);
             }else{
-                return ArrayResponse.of(communityService.getPostsWithLimitAndIdAfter(communityId,postId,limit),200);
+                return ArrayResponse.of(communityService.getPostsWithLimitAndIdAfter(communityId,postId,limit,jwt),200);
             }
         }catch(NoSuchElementException e){
             throw e;
@@ -95,10 +99,11 @@ public class CommunityController {
 
     //선택된 게시글 불러오기
     @GetMapping("/post/{postId}")
-    public ObjectResponse<PostDetailResponse> getCertainPost(@PathVariable("postId") Long postId){
+    public ObjectResponse<PostDetailResponse> getCertainPost(HttpServletRequest req,@PathVariable("postId") Long postId){
         try{
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            return new ObjectResponse<>(communityService.getCertainPost(postId,user.getId()),200);
+            UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String jwt = req.getHeader("Authorization");
+            return new ObjectResponse<>(communityService.getCertainPost(postId,user.getId(),jwt),200);
         }catch(NoSuchElementException e){
             throw e;
         }catch (Exception e){
@@ -109,12 +114,12 @@ public class CommunityController {
     // 댓글 작성하기
     @PostMapping("/thread")
     public CodeMessageResponse createThread(@Validated @RequestBody ThreadCreateRequest request,
-                                            BindingResult bindingResult){
+                                            BindingResult bindingResult,HttpServletRequest req){
         if(bindingResult.hasErrors()){
             throw new IllegalArgumentException("바인딩 실패");
         }
         try{
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             communityService.createThread(user.getId(),request);
             return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
         }catch(NoSuchElementException e){
@@ -131,8 +136,8 @@ public class CommunityController {
             throw new IllegalArgumentException("바인딩 실패");
         }
         try{
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            communityService.createThreadOfThread(user.getId(),request);
+            UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            communityService.createThreadOfThread(request,user.getId());
             return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
         }catch(NoSuchElementException e){
             throw e;
@@ -142,9 +147,10 @@ public class CommunityController {
     }
 
     @GetMapping("/thread/{postId}")
-    public ArrayResponse<ThreadResponse> getThreads(@PathVariable("postId")Long postId){
+    public ArrayResponse<ThreadResponse> getThreads(@PathVariable("postId")Long postId, HttpServletRequest req){
         try{
-            List<ThreadResponse> threadResponses = communityService.getThreadByPostId(postId);
+            String jwt = req.getHeader("Authorization");
+            List<ThreadResponse> threadResponses = communityService.getThreadByPostId(postId,jwt);
             return new ArrayResponse<>(threadResponses,200,threadResponses.size());
         }catch(Exception e){
             throw new RuntimeException(e);

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import webdoc.community.domain.entity.community.Community;
@@ -17,21 +19,22 @@ import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
-import webdoc.community.domain.entity.user.User;
-import webdoc.community.domain.entity.user.tutee.Tutee;
+import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.entity.user.tutor.enums.Specialities;
 import webdoc.community.repository.CommunityRepository;
 import webdoc.community.repository.PostRepository;
 import webdoc.community.repository.ThreadRepository;
-import webdoc.community.repository.UserRepository;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
@@ -42,9 +45,9 @@ class CommunityServiceTest {
     CommunityService communityService;
     @Autowired
     CommunityRepository communityRepository;
-    @Autowired
-    UserRepository userRepository;
 
+    @MockBean
+    UserService userService;
     @Autowired
     ThreadRepository threadRepository;
 
@@ -98,9 +101,8 @@ class CommunityServiceTest {
                  .name("외과")
                  .build();
 
-         User user = tuteeCreate();
 
-         userRepository.save(user);
+
          communityRepository.save(com1);
 
          List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
@@ -109,19 +111,24 @@ class CommunityServiceTest {
 
          PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요","ㅋㅋㅋ");
 
+         when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                 .thenReturn(
+                         Optional.of(createUser())
+                 );
+
 
 
 
          //when
-         Post post = communityService.createPost(request,user.getId());
+         Post post = communityService.createPost(request,1L,"");
 
          List<Picture> pictures = post.getPictures();
 
 
          //then
          assertThat(post).isNotNull()
-                         .extracting("community","text","user")
-                                 .contains(com1,"안녕하세요",user);
+                         .extracting("community","text","userId")
+                                 .contains(com1,"안녕하세요",1L);
 
          // 사진이 올바르게 저장됨
          assertThat(pictures).extracting("address","priority")
@@ -135,19 +142,22 @@ class CommunityServiceTest {
       @DisplayName("존재하지 않는 게시판에 게시글을 등록하면 실패한다")
       @Test
       void createPostWithInvalidCommunity(){
-          User user = tuteeCreate();
 
-          userRepository.save(user);
 
           List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
           list.add(new PostCreateRequest.AddressAndPriority(null,1));
           list.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
 
           PostCreateRequest request = postCreateRequest(1L,list,"안녕하세요","반가워요");
+          when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                  .thenReturn(
+                          Optional.of(createUser())
+                  );
 
 
           //when + then
-          assertThatThrownBy(()->communityService.createPost(request,user.getId()))
+
+          assertThatThrownBy(()->communityService.createPost(request,1L,""))
                   .isInstanceOf(NoSuchElementException.class);
        }
 
@@ -160,9 +170,10 @@ class CommunityServiceTest {
                   .name("외과")
                   .build();
 
-          User user = tuteeCreate();
-
-          userRepository.save(user);
+          when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                  .thenReturn(
+                          Optional.of(createUser())
+                  );
           communityRepository.save(com1);
 
           List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
@@ -173,7 +184,7 @@ class CommunityServiceTest {
 
 
           //when + then
-          assertThatThrownBy(()->communityService.createPost(request,user.getId()))
+          assertThatThrownBy(()->communityService.createPost(request,1L,""))
                   .isInstanceOf(IllegalArgumentException.class);
        }
 
@@ -186,9 +197,12 @@ class CommunityServiceTest {
                    .name("외과")
                    .build();
 
-           User user = tuteeCreate();
 
-           userRepository.save(user);
+           when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                   .thenReturn(
+                           Optional.of(createUser())
+                   );
+           UserResponse user = createUser();
            communityRepository.save(com1);
 
            List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
@@ -206,17 +220,17 @@ class CommunityServiceTest {
 
 
            //when
-           Post post = communityService.createPost(request,user.getId());
-           Post post2 = communityService.createPost(request1,user.getId());
-           Post post3 = communityService.createPost(request2,user.getId());
-           Post post4 = communityService.createPost(request3,user.getId());
-           Post post5 = communityService.createPost(request4,user.getId());
-           Post post6 = communityService.createPost(request5,user.getId());
-           Post post7 = communityService.createPost(request6,user.getId());
+           Post post = communityService.createPost(request,user.getId(),"");
+           Post post2 = communityService.createPost(request1,user.getId(),"");
+           Post post3 = communityService.createPost(request2,user.getId(),"");
+           Post post4 = communityService.createPost(request3,user.getId(),"");
+           Post post5 = communityService.createPost(request4,user.getId(),"");
+           Post post6 = communityService.createPost(request5,user.getId(),"");
+           Post post7 = communityService.createPost(request6,user.getId(),"");
 
            //then
-           List<PostResponse> list1 = communityService.getPostsWithLimit(com1.getId(),5);
-           List<PostResponse> list2 = communityService.getPostsWithLimitAndIdAfter(com1.getId(),post7.getId(),5);
+           List<PostResponse> list1 = communityService.getPostsWithLimit(com1.getId(),5,"");
+           List<PostResponse> list2 = communityService.getPostsWithLimitAndIdAfter(com1.getId(),post7.getId(),5,"");
            assertThat(list1).hasSize(5);
            assertThat(list2).hasSize(5);
            list2.forEach(System.out::println);
@@ -231,9 +245,12 @@ class CommunityServiceTest {
                     .name("외과")
                     .build();
 
-            User user = tuteeCreate();
+            when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                    .thenReturn(
+                            Optional.of(createUser())
+                    );
 
-            userRepository.save(user);
+            UserResponse user = createUser();
             communityRepository.save(com1);
 
             List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
@@ -241,12 +258,12 @@ class CommunityServiceTest {
             pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
 
             PostCreateRequest request = postCreateRequest(com1.getId(),pictures,"안녕하세요","ㅋㅋㅋ");
-            Post post = communityService.createPost(request,user.getId());
+            Post post = communityService.createPost(request,user.getId(),"");
 
 
 
             //when
-            PostDetailResponse response = communityService.getCertainPost(post.getId(),user.getId());
+            PostDetailResponse response = communityService.getCertainPost(post.getId(),user.getId(),"");
 
 
             //then
@@ -258,10 +275,10 @@ class CommunityServiceTest {
                             "likeCount","threadCount","mediaCount",
                             "createdAt","isTutor","bookmarkYN","text","view")
                     .containsExactly(
-                        post.getId(),post.getUser().getId(),post.getTitle(),
-                            post.getUser().getNickName(),post.getUser().getProfile(),
+                        post.getId(),post.getUserId(),post.getTitle(),
+                            user.getNickName(),user.getProfile(),
                             post.getBookmarks().size(), post.getLikes().size(), post.getThreads().size(),
-                            post.getPictures().size(), post.getCreatedAt(),post.getUser().isTutor(),
+                            post.getPictures().size(), post.getCreatedAt(),user.getIsTutor(),
                             false,post.getText(),1L
                     );
          }
@@ -274,21 +291,24 @@ class CommunityServiceTest {
                      .builder()
                      .name("외과")
                      .build();
+             when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                     .thenReturn(
+                             Optional.of(createUser())
+                     );
 
-             User user = tuteeCreate();
-             userRepository.save(user);
+             UserResponse user = createUser();
              communityRepository.save(com1);
              PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
-             Post post = communityService.createPost(request,user.getId());
+             Post post = communityService.createPost(request,user.getId(),"");
              ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
 
              //when
              Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
 
              //then
-             assertThat(thread).extracting("text","parent","user","post")
+             assertThat(thread).extracting("text","parent","userId","post")
                      .containsExactly(threadCreateRequest.getText(),null,
-                     user,post);
+                     user.getId(),post);
              assertThat(thread.getId()).isNotNull();
           }
 
@@ -296,8 +316,7 @@ class CommunityServiceTest {
           @Test
           void createThreadWithWrongPostId(){
               //given
-              User user = tuteeCreate();
-              userRepository.save(user);
+              UserResponse user = createUser();
               ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",5L);
 
               //when + then
@@ -314,12 +333,15 @@ class CommunityServiceTest {
                        .builder()
                        .name("외과")
                        .build();
+               when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                       .thenReturn(
+                               Optional.of(createUser())
+                       );
 
-               User user = tuteeCreate();
-               userRepository.save(user);
+               UserResponse user = createUser();
                communityRepository.save(com1);
                PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
-               Post post = communityService.createPost(request,user.getId());
+               Post post = communityService.createPost(request,user.getId(),"");
                ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
                Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
 
@@ -328,12 +350,12 @@ class CommunityServiceTest {
 
 
                //when
-               Thread child = communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest);
+               Thread child = communityService.createThreadOfThread(threadOfThreadCreateRequest,user.getId());
 
                //then
-               assertThat(child).extracting("text","parent","user","post")
+               assertThat(child).extracting("text","parent","userId","post")
                        .containsExactly(threadOfThreadCreateRequest.getText(),thread,
-                               user,post);
+                               user.getId(),post);
                assertThat(thread.getId()).isNotNull();
 
             }
@@ -347,11 +369,16 @@ class CommunityServiceTest {
                         .name("외과")
                         .build();
 
-                User user = tuteeCreate();
-                userRepository.save(user);
+                UserResponse user = createUser();
+                when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                        .thenReturn(
+                                Optional.of(createUser())
+                        );
+
+
                 communityRepository.save(com1);
                 PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
-                Post post = communityService.createPost(request,user.getId());
+                Post post = communityService.createPost(request,user.getId(),"");
                 ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
                 communityService.createThread(user.getId(),threadCreateRequest);
 
@@ -361,7 +388,7 @@ class CommunityServiceTest {
 
                 //when
                 assertThatThrownBy(()->{
-                    communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest);
+                    communityService.createThreadOfThread(threadOfThreadCreateRequest,user.getId());
                 }).isInstanceOf(NoSuchElementException.class);
              }
              @DisplayName("특정 게시물의 댓글리스트를 불러온다")
@@ -373,11 +400,16 @@ class CommunityServiceTest {
                          .name("외과")
                          .build();
 
-                 User user = tuteeCreate();
-                 userRepository.save(user);
+                 UserResponse user = createUser();
+                 when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                         .thenReturn(
+                                 Optional.of(createUser())
+                         );
+
+
                  communityRepository.save(com1);
                  PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
-                 Post post = communityService.createPost(request,user.getId());
+                 Post post = communityService.createPost(request,user.getId(),"");
 
 
                  ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
@@ -392,23 +424,19 @@ class CommunityServiceTest {
                  ThreadOfThreadCreateRequest threadOfThreadCreateRequest2 = threadOfThreadCreateRequest("안녕ㅇㅇ", post.getId(), thread.getId());
                  ThreadOfThreadCreateRequest threadOfThreadCreateRequest3 = threadOfThreadCreateRequest("안녕ㅇㅇㅇ", post.getId(), thread2.getId());
 
-                 Thread child = communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest);
-                 Thread child2 =  communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest2);
-                 Thread child3 =  communityService.createThreadOfThread(user.getId(),threadOfThreadCreateRequest3);
+                 Thread child = communityService.createThreadOfThread(threadOfThreadCreateRequest,user.getId());
+                 Thread child2 =  communityService.createThreadOfThread(threadOfThreadCreateRequest2,user.getId());
+                 Thread child3 =  communityService.createThreadOfThread(threadOfThreadCreateRequest3,user.getId());
 
 
                  //when
-                 List<ThreadResponse> threadResponses = communityService.getThreadByPostId(post.getId());
+                 List<ThreadResponse> threadResponses = communityService.getThreadByPostId(post.getId(),"");
                  //then
                  assertThat(threadResponses).hasSize(3);
               }
 
 
-    private Tutee tuteeCreate(){
-        return Tutee.createTutee(
-                "1dilumn0@gmail.com","dntjrdn78","우석우","01025045779"
-        );
-    }
+
 
     private ThreadCreateRequest threadCreateRequest(String text,Long postId){
         return ThreadCreateRequest.builder()
@@ -438,6 +466,17 @@ class CommunityServiceTest {
                         .build();
 
         return  request;
+    }
+
+    public UserResponse createUser(){
+        return UserResponse.builder()
+                .contact("01025045779")
+                .email("1dilumn0@gmail.com")
+                .id(1L)
+                .nickName("우석우")
+                .profile("naver.com")
+                .specialities(List.of(Specialities.KEYBOARD_INSTRUMENT))
+                .build();
     }
 
 }

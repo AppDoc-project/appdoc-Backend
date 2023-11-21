@@ -84,7 +84,7 @@ spring:
       on-profile: local-dev
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   datasource:
     url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
-import webdoc.community.domain.entity.user.User;
 
 @Entity(name = "love")
 @EqualsAndHashCode(of = "id")
@@ -13,15 +12,15 @@ import webdoc.community.domain.entity.user.User;
 public class Like extends BaseEntity {
     protected Like(){}
 
-    public static Like createLike(User user,Post post){
+    public static Like createLike(Long userId,Post post){
         return Like.builder()
-                .user(user)
+                .userId(userId)
                 .post(post)
                 .build();
     }
     @Builder
-    private Like(User user,Post post){
-        this.user = user;
+    private Like(Long userId,Post post){
+        this.userId = userId;
         this.post = post;
         post.addLikes(this);
     }
@@ -32,9 +31,8 @@ public class Like extends BaseEntity {
     @Id
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")

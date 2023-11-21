@@ -5,7 +5,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextFactory;
 import webdoc.community.config.security.token.JwtAuthenticationToken;
-import webdoc.community.domain.entity.user.tutee.Tutee;
+import webdoc.community.domain.entity.user.UserResponse;
 
 public class WithMockCustomUserSecurityContextFactory
         implements WithSecurityContextFactory<WithMockCustomUser> {
@@ -14,7 +14,9 @@ public class WithMockCustomUserSecurityContextFactory
     public SecurityContext createSecurityContext(WithMockCustomUser annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication auth = new JwtAuthenticationToken(
-                Tutee.createTutee(null,null,null,null)
+                UserResponse.builder()
+                        .id(null)
+                        .build()
         );
         context.setAuthentication(auth);
         return context;

@@ -11,7 +11,7 @@ import java.util.List;
 public interface ThreadRepository extends JpaRepository<Thread,Long> {
     int countThreadByPostId(Long postId);
 
-    @Query("select t from Thread t join fetch t.user join t.post where" +
+    @Query("select t from Thread t join t.post where" +
             " t.post.id = :postId and t.parent = null order by t.createdAt asc")
     List<Thread> getThreadByPostId(long postId);
 }

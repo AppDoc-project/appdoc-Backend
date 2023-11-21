@@ -45,6 +45,9 @@ server:
 file:
   dir: /usr/src/app/community/upload/image
 
+authentication:
+  server: http://Docker-spring-env.eba-a3d2ew9y.ap-northeast-2.elasticbeanstalk.com/auth
+
 
 
 ---
@@ -67,6 +70,9 @@ file:
 
 server:
   add: http://127.0.0.1:8081/community/image
+
+authentication:
+  server: http://auth/auth
 ---
 
 # application-local.dev.yml
@@ -76,9 +82,9 @@ spring:
       on-profile: local-dev
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   datasource:
-    url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/myapp1?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
 file:
@@ -86,6 +92,10 @@ file:
 
 server:
   add: http://127.0.0.1:8080/auth/image
+
+
+authentication:
+  server: http://127.0.0.1:8080/auth
 
 ---
 
@@ -115,4 +125,7 @@ file:
 
 server:
   add: http://127.0.0.1:8081/community/image
+
+authentication:
+  server: http://127.0.0.1:8080/auth
 

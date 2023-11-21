@@ -20,23 +20,28 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import webdoc.community.config.security.filter.JwtAuthenticationFilter;
 import webdoc.community.domain.response.CodeMessageResponse;
-import webdoc.community.repository.UserRepository;
+import webdoc.community.service.UserService;
 
 
 import java.io.IOException;
 
 @Configuration
 public class SecurityConfig {
-    @Autowired
-    UserRepository userRepository;
+
     @Autowired
     ObjectMapper objectMapper;
 
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    UserService userService;
+
     @Value("${jwt.signing.key}")
     private String key;
+
+    @Value("${authentication.server}")
+    private String authAddress;
 
     @Bean AuthenticationManager authenticationManager(HttpSecurity http){
         return http.getSharedObject(AuthenticationManager.class);
@@ -44,7 +49,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(){
-        return new JwtAuthenticationFilter(key,objectMapper,userRepository);
+        return new JwtAuthenticationFilter(key,objectMapper,authAddress,userService);
     }
 
     @Bean

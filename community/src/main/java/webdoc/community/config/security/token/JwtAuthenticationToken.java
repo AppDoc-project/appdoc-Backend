@@ -3,20 +3,18 @@ package webdoc.community.config.security.token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import webdoc.community.domain.entity.user.User;
+import webdoc.community.domain.entity.user.UserResponse;
 
 import java.util.Collection;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationToken implements Authentication {
-    private final User user;
-
-
+    private final UserResponse userResponse;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(user::getRole);
+        return List.of(userResponse::getRole);
     }
 
     @Override
@@ -31,7 +29,7 @@ public class JwtAuthenticationToken implements Authentication {
 
     @Override
     public Object getPrincipal() {
-        return user;
+        return userResponse;
     }
 
     @Override
@@ -44,9 +42,8 @@ public class JwtAuthenticationToken implements Authentication {
 
     }
 
-
     @Override
     public String getName() {
-        return user.getName();
+        return userResponse.getNickName();
     }
 }
