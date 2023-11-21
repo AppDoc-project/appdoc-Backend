@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 openjdk:17
+FROM openjdk:17
 
 # 개발 환경용 Dockerfile
 WORKDIR /usr/src/app/community

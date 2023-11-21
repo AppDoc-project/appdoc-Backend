@@ -30,9 +30,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CommunityService {
-
-
-
     private final CommunityRepository communityRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
