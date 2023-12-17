@@ -1,11 +1,11 @@
 package webdoc.community.domain.entity.post.enums;
 
-public enum PostSortType {
+public enum PostSearchType {
 
-    LATEST("최신순"), LIKE("좋아요순"), THREAD("댓글순"), VIEW("조회순");
+    TITLE("제목"), CONTENT("내용"), TITLEANDCONTENT("제목내용");
     private final String name;
 
-    PostSortType(String name) {
+    PostSearchType(String name) {
         this.name = name;
     }
 

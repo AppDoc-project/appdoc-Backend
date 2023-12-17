@@ -21,9 +21,8 @@ public class Thread extends BaseEntity {
     private Thread(String text,Thread parent, Post post,Long userId){
         this.text = text;
         this.parent = parent;
-        this.post = post;
         this.userId = userId;
-
+        post.addThreads(this);
     }
 
     public static Thread createThread(String text,Post post,Long userId){

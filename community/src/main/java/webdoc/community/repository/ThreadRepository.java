@@ -7,6 +7,7 @@ import webdoc.community.domain.entity.post.Thread;
 
 import java.awt.print.Pageable;
 import java.util.List;
+import java.util.Optional;
 
 public interface ThreadRepository extends JpaRepository<Thread,Long> {
     int countThreadByPostId(Long postId);
@@ -14,4 +15,6 @@ public interface ThreadRepository extends JpaRepository<Thread,Long> {
     @Query("select t from Thread t join t.post where" +
             " t.post.id = :postId and t.parent = null order by t.createdAt asc")
     List<Thread> getThreadByPostId(long postId);
+
+    Optional<Thread> getThreadById(Long id);
 }

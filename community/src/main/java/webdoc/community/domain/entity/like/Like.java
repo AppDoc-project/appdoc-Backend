@@ -21,7 +21,6 @@ public class Like extends BaseEntity {
     @Builder
     private Like(Long userId,Post post){
         this.userId = userId;
-        this.post = post;
         post.addLikes(this);
     }
     public void setPost(Post post){

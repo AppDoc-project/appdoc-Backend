@@ -1,10 +1,7 @@
 package webdoc.community.domain.entity.like;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
 
@@ -14,6 +11,7 @@ import webdoc.community.domain.entity.post.Post;
 @Setter(value = AccessLevel.PRIVATE)
 public class Bookmark extends BaseEntity {
 
+    protected Bookmark(){ }
     public void setPost(Post post){
         this.post = post;
     }
@@ -27,6 +25,18 @@ public class Bookmark extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    public static Bookmark createBookmark(Long userId,Post post){
+        return Bookmark.builder()
+                .userId(userId)
+                .post(post)
+                .build();
+    }
+    @Builder
+    private Bookmark(Long userId,Post post){
+        this.userId = userId;
+        post.addBookmark(this);
+    }
 
 
 }

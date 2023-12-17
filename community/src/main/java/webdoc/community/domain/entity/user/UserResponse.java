@@ -3,7 +3,7 @@ package webdoc.community.domain.entity.user;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import webdoc.community.domain.entity.user.tutor.enums.Specialities;
+
 
 import java.util.List;
 

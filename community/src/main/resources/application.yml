@@ -69,7 +69,7 @@ file:
   dir: /usr/src/app/community/upload/image
 
 server:
-  add: http://127.0.0.1:8081/community/image
+  add: http://localhost/community/image
 
 authentication:
   server: http://auth/auth

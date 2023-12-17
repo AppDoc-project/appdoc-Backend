@@ -11,13 +11,17 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.community.domain.entity.community.CommunityResponse;
+import webdoc.community.domain.entity.like.request.CreateRequestWithPostId;
+import webdoc.community.domain.entity.post.enums.PostSearchType;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
+import webdoc.community.domain.entity.report.request.ReportCreateRequest;
 import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
 import webdoc.community.domain.response.CodeMessageResponse;
 import webdoc.community.domain.response.ArrayResponse;
 import webdoc.community.domain.response.ObjectResponse;
@@ -78,7 +82,7 @@ public class CommunityController {
 
     }
 
-    // 게시판에 글 첫번째로 불러오기
+    // 게시판에 글 불러오기
     @GetMapping("/post")
     public ArrayResponse<PostResponse> getPosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId,
                                                 @RequestParam(required = true) int limit, @RequestParam Long communityId,HttpServletRequest req){
@@ -87,11 +91,12 @@ public class CommunityController {
             if (!scroll){
                 return ArrayResponse.of(communityService.getPostsWithLimit(communityId, limit,jwt),200);
             }else{
+                if (postId == null) throw new IllegalArgumentException("postId를 명시해야 합니다");
                 return ArrayResponse.of(communityService.getPostsWithLimitAndIdAfter(communityId,postId,limit,jwt),200);
             }
-        }catch(NoSuchElementException e){
+        }catch(NoSuchElementException | IllegalArgumentException e){
             throw e;
-        }catch(Exception e){
+        } catch(Exception e){
             throw new RuntimeException(e);
         }
 
@@ -129,6 +134,8 @@ public class CommunityController {
         }
     }
 
+    // 대댓글을 작성하기
+
     @PostMapping("/thread_thread")
     public CodeMessageResponse createThreadOfThread(@Validated @RequestBody ThreadOfThreadCreateRequest request,
                                                     BindingResult bindingResult){
@@ -146,6 +153,8 @@ public class CommunityController {
         }
     }
 
+    // 특정 게시글의 댓글 가져오기
+
     @GetMapping("/thread/{postId}")
     public ArrayResponse<ThreadResponse> getThreads(@PathVariable("postId")Long postId, HttpServletRequest req){
         try{
@@ -157,6 +166,166 @@ public class CommunityController {
         }
     }
 
+    // 전체 게시판 검색하기
+    @GetMapping("/search")
+    public ArrayResponse<PostResponse> searchFromEntirePosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId, @RequestParam int limit, @RequestParam String keyword,
+                                                             @RequestParam PostSearchType postSearchType, HttpServletRequest req){
+        try{
+            String jwt = req.getHeader("Authorization");
+            if (!scroll){
+
+                return ArrayResponse.of(communityService.entireSearchPost(limit,keyword,postSearchType,jwt),200);
+            }else{
+                if (postId == null) throw new IllegalArgumentException("postId를 명시해야 합니다");
+                return ArrayResponse.of(communityService.entireSearchPostAfter(limit,keyword,postId,postSearchType,jwt),200);
+            }
+        }catch (IllegalArgumentException e){
+            throw e;
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 특정 게시판 검색하기
+    @GetMapping("/search/{communityId}")
+    public ArrayResponse<PostResponse> searchFromCommunity(@PathVariable Long communityId,@RequestParam boolean scroll, @RequestParam(required = false) Long postId
+            ,@RequestParam int limit, @RequestParam String keyword, @RequestParam PostSearchType postSearchType, HttpServletRequest req){
+        try{
+            String jwt = req.getHeader("Authorization");
+            if (!scroll){
+
+                return ArrayResponse.of(communityService.communitySearchPost(limit,keyword,communityId,postSearchType,jwt),200);
+            }else{
+                if (postId == null) throw new IllegalArgumentException("postId를 명시해야 합니다");
+                return ArrayResponse.of(communityService.communitySearchPostAfter(limit,postId,keyword,communityId,postSearchType,jwt),200);
+            }
+        }catch(IllegalArgumentException e){
+            throw e;
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 좋아요 등록하기
+
+    @PostMapping("/like")
+    public CodeMessageResponse enrollLike(@RequestBody CreateRequestWithPostId likeCreateRequest,HttpServletResponse res){
+        UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(likeCreateRequest.getPostId() == null){
+            throw new IllegalArgumentException("postId는 null일 수 없습니다");
+        }
+        try{
+            boolean success = communityService.enrollLike(userResponse.getId(), likeCreateRequest.getPostId());
+            if (success){
+                return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+            }else{
+                res.setStatus(400);
+                return new CodeMessageResponse(CommonMessageProvider.LIKE_EXISTS,400,ResponseCodeProvider.ALREADY_EXISTS);
+            }
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 북마크 토글하기
+    @PostMapping("/bookmark")
+    public CodeMessageResponse toggleBookmark(@RequestBody CreateRequestWithPostId createRequest){
+        UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(createRequest.getPostId() == null){
+            throw new IllegalArgumentException("postId는 null일 수 없습니다");
+        }
+        try{
+            communityService.toggleBookmark(userResponse.getId(), createRequest.getPostId());
+            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 게시글 삭제하기
+    @DeleteMapping("/post")
+    public CodeMessageResponse deletePost(@RequestParam Long postId){
+        UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try{
+            communityService.deletePost(userResponse.getId(),postId);
+            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+        }catch(NoSuchElementException | IllegalArgumentException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 댓글 삭제하기
+    @DeleteMapping("/thread")
+    public CodeMessageResponse deleteThread(@RequestParam Long threadId){
+        UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try{
+            communityService.deleteThread(userResponse.getId(),threadId);
+            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+        }catch(NoSuchElementException | IllegalArgumentException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 글 신고하기
+    @PostMapping("/report/post")
+    public CodeMessageResponse reportPost(@Validated @RequestBody ReportCreateRequest reportCreateRequest, BindingResult bindingResult,
+                                          HttpServletResponse res){
+        if (bindingResult.hasErrors()){
+            throw new IllegalArgumentException("바인딩 실패");
+        }
+        UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        try{
+            communityService.reportPost(userResponse.getId(),reportCreateRequest);
+            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+        }catch(ReportAlreadyExistsException e){
+            res.setStatus(400);
+            return new CodeMessageResponse(CommonMessageProvider.REPORT_EXISTS,400,ResponseCodeProvider.ALREADY_EXISTS);
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    // 댓글 신고하기
+    @PostMapping("/report/thread")
+    public CodeMessageResponse reportThread(@Validated @RequestBody ReportCreateRequest reportCreateRequest, BindingResult bindingResult,
+                                            HttpServletResponse res){
+        if (bindingResult.hasErrors()){
+            throw new IllegalArgumentException("바인딩 실패");
+        }
+        UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        try{
+            communityService.reportThread(userResponse.getId(),reportCreateRequest);
+            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+        }catch(ReportAlreadyExistsException e){
+            res.setStatus(400);
+            return new CodeMessageResponse(CommonMessageProvider.REPORT_EXISTS,400,ResponseCodeProvider.ALREADY_EXISTS);
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+
+
+
+
+    // 이미지 등록하기
     @PostMapping("/images")
     public ArrayResponse<String> uploadImages(HttpServletResponse res, @RequestParam("files") List<MultipartFile> files) {
         if (files.size()>5){

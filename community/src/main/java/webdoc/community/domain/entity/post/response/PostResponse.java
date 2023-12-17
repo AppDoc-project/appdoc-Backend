@@ -24,6 +24,8 @@ public class PostResponse {
     private final LocalDateTime createdAt;
     private final Boolean isTutor;
     private final Long view;
+    private final String communityName;
+    private final Long communityId;
 
     // 닉네임, 제목, 작성자 프로필, 사진 포함 여부 및 개수, 댓글 수, 좋아요 수, 튜터 여부
 

@@ -10,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
+import webdoc.community.domain.entity.like.Bookmark;
+import webdoc.community.domain.entity.like.Like;
 import webdoc.community.domain.entity.post.Picture;
 import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.post.Thread;
+import webdoc.community.domain.entity.post.enums.PostSearchType;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
@@ -20,7 +23,12 @@ import webdoc.community.domain.entity.post.response.ChildThreadResponse;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
+import webdoc.community.domain.entity.report.PostReport;
+import webdoc.community.domain.entity.report.Report;
+import webdoc.community.domain.entity.report.ThreadReport;
+import webdoc.community.domain.entity.report.request.ReportCreateRequest;
 import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
 import webdoc.community.repository.*;
 
 import java.util.*;
@@ -38,6 +46,7 @@ public class CommunityService {
     private  final ThreadRepository threadRepository;
     private final LikeRepository likeRepository;
 
+    private final ReportRepository reportRepository;
     private final UserService userService;
     private final PictureRepository pictureRepository;
 
@@ -59,9 +68,9 @@ public class CommunityService {
         Post post = postRepository.findById(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시글이 없습니다"));
 
         Thread thread = Thread.createThread(request.getText(),post,userId);
-
         threadRepository.save(thread);
         return thread;
+
     }
 
     // 댓글의 댓글 작성
@@ -79,14 +88,14 @@ public class CommunityService {
 
         Thread childThread = Thread.createThread(request.getText(),post,userId);
         parentThread.setThisAsParent(childThread);
-
+        threadRepository.save(childThread);
         return childThread;
 
     }
 
 
     // 게시판의 게시글 불러오기 처음 fetch할 때 사용 : 최신순
-    public List<PostResponse> getPostsWithLimit(Long communityId, Integer limit,String jwt){
+    public List<PostResponse> getPostsWithLimit(Long communityId, Integer limit, String jwt){
         communityRepository.findById(communityId)
                 .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
 
@@ -121,7 +130,7 @@ public class CommunityService {
                 authServer+"/server/user/id/"+userId,jwt,10_000,10_1000
         ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
 
-        boolean bookmarkYN = bookmarkRepository.findBookmarkByPostIdAndUserId(postId, userId).size() > 0;
+        boolean bookmarkYN = bookmarkRepository.findBookmarkByPostIdAndUserId(postId, userId).orElse(null) != null;
         return mapToPostDetail(post,bookmarkYN,user);
     }
 
@@ -153,11 +162,12 @@ public class CommunityService {
 
     }
 
+
+
     // 특정 게시글 댓글 불러오기
 
     public List<ThreadResponse> getThreadByPostId(long postId,String jwt){
         List<Thread> threads = threadRepository.getThreadByPostId(postId);
-
 
         return threads.stream()
                 .map(e->{
@@ -175,6 +185,170 @@ public class CommunityService {
                             user.getProfile()
                     );
                 }).collect(Collectors.toList());
+    }
+
+    // 게시글 전체 검색 & 처음 검색에서 사용
+    public List<PostResponse> entireSearchPost(Integer limit, String keyword, PostSearchType searchType , String jwt){
+        PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
+                "id"));
+
+
+        Slice<Post> page;
+        if (searchType == PostSearchType.TITLE){
+           page = postRepository.getPostByTitleAndLimit(keyword,pageRequest);
+        }else if(searchType == PostSearchType.CONTENT){
+            page = postRepository.getPostByContentAndLimit(keyword,pageRequest);
+        }else{
+            page = postRepository.getPostByContentAndTitleAndLimit(keyword,pageRequest);
+        }
+
+        return mapToPostResponse(page.getContent(),jwt);
+    }
+
+    // 게시글 전체 검색 & 이후 검색에서 사용
+    public List<PostResponse> entireSearchPostAfter(Integer limit, String keyword,Long postId, PostSearchType searchType , String jwt){
+        PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
+                "id"));
+        Slice<Post> page;
+        if (searchType == PostSearchType.TITLE){
+            page = postRepository.getPostByTitleAndLimitAndId(keyword,postId,pageRequest);
+        }else if(searchType == PostSearchType.CONTENT){
+            page = postRepository.getPostByContentAndLimitAndId(keyword,postId,pageRequest);
+        }else{
+            page = postRepository.getPostByContentAndTitleAndLimitAndId(keyword,postId,pageRequest);
+        }
+
+        return mapToPostResponse(page.getContent(),jwt);
+    }
+
+    // 게시판 별 검색 & 처음 검색에서 사용
+    public List<PostResponse> communitySearchPost(Integer limit, String keyword,Long communityId, PostSearchType searchType , String jwt){
+        PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
+                "id"));
+        communityRepository.findById(communityId)
+                .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
+
+        Slice<Post> page;
+        if (searchType == PostSearchType.TITLE){
+            page = postRepository.getPostByCommunityAndTitleAndLimit(keyword,communityId,pageRequest);
+        }else if(searchType == PostSearchType.CONTENT){
+            page = postRepository.getPostByCommunityAndContentAndLimit(keyword,communityId,pageRequest);
+        }else{
+            page = postRepository.getPostByCommunityAndContentAndTitleAndLimit(keyword,communityId,pageRequest);
+        }
+
+        return mapToPostResponse(page.getContent(),jwt);
+    }
+
+    // 게시판 별 검색 & 처음 검색에서 사용
+    public List<PostResponse> communitySearchPostAfter(Integer limit, Long postId ,String keyword,Long communityId, PostSearchType searchType , String jwt){
+        PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
+                "id"));
+        communityRepository.findById(communityId)
+                .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
+
+        Slice<Post> page;
+        if (searchType == PostSearchType.TITLE){
+            page = postRepository.getPostByCommunityAndTitleAndLimitAndId(keyword,communityId,postId,pageRequest);
+        }else if(searchType == PostSearchType.CONTENT){
+            page = postRepository.getPostByCommunityAndContentAndLimitAndId(keyword,communityId,postId,pageRequest);
+        }else{
+            page = postRepository.getPostByCommunityAndContentAndTitleAndLimitAndId(keyword,communityId,postId,pageRequest);
+        }
+
+        return mapToPostResponse(page.getContent(),jwt);
+    }
+
+    // 게시글 좋아요
+    public boolean enrollLike(Long userId,Long postId){
+        Like like = likeRepository.findLikeByUserIdAndPostId(userId,postId).orElse(null);
+        Post post = postRepository.getCertainPost(postId)
+                .orElseThrow(()-> new NoSuchElementException("해당하는 게시글이 존재하지 않습니다"));
+        if (like != null) return false;
+
+        Like.createLike(userId,post);
+        return true;
+    }
+
+    // 게시글 북마크
+    public void toggleBookmark(Long userId, Long postId){
+        Post post = postRepository.getCertainPost(postId)
+                .orElseThrow(()-> new NoSuchElementException("해당하는 게시글이 존재하지 않습니다"));
+
+        Bookmark bookmark = bookmarkRepository.findBookmarkByPostIdAndUserId(postId,userId)
+                .orElse(null);
+
+        if (bookmark != null){
+            post.getBookmarks().remove(bookmark);
+        }else{
+            Bookmark.createBookmark(userId,post);
+        }
+    }
+
+    // 게시글 삭제
+    public void deletePost(Long userId, Long postId){
+        // 게시글 존재 여부 확인
+        Post post = postRepository.getCertainPost(postId)
+                .orElseThrow(()-> new NoSuchElementException("해당하는 게시글이 존재하지 않습니다"));
+
+        // 게시글이 userId에 해당하는 user의 것이면 삭제
+        if (post.getUserId() != userId){
+            throw new IllegalStateException("삭제하려는 글의 작성자가 아닙니다");
+        }
+        postRepository.delete(post);
+
+
+    }
+
+    // 댓글 삭제
+
+    public void deleteThread(Long userId, Long threadId){
+        // 댓글 존재여부 확인
+        Thread thread = threadRepository.getThreadById(threadId)
+                .orElseThrow(()-> new NoSuchElementException("해당하는 댓글이 존재하지 않습니다"));
+
+        if (thread.getUserId() != userId){
+            throw new IllegalStateException("삭제하려는 댓글의 작성자가 아닙니다");
+        }
+        thread.getPost().getThreads().remove(thread);
+        threadRepository.delete(thread);
+
+    }
+
+    // 댓글 신고
+    public ThreadReport reportThread(Long userId, ReportCreateRequest request){
+        Thread thread = threadRepository.findById(request.getId())
+                .orElseThrow(()->new NoSuchElementException("해당하는 댓글이 없습니다"));
+
+        ThreadReport threadReport =
+                reportRepository.findThreadReportByUserIdAndThreadId(userId,request.getId())
+                        .orElse(null);
+        if(threadReport!=null){
+            throw new ReportAlreadyExistsException("이미 신고한 댓글입니다");
+        }
+
+        threadReport = ThreadReport.createThreadReport(request.getReason(),userId,thread);
+        reportRepository.save(threadReport);
+
+        return threadReport;
+    }
+
+    // 게시글 신고
+    public PostReport reportPost(Long userId, ReportCreateRequest request){
+        Post post = postRepository.findById(request.getId())
+                .orElseThrow(()->new NoSuchElementException("해당하는 글이이 없습니다"));
+
+        PostReport postReport =
+                reportRepository.findPostReportByUserIdAndPostId(userId,request.getId())
+                        .orElse(null);
+        if(postReport!=null){
+            throw new ReportAlreadyExistsException("이미 신고한 글입니다");
+        }
+
+        postReport = PostReport.createPostReport(request.getReason(),userId,post);
+        reportRepository.save(postReport);
+
+        return postReport;
     }
 
     // 불러온 자식 댓글 리스트를 응답객체로 반환하기
@@ -208,7 +382,7 @@ public class CommunityService {
                             return new PostResponse(
                                     s.getId(),s.getUserId(),s.getTitle(),
                                     user.getNickName(),user.getProfile(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                                    s.getCreatedAt(),user.getIsTutor(),s.getView()
+                                    s.getCreatedAt(),user.getIsTutor(),s.getView(),s.getCommunity().getName(),s.getCommunity().getId()
                             );
                         }).collect(Collectors.toList());
     }
@@ -231,6 +405,7 @@ public class CommunityService {
 
         );
     }
+
 
     // 게시글의 북마크, 좋아요, 댓글, 사진 수를 가져오기
     private List<Integer> getBLTP(Long postId){

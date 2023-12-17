@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.exceptions.TimeOutException;
-import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
 import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;

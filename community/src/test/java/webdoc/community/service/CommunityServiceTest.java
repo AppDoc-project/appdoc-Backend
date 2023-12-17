@@ -5,25 +5,29 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
+import webdoc.community.domain.entity.like.Bookmark;
+import webdoc.community.domain.entity.like.Like;
 import webdoc.community.domain.entity.post.Picture;
 import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.post.Thread;
+import webdoc.community.domain.entity.post.enums.PostSearchType;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
+import webdoc.community.domain.entity.report.PostReport;
+import webdoc.community.domain.entity.report.ThreadReport;
+import webdoc.community.domain.entity.report.request.ReportCreateRequest;
+import webdoc.community.domain.entity.user.Specialities;
 import webdoc.community.domain.entity.user.UserResponse;
-import webdoc.community.domain.entity.user.tutor.enums.Specialities;
-import webdoc.community.repository.CommunityRepository;
-import webdoc.community.repository.PostRepository;
-import webdoc.community.repository.ThreadRepository;
+import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
+import webdoc.community.repository.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +55,17 @@ class CommunityServiceTest {
     @Autowired
     ThreadRepository threadRepository;
 
+    @Autowired
+    BookmarkRepository bookmarkRepository;
+
+    @Autowired
+    LikeRepository likeRepository;
 
     @Autowired
     PostRepository postRepository;
+
+    @Autowired
+    ReportRepository reportRepository;
 
     @DisplayName("모든 게시판 리스트를 가져온다")
     @Test
@@ -309,7 +321,9 @@ class CommunityServiceTest {
              assertThat(thread).extracting("text","parent","userId","post")
                      .containsExactly(threadCreateRequest.getText(),null,
                      user.getId(),post);
-             assertThat(thread.getId()).isNotNull();
+             assertThat(thread).isNotNull();
+
+
           }
 
           @DisplayName("유효하지 않은 게시글 아이디로 댓글을 등록할 수 없다")
@@ -434,6 +448,502 @@ class CommunityServiceTest {
                  //then
                  assertThat(threadResponses).hasSize(3);
               }
+
+    @DisplayName("전체 게시판 검색을 사용해서 특정 개수만큼 게시물을 가져온다")
+    @Test
+    void searchPostsWithLimit(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        Community com2 = Community
+                .builder()
+                .name("관악기")
+                .build();
+
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        communityRepository.save(com2);
+
+        List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
+        pictures.add(new PostCreateRequest.AddressAndPriority("Wwww",1));
+        pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
+
+
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        PostCreateRequest request1 = postCreateRequest(com1.getId(),null,"안녕","ㅋㅋㅋㅋ");
+        PostCreateRequest request2 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕ㅋㅋ","모지");
+        PostCreateRequest request3 = postCreateRequest(com1.getId(),null,"네번째","잉?");
+        PostCreateRequest request4 = postCreateRequest(com2.getId(),null,"다섯번째","ㅋㅋㅋㅋ");
+        PostCreateRequest request5 = postCreateRequest(com2.getId(),null,"여섯번째","ㅋㅋㅋㅋ");
+        PostCreateRequest request6 = postCreateRequest(com2.getId(),pictures,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+
+
+        //when
+        Post post = communityService.createPost(request,user.getId(),"");
+        Post post2 = communityService.createPost(request1,user.getId(),"");
+        Post post3 = communityService.createPost(request2,user.getId(),"");
+        Post post4 = communityService.createPost(request3,user.getId(),"");
+        Post post5 = communityService.createPost(request4,user.getId(),"");
+        Post post6 = communityService.createPost(request5,user.getId(),"");
+        Post post7 = communityService.createPost(request6,user.getId(),"");
+
+        //then
+        List<PostResponse> list1 = communityService.entireSearchPost(5,"안녕", PostSearchType.CONTENT,"");
+        List<PostResponse> list2 = communityService.entireSearchPostAfter(5,"ㅋ",post7.getId(),PostSearchType.TITLEANDCONTENT,"");
+        assertThat(list1).hasSize(4);
+        assertThat(list2).hasSize(5);
+        list1.forEach(System.out::println);
+    }
+
+    @DisplayName("특정 게시판 검색을 사용해서 특정 개수만큼 게시물을 가져온다")
+    @Test
+    void searchCommunityPostsWithLimit(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        Community com2 = Community
+                .builder()
+                .name("관악기")
+                .build();
+
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        communityRepository.save(com2);
+
+        List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
+        pictures.add(new PostCreateRequest.AddressAndPriority("Wwww",1));
+        pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
+
+
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        PostCreateRequest request1 = postCreateRequest(com1.getId(),null,"안녕","ㅋㅋㅋㅋ");
+        PostCreateRequest request2 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕ㅋㅋ","모지");
+        PostCreateRequest request3 = postCreateRequest(com1.getId(),null,"네번째","잉?");
+        PostCreateRequest request4 = postCreateRequest(com2.getId(),null,"다섯번째","ㅋㅋㅋㅋ");
+        PostCreateRequest request5 = postCreateRequest(com2.getId(),null,"여섯번째","ㅋㅋㅋㅋ");
+        PostCreateRequest request6 = postCreateRequest(com2.getId(),pictures,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+
+
+        //when
+        Post post = communityService.createPost(request,user.getId(),"");
+        Post post2 = communityService.createPost(request1,user.getId(),"");
+        Post post3 = communityService.createPost(request2,user.getId(),"");
+        Post post4 = communityService.createPost(request3,user.getId(),"");
+        Post post5 = communityService.createPost(request4,user.getId(),"");
+        Post post6 = communityService.createPost(request5,user.getId(),"");
+        Post post7 = communityService.createPost(request6,user.getId(),"");
+
+        //then
+        List<PostResponse> list1 = communityService.communitySearchPost(5,"안녕", com1.getId(), PostSearchType.CONTENT,"");
+        List<PostResponse> list2 = communityService.communitySearchPostAfter(5,post7.getId(),"ㅋ",com2.getId(),PostSearchType.TITLE,"");
+        assertThat(list1).hasSize(3);
+        assertThat(list2).hasSize(2);
+        list1.forEach(System.out::println);
+    }
+
+    @DisplayName("좋아요를 등록한다")
+    @Test
+    void enrollLike(){
+        //given
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+
+        //when
+        boolean success = communityService.enrollLike(user.getId(),post1.getId());
+
+
+        //then
+        assertThat(success).isTrue();
+        Like like = likeRepository.findLikeByUserIdAndPostId(user.getId(), post1.getId()).orElse(null);
+        assertThat(like).isNotNull();
+     }
+
+    @DisplayName("좋아요를 중복 등록하면 실패한다")
+    @Test
+    void enrollLikeDuplicate(){
+        //given
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+        //when
+        communityService.enrollLike(user.getId(),post1.getId());
+        boolean success = communityService.enrollLike(user.getId(),post1.getId());
+
+
+        //then
+        assertThat(success).isFalse();
+        Like like = likeRepository.findLikeByUserIdAndPostId(user.getId(), post1.getId()).orElse(null);
+        assertThat(like).isNotNull();
+    }
+
+    @DisplayName("존재하지 않는 게시글을 좋아요 할 수 없다")
+    @Test
+    void failWhenEnrollLikeWithInvalidPost(){
+        //given
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        //when + then
+        assertThatThrownBy(()->communityService.enrollLike(user.getId(),5L))
+                .isInstanceOf(NoSuchElementException.class);
+
+    }
+
+    @DisplayName("북마크를 등록한다")
+    @Test
+    void toggleBookmark(){
+        //given
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+
+        //when
+        communityService.toggleBookmark(user.getId(),post1.getId());
+
+
+        //then
+        Bookmark bookmark = bookmarkRepository.findBookmarkByPostIdAndUserId(post1.getId(), user.getId()).orElse(null);
+        assertThat(bookmark).isNotNull();
+    }
+
+    @DisplayName("북마크를 토클해서 해제한다")
+    @Test
+    void toggleBookmarkTwice(){
+        //given
+
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+
+        //when
+        communityService.toggleBookmark(user.getId(),post1.getId());
+        communityService.toggleBookmark(user.getId(),post1.getId());
+
+
+        //then
+        Bookmark bookmark = bookmarkRepository.findBookmarkByPostIdAndUserId(post1.getId(), user.getId()).orElse(null);
+        assertThat(bookmark).isNull();
+    }
+
+    @DisplayName("게시글을 삭제한다")
+    @Test
+    void deletePost(){
+        //given
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+        //when
+        communityService.deletePost(user.getId(), post1.getId());
+
+
+        //then
+        Post post = postRepository.findById(post1.getId()).orElse(null);
+        assertThat(post).isNull();
+     }
+
+    @DisplayName("본인의 게시글이 아닌 글은 삭제할 수 없다")
+    @Test
+    void cannotDeleteIfNotMyPost(){
+        //given
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+        //when + then
+
+        assertThatThrownBy(()->communityService.deletePost(100L, post1.getId()))
+                .isInstanceOf(IllegalStateException.class);
+        Post post = postRepository.findById(post1.getId()).orElse(null);
+        assertThat(post).isNotNull();
+
+    }
+
+    @DisplayName("댓글을 삭제한다")
+    @Test
+    void deleteThread(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("외과")
+                .build();
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        Post post = communityService.createPost(request,user.getId(),"");
+        ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+
+        Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+
+        // when
+        communityService.deleteThread(user.getId(),thread.getId());
+
+        // then
+        Thread thread1 = threadRepository.findById(thread.getId()).orElse(null);
+        assertThat(thread1).isNull();
+    }
+
+    @DisplayName("댓글을 신고한다")
+    @Test
+    void reportThread(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("외과")
+                .build();
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        Post post = communityService.createPost(request,user.getId(),"");
+        ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+        Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+
+
+        //when
+        ReportCreateRequest reportCreateRequest = new ReportCreateRequest();
+        reportCreateRequest.setId(thread.getId());
+        reportCreateRequest.setReason("부적절한 글");
+        communityService.reportThread(user.getId(),reportCreateRequest);
+
+
+        //then
+        ThreadReport foundThreadReport = reportRepository.findThreadReportByUserIdAndThreadId(user.getId(), thread.getId())
+                .orElse(null);
+        assertThat(foundThreadReport).isNotNull();
+        assertThat(foundThreadReport).extracting("reason","userId")
+                .containsExactly("부적절한 글",user.getId());
+     }
+
+    @DisplayName("댓글을 중복해서 신고할 수 없다")
+    @Test
+    void reportDuplicatedThread(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("외과")
+                .build();
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        Post post = communityService.createPost(request,user.getId(),"");
+        ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+        Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+
+
+
+
+        //when + then
+        ReportCreateRequest reportCreateRequest = new ReportCreateRequest();
+        reportCreateRequest.setId(thread.getId());
+        reportCreateRequest.setReason("부적절한 글");
+        communityService.reportThread(user.getId(),reportCreateRequest);
+
+        assertThatThrownBy(()->communityService.reportThread(user.getId(),reportCreateRequest))
+                .isInstanceOf(ReportAlreadyExistsException.class);
+
+
+
+    }
+
+    @DisplayName("게시글을 신고한다")
+    @Test
+    void reportPost(){
+        //given
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+        //when
+        ReportCreateRequest reportCreateRequest = new ReportCreateRequest();
+        reportCreateRequest.setId(post1.getId());
+        reportCreateRequest.setReason("매우 부적절");
+        communityService.reportPost(user.getId(),reportCreateRequest);
+
+
+
+        //then
+        PostReport postReport = reportRepository.findPostReportByUserIdAndPostId(user.getId(), post1.getId())
+                .orElse(null);
+        assertThat(postReport).isNotNull();
+        assertThat(postReport).extracting("userId","reason")
+                .containsExactly(user.getId(),"매우 부적절");
+
+     }
+
+    @DisplayName("게시글을 중복 신고할 수 없다")
+    @Test
+    void reportDuplicatedPost(){
+        //given
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId(),"");
+
+
+        //when + then
+        ReportCreateRequest reportCreateRequest = new ReportCreateRequest();
+        reportCreateRequest.setId(post1.getId());
+        reportCreateRequest.setReason("매우 부적절");
+        communityService.reportPost(user.getId(),reportCreateRequest);
+        assertThatThrownBy(()->communityService.reportPost(user.getId(),reportCreateRequest))
+                .isInstanceOf(ReportAlreadyExistsException.class);
+
+
+    }
+
 
 
 
