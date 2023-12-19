@@ -6,6 +6,7 @@ import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.like.Bookmark;
 import webdoc.community.domain.entity.like.Like;
+import webdoc.community.domain.entity.post.request.PostModifyRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,11 @@ public class Post extends BaseEntity {
                         .title(title)
                         .community(community)
                         .build();
+    }
+
+    public void modifyPost(PostModifyRequest request){
+        title = request.getTitle();
+        text = request.getText();
     }
     @Id
     @GeneratedValue

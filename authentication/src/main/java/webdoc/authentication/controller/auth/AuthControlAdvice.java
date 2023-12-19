@@ -1,5 +1,6 @@
 package webdoc.authentication.controller.auth;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -14,14 +15,14 @@ import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import java.util.NoSuchElementException;
-
+@Slf4j
 @RestControllerAdvice(assignableTypes = {AuthController.class, AuthServerController.class})
 public class AuthControlAdvice {
     // 이메일이 중복되는 경우
     @ExceptionHandler(EmailDuplicationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse emailExists(EmailDuplicationException e){
-        e.printStackTrace();
+        log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.EMAIL_EXISTS,400, ResponseCodeProvider.EMAIL_EXISTS);
     }
 
@@ -29,7 +30,7 @@ public class AuthControlAdvice {
     @ExceptionHandler({HttpMessageNotReadableException.class,IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse typeMismatch(Exception e){
-        e.printStackTrace();
+        log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.BINDING_FAILURE,400,ResponseCodeProvider.BINDING_FAILURE);
     }
 
@@ -37,7 +38,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CodeMessageResponse serverError(Exception e){
-        e.printStackTrace();
+        log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.INTERNAL_SERVER_ERROR,500,ResponseCodeProvider.INTERNAL_SERVER_ERROR);
     }
 
@@ -45,7 +46,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse invalidAccess(NoSuchElementException e){
-        e.printStackTrace();
+        log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.INVALID_ACCESS,400,ResponseCodeProvider.INVALID_ACCESS);
     }
 
@@ -53,7 +54,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(TimeOutException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse timeOut(TimeOutException e){
-        e.printStackTrace();
+        log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.VALIDATION_EXPIRED,400,ResponseCodeProvider.VALIDATION_EXPIRED);
     }
 
@@ -61,7 +62,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(AuthenticationServiceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse wrongCode(AuthenticationServiceException e){
-        e.printStackTrace();
+        log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.WRONG_CODE,400,ResponseCodeProvider.WRONG_CODE);
     }
 

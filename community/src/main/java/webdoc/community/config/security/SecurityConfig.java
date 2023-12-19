@@ -62,6 +62,8 @@ public class SecurityConfig {
                             .permitAll()
                             .requestMatchers("/community/images")
                             .permitAll()
+                            .requestMatchers("/error/**")
+                            .permitAll()
                             .anyRequest().authenticated();
                 })
                 .csrf(csrf->{
@@ -79,6 +81,7 @@ public class SecurityConfig {
                    ex.authenticationEntryPoint(new AuthenticationEntryPoint() {
                        @Override
                        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+                           authException.printStackTrace();
                            response.setCharacterEncoding("UTF-8");
                            response.setStatus(401);
                            response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("로그인이 필요 합니다",401,408)));

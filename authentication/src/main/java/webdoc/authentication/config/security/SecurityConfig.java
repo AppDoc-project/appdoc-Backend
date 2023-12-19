@@ -66,8 +66,11 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers("/auth/server/**")
                             .authenticated()
+                            .requestMatchers("/error/**")
+                            .permitAll()
                             .anyRequest()
                             .permitAll();
+
                 })
                 .csrf(csrf->{
                     csrf.disable();

@@ -1,5 +1,6 @@
 package webdoc.community.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,7 @@ import webdoc.community.domain.entity.user.UserResponse;
 import java.util.Optional;
 
 @Component
+@Slf4j
 public class UserService {
 
     public Optional<UserResponse> fetchUserResponseFromAuthServer(String url, String jwt, Integer connectTimeOut, Integer readTimeOut) {
@@ -31,6 +33,8 @@ public class UserService {
                 httpEntity,
                 UserResponse.class
         );
+
+        log.info("통신 결과 상태 코드 :{}",responseEntity.getStatusCode());
 
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             return Optional.of(responseEntity.getBody());

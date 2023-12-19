@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -74,6 +75,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try{
             user = userService.fetchUserResponseFromAuthServer(authServer+"/server/user/email/"+email,jwt,10_000,10_000).get();
         }catch(Exception e){
+
             e.printStackTrace();
             response.setStatus(500);
             response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse(CommonMessageProvider.INTERNAL_SERVER_ERROR,500,ResponseCodeProvider.INTERNAL_SERVER_ERROR)));
@@ -90,9 +92,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         context.setAuthentication(authentication);
 
         filterChain.doFilter(request,response);
-
-
-
 
 
     }

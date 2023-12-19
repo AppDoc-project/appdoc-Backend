@@ -58,13 +58,15 @@ file:
 ---
 
 # application-dev.yml
+
+
 spring:
   config:
     activate:
       on-profile: dev
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
   datasource:
     url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
@@ -73,18 +75,23 @@ server:
   add: http://127.0.0.1/auth/image
 file:
   dir: /usr/src/app/authentication/upload/image
-
+logging:
+  level: # 적용할 곳과 레벨을 지정합니다.
+    root: warn
+  file:
+    path: /usr/src/app/authentication
 
 ---
 
 # application-local.dev.yml
+
 spring:
   config:
     activate:
       on-profile: local-dev
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
   datasource:
     url: jdbc:mysql://localhost:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
@@ -94,6 +101,8 @@ file:
 
 server:
   add: http://127.0.0.1:8080/auth/image
+
+
 
 ---
 

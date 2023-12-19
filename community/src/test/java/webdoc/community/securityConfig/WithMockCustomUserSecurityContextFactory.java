@@ -15,7 +15,7 @@ public class WithMockCustomUserSecurityContextFactory
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         Authentication auth = new JwtAuthenticationToken(
                 UserResponse.builder()
-                        .id(null)
+                        .id(5L)
                         .build()
         );
         context.setAuthentication(auth);

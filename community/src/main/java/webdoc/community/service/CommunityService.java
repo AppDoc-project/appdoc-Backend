@@ -17,6 +17,7 @@ import webdoc.community.domain.entity.post.Post;
 import webdoc.community.domain.entity.post.Thread;
 import webdoc.community.domain.entity.post.enums.PostSearchType;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
+import webdoc.community.domain.entity.post.request.PostModifyRequest;
 import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.ChildThreadResponse;
@@ -45,7 +46,6 @@ public class CommunityService {
     private final PostRepository postRepository;
     private  final ThreadRepository threadRepository;
     private final LikeRepository likeRepository;
-
     private final ReportRepository reportRepository;
     private final UserService userService;
     private final PictureRepository pictureRepository;
@@ -66,7 +66,6 @@ public class CommunityService {
         Long postId = request.getPostId();
 
         Post post = postRepository.findById(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시글이 없습니다"));
-
         Thread thread = Thread.createThread(request.getText(),post,userId);
         threadRepository.save(thread);
         return thread;
@@ -126,28 +125,21 @@ public class CommunityService {
     public PostDetailResponse getCertainPost(Long postId,Long userId,String jwt){
         Post post = postRepository.getCertainPost(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시물이 없습니다"));
         post.viewPlus();
-        UserResponse user = userService.fetchUserResponseFromAuthServer(
-                authServer+"/server/user/id/"+userId,jwt,10_000,10_1000
-        ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
 
         boolean bookmarkYN = bookmarkRepository.findBookmarkByPostIdAndUserId(postId, userId).orElse(null) != null;
-        return mapToPostDetail(post,bookmarkYN,user);
+        return mapToPostDetail(post,bookmarkYN,jwt);
     }
 
 
     // 게시글 만들기
     @Transactional
-    public Post createPost(PostCreateRequest request, Long userId,String jwt){
-        UserResponse user = userService.fetchUserResponseFromAuthServer(
-                authServer+"/server/user/id/"+userId,jwt,10_000,10_1000
-        ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
-
+    public Post createPost(PostCreateRequest request, Long userId){
         Community community = communityRepository.findById(request.getCommunityId())
                 .orElseThrow(()-> new NoSuchElementException("비정상적인 접근입니다"));
 
         Post post = Post.CreatePost(userId,request.getTitle(),request.getText(),community);
         if(request.getAddresses() != null){
-            request.getAddresses().stream()
+            request.getAddresses()
                     .forEach(e->{
                         if(!StringUtils.hasText(e.getAddress()) || e.getPriority() == null){
                             throw new IllegalArgumentException("바인딩에 실패하였습니다");
@@ -157,11 +149,37 @@ public class CommunityService {
                     });
         }
 
-
         return postRepository.save(post);
 
     }
 
+    // 게시글 수정하기
+    @Transactional
+    public Post modifyPost(PostModifyRequest request, long userId){
+        Post post = postRepository.findById(request.getPostId())
+                .orElseThrow(()->new NoSuchElementException("해당하는 게시글이 없습니다"));
+        if (userId != post.getUserId()){
+            throw new IllegalStateException("비정상적인 접근입니다");
+        }
+
+        post.modifyPost(request);
+        if(request.getAddresses() != null){
+            List<Picture> pictures = post.getPictures();
+            pictures.clear();
+            request.getAddresses()
+                    .forEach(e->{
+                        if(!StringUtils.hasText(e.getAddress()) || e.getPriority() == null){
+                            throw new IllegalArgumentException("바인딩에 실패하였습니다");
+                        }
+                        Picture picture = Picture.createPicture(e.getAddress(),e.getPriority());
+                        post.addPictures(picture);
+                    });
+        }
+
+        return post;
+
+
+    }
 
 
     // 특정 게시글 댓글 불러오기
@@ -286,7 +304,7 @@ public class CommunityService {
     }
 
     // 게시글 삭제
-    public void deletePost(Long userId, Long postId){
+    public void deletePost(long userId, Long postId){
         // 게시글 존재 여부 확인
         Post post = postRepository.getCertainPost(postId)
                 .orElseThrow(()-> new NoSuchElementException("해당하는 게시글이 존재하지 않습니다"));
@@ -366,6 +384,8 @@ public class CommunityService {
                 }).collect(Collectors.toList());
     }
 
+    // 게시글 수정하기
+
 
 
     // 불러온 게시물 리스트를 응답객체로 변환하기
@@ -389,11 +409,14 @@ public class CommunityService {
 
     // 불러온 게시물을 응답객체로 반환하기
 
-    private PostDetailResponse mapToPostDetail(Post post,boolean myBookmark,UserResponse user){
+    private PostDetailResponse mapToPostDetail(Post post,boolean myBookmark,String jwt){
         List<Integer> bltp = getBLTP(post.getId());
         List<String> pictures = post.getPictures()
                 .stream().sorted(Comparator.comparingInt(Picture::getPriority)
                 ).map(Picture::getAddress).toList();
+        UserResponse user = userService.fetchUserResponseFromAuthServer(
+                authServer+"/server/user/id/"+post.getUserId(),jwt,10_000,10_1000
+        ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
 
 
         return new PostDetailResponse(

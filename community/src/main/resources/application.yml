@@ -72,7 +72,13 @@ server:
   add: http://localhost/community/image
 
 authentication:
-  server: http://auth/auth
+  server: http://authentication:8080/auth
+
+logging:
+  level: # 적용할 곳과 레벨을 지정합니다.
+    root: warn
+  file:
+    path: /usr/src/app/community
 ---
 
 # application-local.dev.yml

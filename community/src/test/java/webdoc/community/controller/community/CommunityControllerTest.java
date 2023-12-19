@@ -13,6 +13,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import webdoc.community.domain.entity.like.request.CreateRequestWithPostId;
+import webdoc.community.domain.entity.post.request.PostModifyRequest;
 import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.report.request.ReportCreateRequest;
@@ -487,6 +488,64 @@ public class CommunityControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
     }
+
+    @DisplayName("게시글 수정하기를 수행한다")
+    @WithMockCustomUser
+    @Test
+    void modifyPost() throws Exception {
+        PostModifyRequest postCreateRequest =
+                postModifyRequest();
+
+
+        mockMvc.perform(patch("/community/post")
+                        .content(objectMapper.writeValueAsString(postCreateRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @DisplayName("게시글에 5개 이상의 사진을 넣을 수 없다")
+    @WithMockCustomUser
+    @Test
+    void modifyPostWithMoreThan5pictures() throws Exception {
+        PostModifyRequest postModifyRequest =
+                postModifyRequest();
+
+        postModifyRequest.setAddresses(
+                List.of(
+                        new PostModifyRequest.AddressAndPriority("sadsd",1),
+                        new PostModifyRequest.AddressAndPriority("sadsd",1),
+                        new PostModifyRequest.AddressAndPriority("sadsd",1),
+                        new PostModifyRequest.AddressAndPriority("sadsd",1),
+                        new PostModifyRequest.AddressAndPriority("sadsd",1),
+                        new PostModifyRequest.AddressAndPriority("sadsd",1)
+                )
+        );
+
+        mockMvc.perform(post("/community/post")
+                        .content(objectMapper.writeValueAsString(postModifyRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @DisplayName("게시글 수정은 값 검증을 수행한다")
+    @WithMockCustomUser
+    @Test
+    void validateWhenModifyPost() throws Exception {
+        PostModifyRequest postModifyRequest =
+                postModifyRequest();
+        postModifyRequest.setTitle(null);
+
+        mockMvc.perform(post("/community/post")
+                        .content(objectMapper.writeValueAsString(postModifyRequest))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
     private ThreadOfThreadCreateRequest threadOfThreadCreateRequest(String text, Long postId, Long parentId){
         return ThreadOfThreadCreateRequest.builder()
                 .parentThreadId(parentId)
@@ -513,6 +572,18 @@ public class CommunityControllerTest {
                 .postId(postId)
                 .build();
 
+    }
+
+    private PostModifyRequest postModifyRequest(){
+        PostModifyRequest request =
+                PostModifyRequest.builder()
+                        .text("안녕")
+                        .title("하세요")
+                        .postId(5L)
+                        .addressAndPriorities(null)
+                        .build();
+
+        return  request;
     }
 
 

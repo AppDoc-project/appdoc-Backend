@@ -14,6 +14,7 @@ import webdoc.community.domain.entity.community.CommunityResponse;
 import webdoc.community.domain.entity.like.request.CreateRequestWithPostId;
 import webdoc.community.domain.entity.post.enums.PostSearchType;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
+import webdoc.community.domain.entity.post.request.PostModifyRequest;
 import webdoc.community.domain.entity.post.request.ThreadCreateRequest;
 import webdoc.community.domain.entity.post.request.ThreadOfThreadCreateRequest;
 import webdoc.community.domain.entity.post.response.PostDetailResponse;
@@ -59,17 +60,15 @@ public class CommunityController {
 
     // 게시판에 글 작성
     @PostMapping("/post")
-    public CodeMessageResponse createPost(HttpServletRequest req,HttpServletResponse res, @RequestBody @Validated PostCreateRequest request,
+    public CodeMessageResponse createPost(HttpServletRequest req, @RequestBody @Validated PostCreateRequest request,
                                           BindingResult result){
         if(result.hasErrors()){
             throw new IllegalArgumentException("바인딩 실패");
         }
 
-        String jwt = req.getHeader("Authorization");
-
         try{
             UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            communityService.createPost(request,user.getId(),jwt);
+            communityService.createPost(request,user.getId());
 
         }catch(IllegalArgumentException e){
             throw e;
@@ -78,8 +77,28 @@ public class CommunityController {
         }
 
         return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
+    }
+
+    // 게시판에 글 수정
+    @PatchMapping("/post")
+    public CodeMessageResponse modifyPost(HttpServletRequest req, @RequestBody @Validated PostModifyRequest request,
+                                          BindingResult result){
+        if(result.hasErrors()){
+            throw new IllegalArgumentException("바인딩 실패");
+        }
 
 
+        try{
+            UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            communityService.modifyPost(request,user.getId());
+
+        }catch(IllegalArgumentException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+
+        return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
     }
 
     // 게시판에 글 불러오기
