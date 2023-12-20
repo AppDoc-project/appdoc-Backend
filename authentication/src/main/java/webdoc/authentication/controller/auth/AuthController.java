@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.config.security.token.JwtAuthenticationToken;
 import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
+import webdoc.authentication.domain.response.ArrayResponse;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.entity.user.request.EmailRequest;
 import webdoc.authentication.domain.entity.user.request.CodeRequest;
@@ -28,6 +29,8 @@ import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -169,23 +172,50 @@ public class AuthController {
 
     // 인증용 이미지 업로드
 
-    @PostMapping("/image")
-    public CodeMessageResponse authenticationImage(HttpServletResponse res,@RequestParam MultipartFile file) throws IOException {
-        if(file.isEmpty()){
-            throw new IllegalArgumentException("바인딩 실패");
+    // 이미지 등록하기
+    @PostMapping("/images")
+    public ArrayResponse<String> uploadImages(HttpServletResponse res, @RequestParam("files") List<MultipartFile> files) {
+        if (files.size()>5){
+            throw new IllegalArgumentException("사진은 5개 까지만 전송할 수 있습니다");
         }
-        String uuid = UUID.randomUUID().toString();
-        String fileName = file.getOriginalFilename();
-        String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-        if ( !extension.equals("pdf")) {
-            throw new IllegalArgumentException("바인딩 실패");
+        List<String> addresses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                throw new IllegalArgumentException("바인딩 실패");
+            }
+
+            String uuid = UUID.randomUUID().toString();
+            String fileName = file.getOriginalFilename();
+            String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+
+            String[] supportedExtensions = {"jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "ico"};
+
+            // 현재 파일의 확장자가 지원하는 형식인지 확인
+            boolean isSupported = false;
+            for (String supportedExtension : supportedExtensions) {
+                if (extension.equals(supportedExtension)) {
+                    isSupported = true;
+                    break;
+                }
+            }
+
+            if (!isSupported) {
+                throw new IllegalArgumentException("지원하지 않는 파일 형식입니다.");
+            }
+
+            String fullPath = path + "/" + uuid + "." + extension;
+
+            try {
+                file.transferTo(new File(fullPath));
+                String imageUrl = address + "/" + uuid + "." + extension;
+                addresses.add(imageUrl);
+            } catch (IOException e) {
+                // 파일 전송 중 오류 처리
+                throw new RuntimeException(e);
+            }
         }
-        String fullPath = path + "/" + uuid + "."+ extension;
 
-        file.transferTo(new File(fullPath));
-
-        return new CodeMessageResponse(address+"/"+uuid+"."+extension,201,ResponseCodeProvider.SUCCESS);
-
+        return new ArrayResponse<>(addresses,200,addresses.size());
     }
 
 }

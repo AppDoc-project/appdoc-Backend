@@ -22,7 +22,7 @@ public class TuteeCreateRequest {
 
     @NotEmpty
     @Size(min = 8, max = 18)
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*\\d).+$")
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@~_])[a-zA-Z\\d!@~_]+$")
     private String password;
 
     @NotEmpty

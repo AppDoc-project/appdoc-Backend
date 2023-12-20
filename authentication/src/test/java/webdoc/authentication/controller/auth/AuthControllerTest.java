@@ -314,7 +314,7 @@ class AuthControllerTest {
                 .contact("01025045779")
                 .email("1dilumn0@gmail.com")
                 .specialities(List.of(Specialities.KEYBOARD_INSTRUMENT,Specialities.BASS))
-                .password("dntjrdn78")
+                .password("dntjrdn78!")
                 .selfDescription("좋은 튜터입니다")
                 .name("우석우")
                 .build();
@@ -326,7 +326,7 @@ class AuthControllerTest {
                 .contact("01025045779")
                 .email("1dilumn0@gmail.com")
                 .name("우석우")
-                .password("dntjrdn78")
+                .password("dntjrdn78!")
                 .build();
     }
 

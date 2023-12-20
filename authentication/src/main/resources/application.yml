@@ -59,7 +59,6 @@ file:
 
 # application-dev.yml
 
-
 spring:
   config:
     activate:

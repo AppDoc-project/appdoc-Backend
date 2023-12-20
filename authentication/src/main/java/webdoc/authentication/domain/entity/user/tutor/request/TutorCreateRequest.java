@@ -26,7 +26,8 @@ public class TutorCreateRequest {
     private String name;
 
     @NotEmpty
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*\\d).+$")
+    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@~_])[a-zA-Z\\d!@~_]+$")
+    @Size(min = 8, max = 18)
     private String password;
 
     @NotEmpty

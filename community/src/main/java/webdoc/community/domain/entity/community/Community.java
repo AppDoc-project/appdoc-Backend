@@ -24,4 +24,12 @@ public class Community extends BaseEntity {
         this.name = name;
     }
 
+    public static Community createCommunity(String name){
+        return
+                Community
+                        .builder()
+                        .name(name)
+                        .build();
+    }
+
 }
