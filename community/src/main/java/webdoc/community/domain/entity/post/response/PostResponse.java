@@ -17,6 +17,8 @@ public class PostResponse {
     private final String title;
     private final String nickName;
     private final String profile;
+
+    private final String text;
     private final Integer bookmarkCount;
     private final Integer likeCount;
     private final Integer threadCount;
@@ -27,6 +29,6 @@ public class PostResponse {
     private final String communityName;
     private final Long communityId;
 
-    // 닉네임, 제목, 작성자 프로필, 사진 포함 여부 및 개수, 댓글 수, 좋아요 수, 튜터 여부
+    // 닉네임, 제목, 내용 ,작성자 프로필, 사진 포함 여부 및 개수, 댓글 수, 좋아요 수, 튜터 여부
 
 }

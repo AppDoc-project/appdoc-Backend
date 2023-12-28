@@ -18,6 +18,68 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AuthServerService {
     private final UserRepository userRepository;
+    // 해당 유저의 성명까지 가져 옴
+    public UserResponse fetchFullUserById(Long id){
+
+        User user = userRepository.findUserById(id)
+                .orElse(null);
+
+        if (user == null){
+            return
+                    UserResponse.builder()
+                            .contact("")
+                            .name("")
+                            .email("")
+                            .id(null)
+                            .isTutor(false)
+                            .nickName("")
+                            .profile("")
+                            .selfDescription("")
+                            .specialities(null)
+                            .role("")
+                            .build();
+        }
+
+        else if (user instanceof Tutor){
+            Tutor tutor = (Tutor) user;
+
+            List<Specialities> specialities =
+                    tutor.getSpecialities()
+                            .stream().map(s->s.getSpecialities())
+                            .collect(Collectors.toList());
+            return
+                    UserResponse.builder()
+                            .contact(tutor.getContact())
+                            .email(tutor.getEmail())
+                            .id(tutor.getId())
+                            .isTutor(true)
+                            .name(tutor.getName())
+                            .nickName(tutor.getName())
+                            .profile(tutor.getProfile())
+                            .role(tutor.getRole())
+                            .specialities(specialities)
+                            .build();
+        }
+
+        else{
+            Tutee tutee = (Tutee) user;
+
+            return
+                    UserResponse.builder()
+                            .contact(tutee.getContact())
+                            .email(tutee.getEmail())
+                            .id(tutee.getId())
+                            .isTutor(false)
+                            .name(tutee.getName())
+                            .nickName(tutee.getNickName())
+                            .profile(tutee.getProfile())
+                            .specialities(null)
+                            .role(tutee.getRole())
+                            .build();
+        }
+
+    }
+
 
     public UserResponse fetchUserById(Long id){
 

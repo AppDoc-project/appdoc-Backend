@@ -9,14 +9,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.community.config.security.token.JwtAuthenticationToken;
-import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.entity.user.response.UserResponse;
 import webdoc.community.domain.response.CodeMessageResponse;
 import webdoc.community.utility.messageprovider.CommonMessageProvider;
 import webdoc.community.utility.messageprovider.ResponseCodeProvider;
@@ -73,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         UserResponse user;
         try{
-            user = userService.fetchUserResponseFromAuthServer(authServer+"/server/user/email/"+email,jwt,10_000,10_000).get();
+            user = userService.fetchUserResponseFromAuthServer(authServer+"/server/user/my",jwt,10_000,10_000).get();
         }catch(Exception e){
 
             e.printStackTrace();

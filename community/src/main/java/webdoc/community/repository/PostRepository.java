@@ -73,6 +73,21 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             " where p.title like %:keyword% and p.text like %:keword% and p.community.id = :communityId and p.id < :postId")
     Slice<Post> getPostByCommunityAndContentAndTitleAndLimitAndId(String keyword,Long communityId,Long postId,PageRequest pageRequest);
 
+    // 자기가 쓴 게시글 수 확인
+    int countPostsByUserId(Long userId);
+
+    // 자기가 쓴 게시글
+    Slice<Post> getPostByUserId(Long userId, PageRequest pageRequest);
+
+    // 내가 쓴 댓글이 담긴 게시글
+    @Query("select distinct p from Post p "+ " join p.threads t " +
+        " where t.userId = :userId")
+    Slice<Post> getPostsWithMyThread(Long userId,PageRequest pageRequest);
+
+    // 내가 북마크 한 게시글
+    @Query("select distinct p from Post p" + " join p.bookmarks b " +
+        " where b.userId = :userId")
+    Slice<Post> getBookmarkedPosts(Long userId, PageRequest pageRequest);
 
 
 }

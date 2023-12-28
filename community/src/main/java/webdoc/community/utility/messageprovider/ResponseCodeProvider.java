@@ -16,7 +16,11 @@ public class ResponseCodeProvider {
     public static final Integer AUTHENTICATION_NOT_PROVIDED = 408;
     public static final Integer NOT_AUTHORIZED = 409;
     public static final Integer ALREADY_EXISTS = 410;
+
+    public static final Integer NOT_FOUND = 412;
     public static final Integer INTERNAL_SERVER_ERROR = 500;
+
+    public static final Integer BANNED = 411;
 
 
 

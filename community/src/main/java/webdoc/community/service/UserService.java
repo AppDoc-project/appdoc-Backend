@@ -9,7 +9,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.entity.user.response.UserResponse;
 
 import java.util.Optional;
 

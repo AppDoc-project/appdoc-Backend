@@ -3,7 +3,7 @@ package webdoc.community.config.security.token;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.entity.user.response.UserResponse;
 
 import java.util.Collection;
 import java.util.List;

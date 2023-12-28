@@ -8,5 +8,7 @@ import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark,Long> {
     int countBookmarkByPostId(Long postId);
+
+    int countBookmarkByUserId(Long userId);
     Optional<Bookmark> findBookmarkByPostIdAndUserId(Long postId, Long userId);
 }

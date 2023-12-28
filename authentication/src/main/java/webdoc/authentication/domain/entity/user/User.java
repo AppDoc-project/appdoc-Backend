@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import webdoc.authentication.domain.BaseEntity;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Getter
@@ -12,8 +14,6 @@ import webdoc.authentication.domain.BaseEntity;
 @EqualsAndHashCode(of = "id")
 @DiscriminatorColumn(name="dtype")
 public abstract class User extends BaseEntity {
-
-
     protected User(){}
 
     protected User(String name, String email,
@@ -25,8 +25,6 @@ public abstract class User extends BaseEntity {
         this.contact = contact;
         this.role = role;
     }
-
-
 
     // token setter
     public void setToken(Token token){
@@ -54,9 +52,5 @@ public abstract class User extends BaseEntity {
     private String role;
     @Column
     private String profile;
-
-
-
-
 
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import webdoc.community.domain.entity.banned.Banned;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
 import webdoc.community.domain.entity.like.Bookmark;
@@ -25,13 +26,14 @@ import webdoc.community.domain.entity.post.response.PostDetailResponse;
 import webdoc.community.domain.entity.post.response.PostResponse;
 import webdoc.community.domain.entity.post.response.ThreadResponse;
 import webdoc.community.domain.entity.report.PostReport;
-import webdoc.community.domain.entity.report.Report;
 import webdoc.community.domain.entity.report.ThreadReport;
 import webdoc.community.domain.entity.report.request.ReportCreateRequest;
-import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.entity.user.response.UserResponse;
 import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
+import webdoc.community.domain.exceptions.UserBannedException;
 import webdoc.community.repository.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import java.util.stream.Collectors;
@@ -49,8 +51,8 @@ public class CommunityService {
     private final ReportRepository reportRepository;
     private final UserService userService;
     private final PictureRepository pictureRepository;
-
     private final BookmarkRepository bookmarkRepository;
+    private final BannedRepository bannedRepository;
 
     public List<CommunityResponse> getAllCommunities(){
         return
@@ -65,6 +67,14 @@ public class CommunityService {
     public Thread createThread(Long userId, ThreadCreateRequest request){
         Long postId = request.getPostId();
 
+        // 차단 시 댓글 작성 불가
+        Banned banned = bannedRepository.findBannedByUserIdAndUntilWhenAfter(userId, LocalDateTime.now())
+                .orElse(null);
+
+        if (banned != null){
+            throw new UserBannedException("정지된 유저 입니다",banned.getUntilWhen());
+        }
+
         Post post = postRepository.findById(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시글이 없습니다"));
         Thread thread = Thread.createThread(request.getText(),post,userId);
         threadRepository.save(thread);
@@ -76,6 +86,15 @@ public class CommunityService {
     @Transactional
     public Thread createThreadOfThread(ThreadOfThreadCreateRequest request,Long userId){
         Long postId = request.getPostId();
+
+        // 차단 시 글 작성 불가
+        Banned banned = bannedRepository.findBannedByUserIdAndUntilWhenAfter(userId, LocalDateTime.now())
+                .orElse(null);
+
+        if (banned != null){
+            throw new UserBannedException("정지된 유저 입니다",banned.getUntilWhen());
+        }
+
 
         Post post = postRepository.findById(postId).orElseThrow(()->new NoSuchElementException("해당하는 유저가 없습니다"));
         Thread parentThread = threadRepository.findById(request.getParentThreadId()).orElseThrow(()->new NoSuchElementException("해당하는 댓글이 없습니다"));
@@ -137,6 +156,15 @@ public class CommunityService {
         Community community = communityRepository.findById(request.getCommunityId())
                 .orElseThrow(()-> new NoSuchElementException("비정상적인 접근입니다"));
 
+        // 차단 시 게시글 작성 불가
+        Banned banned = bannedRepository.findBannedByUserIdAndUntilWhenAfter(userId, LocalDateTime.now())
+                .orElse(null);
+
+        if (banned != null){
+            throw new UserBannedException("정지된 유저 입니다",banned.getUntilWhen());
+        }
+
+
         Post post = Post.CreatePost(userId,request.getTitle(),request.getText(),community);
         if(request.getAddresses() != null){
             request.getAddresses()
@@ -162,6 +190,15 @@ public class CommunityService {
             throw new IllegalStateException("비정상적인 접근입니다");
         }
 
+        // 차단 시 게시글 수정 불가
+        Banned banned = bannedRepository.findBannedByUserIdAndUntilWhenAfter(userId, LocalDateTime.now())
+                .orElse(null);
+
+        if (banned != null){
+            throw new UserBannedException("정지된 유저 입니다",banned.getUntilWhen());
+        }
+
+
         post.modifyPost(request);
         if(request.getAddresses() != null){
             List<Picture> pictures = post.getPictures();
@@ -177,8 +214,6 @@ public class CommunityService {
         }
 
         return post;
-
-
     }
 
 
@@ -384,9 +419,6 @@ public class CommunityService {
                 }).collect(Collectors.toList());
     }
 
-    // 게시글 수정하기
-
-
 
     // 불러온 게시물 리스트를 응답객체로 변환하기
 
@@ -401,7 +433,7 @@ public class CommunityService {
                             List<Integer> bltp = getBLTP(s.getId());
                             return new PostResponse(
                                     s.getId(),s.getUserId(),s.getTitle(),
-                                    user.getNickName(),user.getProfile(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
+                                    user.getNickName(),user.getProfile(),s.getText(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
                                     s.getCreatedAt(),user.getIsTutor(),s.getView(),s.getCommunity().getName(),s.getCommunity().getId()
                             );
                         }).collect(Collectors.toList());

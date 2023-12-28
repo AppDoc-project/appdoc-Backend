@@ -16,4 +16,6 @@ public class CommonMessageProvider {
     public final static String LIKE_EXISTS = "좋아요를 이미 눌렀습니다";
 
     public final static String REPORT_EXISTS = "이미 신고 하였습니다";
+
+    public final static String USER_BANNED = "접근이 금지된 유저입니다";
 }

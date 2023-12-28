@@ -10,11 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import webdoc.authentication.domain.entity.user.response.LoginResponse;
 import webdoc.authentication.domain.entity.user.tutor.Tutor;
 import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
 import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.response.CodeMessageResponse;
+import webdoc.authentication.domain.response.ObjectResponse;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
@@ -69,15 +71,15 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String type;
-        int subCode;
+        boolean isTutor;
 
         if (user instanceof Tutor){
             type = "tutor";
-            subCode = ResponseCodeProvider.TUTOR_LOGIN;
+            isTutor = true;
 
         }else{
             type = "tutee";
-            subCode = ResponseCodeProvider.TUTEE_LOGIN;
+            isTutor = false;
 
         }
 
@@ -98,7 +100,7 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
 
         response.setHeader("Authorization",jwt);
         response.setStatus(200);
-        response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse(AuthMessageProvider.LOGIN_SUCCESS,200,subCode)));
+        response.getWriter().write(objectMapper.writeValueAsString(new ObjectResponse<>(new LoginResponse(user.getId(),user.getEmail(),user.getName(),isTutor),200)));
 
 
 

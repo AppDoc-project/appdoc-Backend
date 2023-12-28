@@ -17,4 +17,6 @@ public interface ThreadRepository extends JpaRepository<Thread,Long> {
     List<Thread> getThreadByPostId(long postId);
 
     Optional<Thread> getThreadById(Long id);
+
+    int countThreadByUserId(Long userId);
 }

@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import webdoc.community.domain.entity.banned.Banned;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
 import webdoc.community.domain.entity.like.Bookmark;
@@ -26,15 +27,15 @@ import webdoc.community.domain.entity.report.PostReport;
 import webdoc.community.domain.entity.report.ThreadReport;
 import webdoc.community.domain.entity.report.request.ReportCreateRequest;
 import webdoc.community.domain.entity.user.Specialities;
-import webdoc.community.domain.entity.user.UserResponse;
+import webdoc.community.domain.entity.user.response.UserResponse;
 import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
+import webdoc.community.domain.exceptions.UserBannedException;
 import webdoc.community.repository.*;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -67,6 +68,9 @@ class CommunityServiceTest {
 
     @Autowired
     ReportRepository reportRepository;
+
+    @Autowired
+    BannedRepository bannedRepository;
 
     @DisplayName("모든 게시판 리스트를 가져온다")
     @Test
@@ -1069,6 +1073,135 @@ class CommunityServiceTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
+    @DisplayName("정지된 계정은 글 작성이 불가능 하다")
+    @Test
+    void bannedPostCreate(){
+        //given
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        Banned banned = Banned.createBanned(user.getId(), LocalDateTime.now().plusDays(1L),"부적절한 글 작성");
+        bannedRepository.save(banned);
+
+        // when
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+
+        //then
+        assertThatThrownBy(()->communityService.createPost(request6,user.getId()))
+                .isInstanceOf(UserBannedException.class);
+    }
+
+    @DisplayName("정지된 계정은 게시글을 수정할 수 없다")
+    @Test
+    void bannedModifyPost(){
+        //given
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        Community com1 = Community
+                .builder()
+                .name("현악기")
+                .build();
+
+        communityRepository.save(com1);
+        UserResponse user = createUser();
+
+        PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        Post post1 = communityService.createPost(request6,user.getId());
+
+        Banned banned = Banned.createBanned(user.getId(), LocalDateTime.now().plusDays(1L),"부적절한 글 작성");
+        bannedRepository.save(banned);
+
+        //when
+        PostModifyRequest request7 = postModifyRequest(post1.getId(),null,"뭐해","난 바쁨");
+
+
+
+        //then
+        assertThatThrownBy(()->communityService.modifyPost(request7,user.getId()))
+                .isInstanceOf(UserBannedException.class);
+        Post post = postRepository.findById(post1.getId()).orElse(null);
+        assertThat(post).isNotNull();
+        assertThat(post).extracting(
+                        "userId","id","title","text"
+                )
+                .containsExactly(user.getId(),post1.getId(),"ㅋㅋㅋㅋ","ㅋㅋ안녕");
+    }
+
+    @DisplayName("정지된 계정은 댓글을 생성할 수 없다")
+    @Test
+    void bannedCreateThread(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("외과")
+                .build();
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        Post post = communityService.createPost(request,user.getId());
+
+        Banned banned = Banned.createBanned(user.getId(), LocalDateTime.now().plusDays(1L),"부적절한 글 작성");
+        bannedRepository.save(banned);
+
+
+        // when
+        ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+
+        // then
+        assertThatThrownBy(()->communityService.createThread(user.getId(),threadCreateRequest))
+                .isInstanceOf(UserBannedException.class);
+    }
+
+    @DisplayName("정지된 계정은 대댓글을 생성할 수 없다")
+    @Test
+    void bannedCreateChildThread(){
+        //given
+        Community com1 = Community
+                .builder()
+                .name("외과")
+                .build();
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                .thenReturn(
+                        Optional.of(createUser())
+                );
+
+        UserResponse user = createUser();
+        communityRepository.save(com1);
+        PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
+        Post post = communityService.createPost(request,user.getId());
+
+        // when
+
+
+        ThreadCreateRequest threadCreateRequest = threadCreateRequest("안녕",post.getId());
+        Thread thread = communityService.createThread(user.getId(),threadCreateRequest);
+
+        Banned banned = Banned.createBanned(user.getId(), LocalDateTime.now().plusDays(1L),"부적절한 글 작성");
+        bannedRepository.save(banned);
+        ThreadOfThreadCreateRequest threadOfThreadCreateRequest =  threadOfThreadCreateRequest("ㅋㅋ", post.getId(),thread.getId());
+
+        // then
+        assertThatThrownBy(()->communityService.createThreadOfThread(threadOfThreadCreateRequest,user.getId()))
+                .isInstanceOf(UserBannedException.class);
+    }
 
 
 

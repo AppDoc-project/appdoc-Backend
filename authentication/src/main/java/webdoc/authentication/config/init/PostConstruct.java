@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.tutee.Tutee;
 import webdoc.authentication.domain.entity.user.tutor.Tutor;
+import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
 import webdoc.authentication.repository.UserRepository;
 
 import java.util.List;
@@ -21,9 +22,11 @@ public class PostConstruct {
     @Transactional
     public void devInit(){
 
-        Tutor tutor = Tutor.createTutor("tutor@gmail.com","tutor1234",
+        Tutor tutor = Tutor.createTutor("tutor@gmail.com",passwordEncoder.encode("tutor1234"),
                 "은현장","01025045779",
                 "http://localhost:8080","안녕하세요 ㅎㅎㅎ");
+
+        tutor.changeTutorState(AuthenticationProcess.AUTHENTICATION_SUCCESS);
 
         Tutee tutee = Tutee.createTutee(
                 "tutee@gmail.com",passwordEncoder.encode("tutee1234"),"우석우","01025045779"
