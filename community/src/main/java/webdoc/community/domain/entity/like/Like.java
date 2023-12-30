@@ -5,7 +5,7 @@ import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
 
-@Entity(name = "love")
+@Entity(name = "choose")
 @EqualsAndHashCode(of = "id")
 @Getter
 @Setter(value = AccessLevel.PRIVATE)
@@ -26,7 +26,7 @@ public class Like extends BaseEntity {
     public void setPost(Post post){
         this.post = post;
     }
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
@@ -34,7 +34,7 @@ public class Like extends BaseEntity {
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id",nullable = false)
     private Post post;
 
 

@@ -19,7 +19,7 @@ public abstract class Report extends BaseEntity {
         this.reason = reason;
     }
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
     private Long userId;

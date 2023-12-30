@@ -65,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = claims.get("email",String.class);
         User user =  repository.findByEmail(email).orElse(null);
         String tokenExpiredAt = claims.get("expireAt",String.class);
-        if(user == null || user.getToken() == null || user.getToken().getExpiredAt().isBefore(LocalDateTime.now()) || !jwt.equals(user.getToken().getValue())){
+        if(user == null || user.getTokens().size() == 0 || user.getTokens().get(0).getExpiredAt().isBefore(LocalDateTime.now()) || !jwt.equals(user.getTokens().get(0).getValue())){
             response.setCharacterEncoding("UTF-8");
             response.setStatus(400);
             response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));

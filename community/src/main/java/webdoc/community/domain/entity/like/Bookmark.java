@@ -15,15 +15,16 @@ public class Bookmark extends BaseEntity {
     public void setPost(Post post){
         this.post = post;
     }
-    @GeneratedValue
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id",nullable = false)
     private Post post;
 
     public static Bookmark createBookmark(Long userId,Post post){

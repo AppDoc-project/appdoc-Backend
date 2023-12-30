@@ -18,7 +18,7 @@ public class TutorSpeciality {
         this.specialities = specialities;
     }
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @JoinColumn(nullable = false)

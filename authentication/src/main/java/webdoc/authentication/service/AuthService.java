@@ -3,6 +3,7 @@ package webdoc.authentication.service;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.exceptions.TimeOutException;
+import webdoc.authentication.repository.TokenRepository;
 import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.utility.generator.FourDigitsNumberGenerator;
@@ -31,6 +33,8 @@ import java.util.NoSuchElementException;
 @Transactional(readOnly = true)
 public class AuthService{
     private final UserRepository userRepository;
+
+    private final TokenRepository tokenRepository;
     private final UserMailRepository userMailRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
@@ -149,9 +153,7 @@ public class AuthService{
     // 토큰 설정
     @Transactional
     public void setToken(User user, Token token){
-        User findUser = userRepository.findById(user.getId()).orElse(null);
-        findUser.setToken(token);
-        token.setUser(user);
+        user.setToken(token);
     }
 
     // 이메일 중복 확인 로직

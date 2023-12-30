@@ -14,6 +14,7 @@ const queryParse = (req) => {
 };
 
 module.exports = async (server,app)=>{
+
     const io = socketIo(server,{path:'/socket.io',  cors: {
         origin: "*",
         methods: ["GET", "POST"]

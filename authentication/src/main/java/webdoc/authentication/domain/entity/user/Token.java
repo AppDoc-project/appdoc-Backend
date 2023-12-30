@@ -24,7 +24,7 @@ public class Token {
         return token;
     }
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // 토큰 유효 기간 지정
@@ -35,7 +35,7 @@ public class Token {
     @Column(nullable = false)
     private String value;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false)
     private User user;
 }

@@ -1,10 +1,8 @@
 package webdoc.community.domain.entity.banned;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import webdoc.community.domain.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,15 +10,15 @@ import java.time.LocalDateTime;
 @Getter
 @EqualsAndHashCode(of = "id")
 @Setter(value = AccessLevel.PRIVATE)
-public class Banned {
+public class Banned extends BaseEntity {
 
     protected Banned(){}
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
     private Long userId;
-    @Column
+    @Column(nullable = false)
     private LocalDateTime untilWhen;
     @Column
     private String reason;

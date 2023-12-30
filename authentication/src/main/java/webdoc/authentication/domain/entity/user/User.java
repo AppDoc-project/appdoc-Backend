@@ -6,6 +6,8 @@ import lombok.Getter;
 import webdoc.authentication.domain.BaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -28,7 +30,11 @@ public abstract class User extends BaseEntity {
 
     // token setter
     public void setToken(Token token){
-        this.token = token;
+        if (tokens.size() >= 1){
+            tokens.remove(0);
+        }
+        tokens.add(token);
+        token.setUser(this);
     }
 
     // role setter
@@ -36,7 +42,7 @@ public abstract class User extends BaseEntity {
         this.role = role;
     }
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false,unique = true)
     private String email;
@@ -44,8 +50,8 @@ public abstract class User extends BaseEntity {
     private String name;
     @Column(nullable = false)
     private String password;
-    @OneToOne(fetch = FetchType.EAGER, mappedBy = "user",orphanRemoval = true,cascade = CascadeType.ALL)
-    private Token token;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user",orphanRemoval = true,cascade = CascadeType.ALL)
+    private List<Token> tokens = new ArrayList<>();
     @Column(nullable = false)
     private String contact;
     @Column(nullable = false)

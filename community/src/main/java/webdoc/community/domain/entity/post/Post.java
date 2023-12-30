@@ -42,9 +42,10 @@ public class Post extends BaseEntity {
         text = request.getText();
     }
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false, length = 3000)
