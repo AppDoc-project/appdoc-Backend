@@ -34,6 +34,8 @@ public abstract class User extends BaseEntity {
     public void setRole(String role){
         this.role = role;
     }
+
+    public void setPassword(String password){this.password = password;}
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

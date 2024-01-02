@@ -43,9 +43,9 @@ public class AuthControlAdvice {
     }
 
     // 비정상적인 접근
-    @ExceptionHandler(NoSuchElementException.class)
+    @ExceptionHandler({NoSuchElementException.class, IllegalStateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public CodeMessageResponse invalidAccess(NoSuchElementException e){
+    public CodeMessageResponse invalidAccess(Exception e){
         log.info("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.INVALID_ACCESS,400,ResponseCodeProvider.INVALID_ACCESS);
     }

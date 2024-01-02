@@ -21,8 +21,10 @@ import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.utility.generator.FourDigitsNumberGenerator;
+import webdoc.authentication.utility.generator.UUIDGenerator;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 
@@ -34,8 +36,65 @@ public class AuthService{
     private final UserMailRepository userMailRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-
     private final RedisService redisService;
+
+    // 비밀번호 찾기 메일 전송
+    public void findPassword(String email) throws MessagingException {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+
+        String code = FourDigitsNumberGenerator.generateFourDigitsNumber();
+
+        // 비밀번호 찾기 코드는 3분간 유효
+        emailService.sendEmail(email,code,"BEATMATE 비밀번호 찾기 인증번호");
+        redisService.setValues(user.getEmail()+"password",code, Duration.ofMinutes(3L));
+
+    }
+
+    // 비밀번호 찾기 코드 인증
+    public String validateCodeForPasswordFind(String email, String code){
+        String redisCode = redisService.getValues(email+"password");
+
+        // 해당 이메일에 대한 인증 코드가 없는 경우
+        if (redisCode.equals("false")){
+            throw new TimeOutException("인증 시간을 초과하였습니다");
+        }
+        System.out.println(redisCode);
+        if (redisCode.equals(code)){
+
+            User user = userRepository.findUserByEmail(email)
+                    .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+
+            String uuid = UUIDGenerator.generateRandomUUID();
+
+            redisService.setValues(user.getEmail()+"password_auth",uuid,Duration.ofMinutes(10L));
+
+            return uuid;
+        }else{
+            throw new AuthenticationServiceException("잘못된 인증 코드입니다");
+        }
+    }
+
+    // 비밀번호 변경
+    @Transactional
+    public void changePassword(String email, String token, String password){
+        String redisCode = redisService.getValues(email + "password_auth");
+
+        // 해당 이메일에 대한 인증 코드가 없는 경우
+        if (redisCode.equals("false")){
+            throw new IllegalStateException("비정상적인 접근입니다");
+        }
+
+        if (redisCode.equals(token)){
+            User user = userRepository.findUserByEmail(email)
+                    .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+
+            user.setPassword(passwordEncoder.encode(password));
+
+        }
+
+
+    }
 
 
     // 튜터 계정 생성
@@ -66,7 +125,7 @@ public class AuthService{
         }
 
         userMailRepository.save(tutor);
-        emailService.sendEmail(dto.getEmail(),code);
+        emailService.sendEmail(dto.getEmail(),code,"BEATMATE 회원가입 인증번호");
 
         return tutor;
     }
@@ -94,7 +153,7 @@ public class AuthService{
         }
 
         userMailRepository.save(tutee);
-        emailService.sendEmail(dto.getEmail(),code);
+        emailService.sendEmail(dto.getEmail(),code,"BEATMATE 회원가입 인증번호");
 
         return tutee;
     }

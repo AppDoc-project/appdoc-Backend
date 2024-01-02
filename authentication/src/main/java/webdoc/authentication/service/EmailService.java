@@ -25,10 +25,9 @@ public class EmailService {
 
 
     //메일 양식 작성 로직
-    public MimeMessage createEmailForm(String email,String code) throws MessagingException{
+    public MimeMessage createEmailForm(String email,String code,String title) throws MessagingException{
 
         String setFrom = "springbank0625@gmail.com"; //email-config에 설정한 자신의 이메일 주소(보내는 사람)
-        String title = "WEBDOC 회원가입 인증 번호"; //제목
         MimeMessage message = emailSender.createMimeMessage();
         message.addRecipients(MimeMessage.RecipientType.TO, email); //보낼 이메일 설정
         message.setSubject(title); //제목 설정
@@ -40,10 +39,10 @@ public class EmailService {
 
     //메일 전송 로직
     @Async
-    public void sendEmail(String toEmail,String code) throws MessagingException {
+    public void sendEmail(String toEmail,String code,String title) throws MessagingException {
 
         //메일전송에 필요한 정보 설정
-        MimeMessage emailForm = createEmailForm(toEmail,code);
+        MimeMessage emailForm = createEmailForm(toEmail,code,title);
         //실제 메일 전송
         emailSender.send(emailForm);
 

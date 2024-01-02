@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.config.security.token.JwtAuthenticationToken;
+import webdoc.authentication.domain.entity.user.request.CodePasswordRequest;
 import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.response.ArrayResponse;
@@ -24,6 +25,7 @@ import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
+import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import java.io.File;
@@ -56,6 +58,56 @@ public class AuthController {
         JwtAuthenticationToken token = (JwtAuthenticationToken) user;
         authService.logOut((User)token.getPrincipal());
         return new CodeMessageResponse(AuthMessageProvider.LOGOUT_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+    }
+
+    // 비밀번호 찾기 이메일 입력
+    @GetMapping("/password/code")
+    public CodeMessageResponse passwordFindAuth(@RequestParam String email){
+        try{
+            authService.findPassword(email);
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+    }
+
+    // 비밀번호 찾기 인증코드 입력
+    @PostMapping("/password/code")
+    public CodeMessageResponse validateCode(@Validated @RequestBody  CodeRequest codeRequest, BindingResult bindingResult,HttpServletResponse res){
+        if (bindingResult.hasErrors()){
+            throw new IllegalArgumentException("바인딩 실패");
+        }
+
+        try{
+            String token =
+                    authService.validateCodeForPasswordFind(codeRequest.getEmail(), codeRequest.getCode());
+            res.setHeader("token",token);
+
+        }catch(TimeOutException | AuthenticationServiceException e){
+            throw e;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
+    }
+
+    // 비밀번호 변경
+    @PatchMapping("/password")
+    public CodeMessageResponse changePassword(@Validated @RequestBody  CodePasswordRequest codePasswordRequest, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            throw new IllegalArgumentException("바인딩 실패");
+        }
+        try{
+            authService.changePassword(codePasswordRequest.getEmail(),codePasswordRequest.getCode(), codePasswordRequest.getPassword());
+        }catch (IllegalStateException | NoSuchElementException e){
+            throw e;
+        }catch( Exception e){
+            throw new RuntimeException(e);
+        }
+
+        return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
     }
 
     // 이메일 중복 검사

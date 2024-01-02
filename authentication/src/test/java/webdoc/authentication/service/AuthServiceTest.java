@@ -327,6 +327,7 @@ class AuthServiceTest {
 
     }
 
+
     @DisplayName("회원가입을 하지 않은 튜티의 메일을 인증한다")
     @Test
     void validateTuteeNotRegistered(){
