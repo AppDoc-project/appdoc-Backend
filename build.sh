@@ -30,4 +30,9 @@ docker push cualestunombre/local:mysql
 docker push cualestunombre/back:mysql
 cd ..
 
+cd ./redis
+docker build --tag cualestunombre/back:redis .
+docker build --tag cualestunombre/local:redis -f Dockerfile.arm.dev  .
+docker push cualestunombre/local:redis
+docker push cualestunombre/back:redis
 

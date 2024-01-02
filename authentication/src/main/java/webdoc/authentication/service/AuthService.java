@@ -3,7 +3,6 @@ package webdoc.authentication.service;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,15 +15,14 @@ import webdoc.authentication.domain.entity.user.request.CodeRequest;
 import webdoc.authentication.domain.entity.user.tutee.TuteeMail;
 import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
 import webdoc.authentication.domain.entity.user.tutee.Tutee;
-import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
 import webdoc.authentication.domain.exceptions.TimeOutException;
-import webdoc.authentication.repository.TokenRepository;
 import webdoc.authentication.repository.UserMailRepository;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.utility.generator.FourDigitsNumberGenerator;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 
@@ -33,11 +31,12 @@ import java.util.NoSuchElementException;
 @Transactional(readOnly = true)
 public class AuthService{
     private final UserRepository userRepository;
-
-    private final TokenRepository tokenRepository;
     private final UserMailRepository userMailRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+
+    private final RedisService redisService;
+
 
     // 튜터 계정 생성
     @Transactional
@@ -147,14 +146,9 @@ public class AuthService{
     @Transactional
     public void logOut(User user){
         User findUser = userRepository.findByEmail(user.getEmail()).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
-        findUser.setToken(null);
+        redisService.deleteValues(user.getEmail());
     }
 
-    // 토큰 설정
-    @Transactional
-    public void setToken(User user, Token token){
-        user.setToken(token);
-    }
 
     // 이메일 중복 확인 로직
     public boolean isEmailDuplicated(String email){

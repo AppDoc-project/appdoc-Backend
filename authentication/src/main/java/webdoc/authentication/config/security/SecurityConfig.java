@@ -23,6 +23,7 @@ import webdoc.authentication.config.security.filter.JwtAuthenticationFilter;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
+import webdoc.authentication.service.RedisService;
 
 import java.io.IOException;
 
@@ -40,6 +41,9 @@ public class SecurityConfig {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    RedisService redisService;
+
     @Value("${jwt.signing.key}")
     private String key;
 
@@ -48,11 +52,11 @@ public class SecurityConfig {
     }
     @Bean
     public InitialAuthenticationFilter initialAuthenticationFilter(HttpSecurity http){
-        return new InitialAuthenticationFilter(service,key,userRepository,passwordEncoder,objectMapper);
+        return new InitialAuthenticationFilter(service,key,userRepository,passwordEncoder,objectMapper,redisService);
     }
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(){
-        return new JwtAuthenticationFilter(key,objectMapper,userRepository);
+        return new JwtAuthenticationFilter(key,objectMapper,userRepository,redisService);
     }
 
     @Bean

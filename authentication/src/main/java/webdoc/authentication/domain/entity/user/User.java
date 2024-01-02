@@ -28,14 +28,7 @@ public abstract class User extends BaseEntity {
         this.role = role;
     }
 
-    // token setter
-    public void setToken(Token token){
-        if (tokens.size() >= 1){
-            tokens.remove(0);
-        }
-        tokens.add(token);
-        token.setUser(this);
-    }
+
 
     // role setter
     public void setRole(String role){
@@ -50,8 +43,6 @@ public abstract class User extends BaseEntity {
     private String name;
     @Column(nullable = false)
     private String password;
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user",orphanRemoval = true,cascade = CascadeType.ALL)
-    private List<Token> tokens = new ArrayList<>();
     @Column(nullable = false)
     private String contact;
     @Column(nullable = false)

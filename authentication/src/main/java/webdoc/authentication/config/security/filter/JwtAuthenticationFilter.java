@@ -18,6 +18,8 @@ import webdoc.authentication.config.security.token.JwtAuthenticationToken;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
+import webdoc.authentication.service.RedisService;
+
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final ObjectMapper mapper;
 
     private final UserRepository repository;
+
+    private final RedisService redisService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -64,8 +68,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String email = claims.get("email",String.class);
         User user =  repository.findByEmail(email).orElse(null);
-        String tokenExpiredAt = claims.get("expireAt",String.class);
-        if(user == null || user.getTokens().size() == 0 || user.getTokens().get(0).getExpiredAt().isBefore(LocalDateTime.now()) || !jwt.equals(user.getTokens().get(0).getValue())){
+
+        String token = redisService.getValues(email);
+        LocalDateTime expireTime = LocalDateTime.parse((CharSequence) claims.get("expireAt"));
+
+
+        if(user == null || token==null || expireTime.isBefore(LocalDateTime.now()) || !jwt.equals(token)){
             response.setCharacterEncoding("UTF-8");
             response.setStatus(400);
             response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));

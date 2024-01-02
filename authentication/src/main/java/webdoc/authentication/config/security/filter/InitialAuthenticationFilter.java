@@ -13,12 +13,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import webdoc.authentication.domain.entity.user.response.LoginResponse;
 import webdoc.authentication.domain.entity.user.tutor.Tutor;
 import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
-import webdoc.authentication.domain.entity.user.Token;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.response.ObjectResponse;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.AuthService;
+import webdoc.authentication.service.RedisService;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
@@ -35,6 +35,8 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
+
+    private final RedisService redisService;
 
 
 
@@ -93,8 +95,8 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
                 .signWith(key)
                 .compact();
 
-        Token token = Token.createToken(now.plusHours(24),jwt,null);
-        service.setToken(user,token);
+        // 레디스에 jwt토큰 저장
+        redisService.setValues(email,jwt);
 
 
 
