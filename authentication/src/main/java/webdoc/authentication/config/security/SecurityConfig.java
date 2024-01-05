@@ -70,6 +70,8 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers("/auth/server/**")
                             .authenticated()
+                            .requestMatchers("/auth/setting/**")
+                            .authenticated()
                             .requestMatchers("/error/**")
                             .permitAll()
                             .anyRequest()

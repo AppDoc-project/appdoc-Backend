@@ -19,12 +19,16 @@ public class Tutor extends User {
     private String authenticationAddress;
     @OneToMany(mappedBy = "tutor",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<TutorSpeciality> specialities;
-    @Column(nullable = false)
+    @Column(nullable = false,length = 3000)
     @Enumerated(EnumType.STRING)
     private AuthenticationProcess authenticationProcess;
     private String selfDescription;
     protected Tutor(){
 
+    }
+
+    public void setSelfDescription(String selfDescription){
+        this.selfDescription = selfDescription;
     }
     public void changeTutorState(AuthenticationProcess authenticationProcess){
         this.authenticationProcess = authenticationProcess;

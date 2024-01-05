@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
+import webdoc.authentication.domain.exceptions.WrongPasswordException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.exceptions.TimeOutException;
 import webdoc.authentication.utility.messageprovider.AuthMessageProvider;
@@ -16,7 +17,7 @@ import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import java.util.NoSuchElementException;
 @Slf4j
-@RestControllerAdvice(assignableTypes = {AuthController.class, AuthServerController.class})
+@RestControllerAdvice(assignableTypes = {AuthController.class, AuthServerController.class, AuthSettingController.class})
 public class AuthControlAdvice {
     // 이메일이 중복되는 경우
     @ExceptionHandler(EmailDuplicationException.class)
@@ -66,6 +67,13 @@ public class AuthControlAdvice {
         return new CodeMessageResponse(AuthMessageProvider.WRONG_CODE,400,ResponseCodeProvider.WRONG_CODE);
     }
 
+    // 비밀번호가 틀릴 경우
+    @ExceptionHandler(WrongPasswordException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CodeMessageResponse wrongPassword(WrongPasswordException e){
+        log.info("에러 메시지: {}", e.getMessage(), e);
+        return new CodeMessageResponse(AuthMessageProvider.WRONG_CODE,400,ResponseCodeProvider.WRONG_CODE);
+    }
 
 
 

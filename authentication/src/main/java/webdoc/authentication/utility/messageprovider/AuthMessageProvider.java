@@ -15,6 +15,8 @@ public class AuthMessageProvider {
 
     public final static String AUTHENTICATION_ONGOING = "인증절차가 진행 중 입니다";
 
+    public final static String WRONG_PASSWORD = "잘못된 비밀번호 입니다";
+
 
 
 

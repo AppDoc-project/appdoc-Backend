@@ -36,6 +36,11 @@ public abstract class User extends BaseEntity {
     }
 
     public void setPassword(String password){this.password = password;}
+
+    public void setContact(String contact){this.contact = contact;}
+
+    public void setProfile(String profile){this.profile = profile;}
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

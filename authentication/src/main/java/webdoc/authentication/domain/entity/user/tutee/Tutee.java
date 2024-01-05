@@ -17,6 +17,10 @@ public class Tutee extends User {
     @Column(unique = true)
     private String nickName;
     public static final String role = "ROLE_TUTEE";
+
+    public void setNickName(String nickName){
+        this.nickName = nickName;
+    }
     protected Tutee(){}
     public static Tutee createTutee(String email, String password, String name,
                                       String contact){

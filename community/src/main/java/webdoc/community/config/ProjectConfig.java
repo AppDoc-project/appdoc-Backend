@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import webdoc.community.config.init.PostConstruct;
 import webdoc.community.domain.entity.community.Community;
 import webdoc.community.repository.CommunityRepository;
+import webdoc.community.service.CommunityService;
 
 @Configuration
 @EnableJpaAuditing
@@ -21,14 +22,17 @@ public class ProjectConfig {
     @Autowired
     CommunityRepository communityRepository;
 
+    @Autowired
+    CommunityService communityService;
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    @Profile("dev")
+    @Profile({"dev","local-dev"})
     public PostConstruct postConstruct(){
-        return new PostConstruct(communityRepository);
+        return new PostConstruct(communityRepository,communityService);
     }
 }
