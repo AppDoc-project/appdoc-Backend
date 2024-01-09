@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 @Entity
 @Getter
-public class TutorSpeciality extends BaseEntity {
-    protected TutorSpeciality(){}
+public class SpecialityChange extends BaseEntity {
+    protected SpecialityChange(){}
 
-    public TutorSpeciality(Tutor tutor,Specialities specialities){
+    public SpecialityChange(Tutor tutor, Specialities specialities){
         this.tutor = tutor;
         this.specialities = specialities;
     }
@@ -30,11 +30,8 @@ public class TutorSpeciality extends BaseEntity {
     @Column(nullable = false)
     private Specialities specialities;
 
-    public static List<TutorSpeciality> convertTutorSpeciality(List<Specialities> specialities, Tutor tutor){
-
-        return specialities.stream().collect(Collectors.toSet()).stream()
-                .map(s->new TutorSpeciality(tutor,s)).collect(Collectors.toList());
+    public static List<SpecialityChange> convertTutorSpeciality(List<Specialities> specialities, Tutor tutor){
+        return specialities.stream()
+                .map(s->new SpecialityChange(tutor,s)).collect(Collectors.toList());
     }
-
-
 }

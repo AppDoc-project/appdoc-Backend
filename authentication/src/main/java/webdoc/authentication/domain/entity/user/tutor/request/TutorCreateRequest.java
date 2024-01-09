@@ -19,17 +19,14 @@ public class TutorCreateRequest {
     @Size(max=50)
     @NotEmpty
     private String email;
-
     @NotEmpty
     @Size(min = 2, max = 10)
     @Pattern(regexp = "^[가-힣]*$")
     private String name;
-
     @NotEmpty
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@~_])[a-zA-Z\\d!@~_]+$")
     @Size(min = 8, max = 18)
     private String password;
-
     @NotEmpty
     @Pattern(regexp = "^[0-9]{11}$")
     private String contact;
@@ -37,7 +34,6 @@ public class TutorCreateRequest {
     private String authenticationAddress;
     @NotNull
     private List<Specialities> specialities;
-
     @Size(max=1000)
     private String selfDescription;
 
@@ -54,7 +50,5 @@ public class TutorCreateRequest {
         this.contact = contact;
         this.password = password;
     }
-
-
 
 }
