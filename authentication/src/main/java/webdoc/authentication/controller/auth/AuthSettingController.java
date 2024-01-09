@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.request.*;
-import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 import webdoc.authentication.domain.entity.user.tutor.request.TutorSpecialityRequest;
 import webdoc.authentication.domain.exceptions.WrongPasswordException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth/setting")
@@ -143,6 +141,23 @@ public class AuthSettingController {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @PostMapping("/removal")
+    public CodeMessageResponse deleteAccount(@Validated @RequestBody AccountClosureRequest request, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            throw new IllegalArgumentException("값 검증에 실패하였습니다");
+        }
+
+        try{
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            settingService.deleteAccount(user.getId(),request.getPassword());
+            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
+        }catch(NoSuchElementException | WrongPasswordException e){
+            throw e;
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
 

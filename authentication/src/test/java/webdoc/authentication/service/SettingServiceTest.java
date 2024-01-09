@@ -285,6 +285,36 @@ public class SettingServiceTest {
 
     }
 
+    @DisplayName("회원을 삭제한다")
+    @Test
+    void deleteAccount(){
+        //when
+        settingService.deleteAccount(2L,"tutor1234");
+
+        //then
+        User user = userRepository.findUserById(2L)
+                .orElse(null);
+        assertThat(user).isNull();
+     }
+
+     @DisplayName("없는 회원을 삭제할 수 없다")
+     @Test
+     void cantDeleteNotExistingAccount(){
+         //when + then
+         assertThatThrownBy(()->settingService.deleteAccount(100L,"tutor1234"))
+                 .isInstanceOf(NoSuchElementException.class);
+      }
+
+    @DisplayName("패스워드가 틀리면 회원을 삭제할 수 없다")
+    @Test
+    void cantDeleteNotWithWrongPassword(){
+        //when + then
+        assertThatThrownBy(()->settingService.deleteAccount(2L,"tutor123"))
+                .isInstanceOf(WrongPasswordException.class);
+    }
+
+
+
     private TutorCreateRequest tutorCreateRequest(){
         return TutorCreateRequest
                 .builder()

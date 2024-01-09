@@ -23,6 +23,8 @@ public class SettingService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final RedisService redisService;
+
     // 비밀번호 변경
 
     public void changePassword(String currentPassword, String changedPassword,Long userId){
@@ -101,5 +103,18 @@ public class SettingService {
         tutor.setAuthenticationAddress(authenticationAddress);
         tutor.setChangeRequests(specialitiesList);
 
+    }
+
+    // 회원 탈퇴
+    public void deleteAccount(Long userId, String password){
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
+        if (passwordEncoder.matches(password, user.getPassword())){
+            userRepository.delete(user);
+            redisService.deleteValues(user.getEmail());
+
+        }else{
+            throw new WrongPasswordException("잘못된 비밀번호 입니다");
+        }
     }
 }

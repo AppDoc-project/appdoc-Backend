@@ -79,6 +79,7 @@ public class AuthService{
     @Transactional
     public void changePassword(String email, String token, String password){
         String redisCode = redisService.getValues(email + "password_auth");
+        redisService.deleteValues(email + "password_auth");
 
         // 해당 이메일에 대한 인증 코드가 없는 경우
         if (redisCode.equals("false")){
@@ -90,7 +91,8 @@ public class AuthService{
                     .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
 
             user.setPassword(passwordEncoder.encode(password));
-
+        }else{
+            throw new IllegalStateException("비정상적인 접근입니다");
         }
 
 

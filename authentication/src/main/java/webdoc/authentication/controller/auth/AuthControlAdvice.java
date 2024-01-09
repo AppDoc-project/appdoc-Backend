@@ -72,7 +72,7 @@ public class AuthControlAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse wrongPassword(WrongPasswordException e){
         log.info("에러 메시지: {}", e.getMessage(), e);
-        return new CodeMessageResponse(AuthMessageProvider.WRONG_CODE,400,ResponseCodeProvider.WRONG_CODE);
+        return new CodeMessageResponse(AuthMessageProvider.WRONG_PASSWORD,400,ResponseCodeProvider.WRONG_CODE);
     }
 
 

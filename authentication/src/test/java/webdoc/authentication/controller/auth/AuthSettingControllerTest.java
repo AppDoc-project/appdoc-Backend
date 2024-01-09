@@ -12,18 +12,19 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import webdoc.authentication.domain.entity.user.request.ContactChangeRequest;
-import webdoc.authentication.domain.entity.user.request.NickNameChangeRequest;
-import webdoc.authentication.domain.entity.user.request.PasswordChangeRequest;
-import webdoc.authentication.domain.entity.user.request.SelfDescriptionChangeRequest;
+import webdoc.authentication.domain.entity.user.request.*;
+import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
+import webdoc.authentication.domain.entity.user.tutor.request.TutorSpecialityRequest;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.securityConfig.WithMockCustomUser;
 import webdoc.authentication.service.AuthService;
 import webdoc.authentication.service.SettingService;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -166,6 +167,67 @@ public class AuthSettingControllerTest {
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
     }
+
+    @DisplayName("튜터 전공을 변경한다")
+    @Test
+    @WithMockCustomUser
+    void changeSpecialities() throws Exception {
+        TutorSpecialityRequest request
+                = tutorSpecialityRequest("adsdsd",List.of(Specialities.DRUM,Specialities.COMPOSITION));
+
+        mockMvc.perform(patch("/auth/setting/speciality")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful());
+     }
+
+    @DisplayName("튜터 전공변경은 값검증을 수행한다")
+    @Test
+    @WithMockCustomUser
+    void changeSpecialitiesWithInvalid() throws Exception {
+        TutorSpecialityRequest request
+                = tutorSpecialityRequest("adsdsd",null);
+
+        mockMvc.perform(patch("/auth/setting/speciality")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        request = tutorSpecialityRequest("Sdasd",List.of(Specialities.DRUM,Specialities.DRUM));
+        mockMvc.perform(patch("/auth/setting/speciality")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful());
+    }
+
+    @DisplayName("회원탈퇴를 수행한다")
+    @Test
+    @WithMockCustomUser
+    void deleteAccount() throws Exception {
+        AccountClosureRequest accountClosureRequest = accountClosureRequest("a!aa1aaaa");
+        mockMvc.perform(post("/auth/setting/account")
+                        .content(objectMapper.writeValueAsString(accountClosureRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful());
+     }
+
+     AccountClosureRequest accountClosureRequest(String password){
+        return AccountClosureRequest
+                .builder()
+                .password(password)
+                .build();
+     }
+     TutorSpecialityRequest tutorSpecialityRequest(String address, List<Specialities> specialities){
+        return TutorSpecialityRequest
+                .builder()
+                .authenticationAddress(address)
+                .specialities(specialities)
+                .build();
+     }
 
     ContactChangeRequest contactChangeRequest(String contact,String password){
         return ContactChangeRequest
