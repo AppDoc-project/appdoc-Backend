@@ -208,7 +208,7 @@ public class AuthSettingControllerTest {
     @WithMockCustomUser
     void deleteAccount() throws Exception {
         AccountClosureRequest accountClosureRequest = accountClosureRequest("a!aa1aaaa");
-        mockMvc.perform(post("/auth/setting/account")
+        mockMvc.perform(post("/auth/setting/removal")
                         .content(objectMapper.writeValueAsString(accountClosureRequest))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

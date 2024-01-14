@@ -68,8 +68,6 @@ spring:
 file:
   dir: /usr/src/app/community/upload/image
 
-server:
-  add: http://localhost/community/image
 
 authentication:
   server: http://authentication:8080/auth
@@ -96,8 +94,6 @@ spring:
 file:
   dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/upload/image
 
-server:
-  add: http://127.0.0.1:8080/auth/image
 
 
 authentication:
@@ -129,8 +125,7 @@ spring:
 file:
   dir: /Users/woo/Desktop/code/appdoc-Backend/community/upload/image
 
-server:
-  add: http://127.0.0.1:8081/community/image
+
 
 authentication:
   server: http://127.0.0.1:8080/auth

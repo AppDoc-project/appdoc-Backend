@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import webdoc.authentication.domain.entity.TutorSpeciality;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.tutee.Tutee;
 import webdoc.authentication.domain.entity.user.tutor.Tutor;
 import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 import webdoc.authentication.domain.exceptions.WrongPasswordException;
 import webdoc.authentication.repository.UserRepository;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 

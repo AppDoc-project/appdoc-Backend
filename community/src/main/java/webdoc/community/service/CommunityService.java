@@ -140,7 +140,9 @@ public class CommunityService {
         return mapToPostResponse(page.getContent(),jwt);
     }
 
+
     // 특정 글 불러오기
+    @Transactional
     public PostDetailResponse getCertainPost(Long postId,Long userId,String jwt){
         Post post = postRepository.getCertainPost(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시물이 없습니다"));
         post.viewPlus();
@@ -313,17 +315,18 @@ public class CommunityService {
     }
 
     // 게시글 좋아요
+    @Transactional
     public boolean enrollLike(Long userId,Long postId){
         Like like = likeRepository.findLikeByUserIdAndPostId(userId,postId).orElse(null);
         Post post = postRepository.getCertainPost(postId)
                 .orElseThrow(()-> new NoSuchElementException("해당하는 게시글이 존재하지 않습니다"));
         if (like != null) return false;
-
         Like.createLike(userId,post);
         return true;
     }
 
     // 게시글 북마크
+    @Transactional
     public void toggleBookmark(Long userId, Long postId){
         Post post = postRepository.getCertainPost(postId)
                 .orElseThrow(()-> new NoSuchElementException("해당하는 게시글이 존재하지 않습니다"));
@@ -339,6 +342,7 @@ public class CommunityService {
     }
 
     // 게시글 삭제
+    @Transactional
     public void deletePost(long userId, Long postId){
         // 게시글 존재 여부 확인
         Post post = postRepository.getCertainPost(postId)
@@ -354,6 +358,7 @@ public class CommunityService {
     }
 
     // 댓글 삭제
+    @Transactional
 
     public void deleteThread(Long userId, Long threadId){
         // 댓글 존재여부 확인
@@ -369,6 +374,7 @@ public class CommunityService {
     }
 
     // 댓글 신고
+    @Transactional
     public ThreadReport reportThread(Long userId, ReportCreateRequest request){
         Thread thread = threadRepository.findById(request.getId())
                 .orElseThrow(()->new NoSuchElementException("해당하는 댓글이 없습니다"));
@@ -387,6 +393,7 @@ public class CommunityService {
     }
 
     // 게시글 신고
+    @Transactional
     public PostReport reportPost(Long userId, ReportCreateRequest request){
         Post post = postRepository.findById(request.getId())
                 .orElseThrow(()->new NoSuchElementException("해당하는 글이이 없습니다"));

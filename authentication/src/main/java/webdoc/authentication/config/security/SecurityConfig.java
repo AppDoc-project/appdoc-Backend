@@ -95,7 +95,7 @@ public class SecurityConfig {
                        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                            response.setCharacterEncoding("UTF-8");
                            response.setStatus(401);
-                           response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("인증이 필요합니다",400,null)));
+                           response.getWriter().write(objectMapper.writeValueAsString(new CodeMessageResponse("로그인이 필요합니다",400,408)));
 
                        }
                    });

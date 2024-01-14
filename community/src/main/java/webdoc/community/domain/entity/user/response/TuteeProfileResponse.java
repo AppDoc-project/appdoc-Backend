@@ -12,9 +12,12 @@ import java.util.List;
 public class TuteeProfileResponse extends CountResponse {
     private String name;
 
+    private String profile;
+
     public TuteeProfileResponse(int bookmarkCount, int postCount, int threadCount,
-                                String name){
+                                String name,String profile){
         super(postCount,threadCount,bookmarkCount);
         this.name = name;
+        this.profile = profile;
     }
 }

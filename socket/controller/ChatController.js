@@ -4,9 +4,10 @@ const jwtAuthenticationFilter = require("./filters/JwtAuthenticationFilter");
 const roomCreateRequest = require("../request/RoomCreateRequest");
 const chatCreateRequest = require("../request/ChatCreateRequest");
 const chatFetchRequest = require("../request/ChatFetchRequest");
+const chatCheckRequest = require("../request/ChatCheckRequest");
 const InternalServerException = require("../exceptions/InternalServerException");
 const AlreadyExistException = require("../exceptions/AlreadyExistException");
-const {createChatRoom, createChat,fetchChatRooms,fetchChats,sendChatToSocket} = require("../service/ChatService");
+const {createChatRoom, createChat,fetchChatRooms,fetchChats,sendChatToSocket,checkChats,sendChatToOuterSocket} = require("../service/ChatService");
 const CodeMessageResponse = require("../response/CodeMessageResponse");
 const CommonMessageProvider = require("../utility/CommonMessageProvider");
 const ResponseCodeProvider = require("../utility/ResponseCodeProvider");
@@ -34,14 +35,30 @@ router.get("/",jwtAuthenticationFilter,chatFetchRequest,async(req,res,next)=>{
             next(new InternalServerException("서버 에러가 발생하였습니다",err));
 
         }
-        
+       
     }
-
-
 });
 
+// 채팅 방에 들어갈 때 모든 메세지를 확인하는 컨트롤러 로직 
+router.get("/check",jwtAuthenticationFilter,chatCheckRequest,async(req,res,next)=>{
+    const {id} = req.query;
 
+    try{
+        await checkChats(req.user.id,id,req.user.isTutor);
+        res.send(new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.REQUEST_SUCCESS));
+    }catch(err){
+        if (err instanceof AlreadyExistException || err instanceof InvalidAccessException ){
 
+            next(err);
+
+        }else{
+
+            next(new InternalServerException("서버 에러가 발생하였습니다",err));
+
+        }
+    }
+    
+});
 
 // 채팅 방 목록을 가져오는 컨트롤러 로직
 router.get("/room",jwtAuthenticationFilter,async(req,res,next)=>{
@@ -111,11 +128,19 @@ router.post("/",jwtAuthenticationFilter,chatCreateRequest,async(req,res,next)=>{
         if (user.id != senderId){
             throw new InvalidAccessException("비상적인 접근입니다");
         }
-        const socket = req.app.get("io").of("/room");
+        const roomSocket = req.app.get("io").of("/room");
+        const outerSocket = req.app.get("io").of("/outer");
+        
 
-        const ret = await createChat(senderId,receiverId,text,user.isTutor);
-        // userId,senderId,messageId,createdAt,roomId,text,socket,jwt
-        await sendChatToSocket(user.id,senderId,ret.createdAt,ret.roomId,text,socket,jwt);
+        // 몽고 DB에 데이터 저장
+        const ret = await createChat(senderId,receiverId,text,user.isTutor,roomSocket);
+
+
+        // 소켓으로 상대방에게 메세지 전달
+        await sendChatToSocket(user.id,senderId,ret.createdAt,ret.roomId,text,roomSocket,jwt);
+
+        // 상대방 외부소켓에 메세지 전달
+        await sendChatToOuterSocket(receiverId,senderId,ret.createdAt,ret.roomId,text,outerSocket,jwt);
 
         res.send(new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.REQUEST_SUCCESS));
 
@@ -134,6 +159,7 @@ router.post("/",jwtAuthenticationFilter,chatCreateRequest,async(req,res,next)=>{
     }
 
 });
+
 
 
 

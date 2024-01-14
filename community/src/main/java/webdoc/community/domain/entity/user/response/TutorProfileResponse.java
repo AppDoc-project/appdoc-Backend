@@ -11,12 +11,15 @@ import java.util.List;
 @Setter
 public class TutorProfileResponse extends CountResponse {
     private String name;
+
+    private String profile;
     private List<Specialities> specialities;
 
     public TutorProfileResponse(int bookmarkCount, int postCount, int threadCount,
-                                String name, List<Specialities> specialities){
+                                String name, List<Specialities> specialities,String profile){
         super(postCount,threadCount,bookmarkCount);
         this.name = name;
+        this.profile = profile;
         this.specialities = specialities;
     }
 }

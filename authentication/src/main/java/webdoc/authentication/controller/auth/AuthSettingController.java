@@ -33,8 +33,7 @@ public class AuthSettingController {
 
     @Value("${file.dir}")
     private String path;
-    @Value("${server.add}")
-    private String address;
+
 
     @PatchMapping("/password")
     public CodeMessageResponse changePassword(@Validated @RequestBody PasswordChangeRequest passwordChangeRequest, BindingResult bindingResult){
@@ -162,8 +161,8 @@ public class AuthSettingController {
 
 
 
-    @PostMapping("/image")
-    public CodeMessageResponse postProfile(@RequestParam("file") MultipartFile file){
+    @PostMapping("/image/{baseUrl}")
+    public CodeMessageResponse postProfile(@RequestParam("file") MultipartFile file,@PathVariable String baseUrl){
 
             if (file.isEmpty()) {
                 throw new IllegalArgumentException("바인딩 실패");
@@ -193,7 +192,7 @@ public class AuthSettingController {
 
             try {
                 file.transferTo(new File(fullPath));
-                imageUrl = address + "/" + uuid + "." + extension;
+                imageUrl = "http://" + baseUrl+ "/auth/image" + "/" + uuid + "." + extension;
             } catch (IOException e) {
                 // 파일 전송 중 오류 처리
                 throw new RuntimeException(e);

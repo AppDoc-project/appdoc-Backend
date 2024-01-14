@@ -45,7 +45,7 @@ public class ProfileService {
         int threadCount = threadRepository.countThreadByUserId(user.getId());
 
         return new TutorProfileResponse(bookmarkCount,postCount,threadCount,
-                user.getName(),user.getSpecialities());
+                user.getName(),user.getSpecialities(),user.getProfile());
     }
 
     // 튜티 프로필 정보
@@ -55,7 +55,7 @@ public class ProfileService {
         int threadCount = threadRepository.countThreadByUserId(user.getId());
 
         return new TuteeProfileResponse(bookmarkCount,postCount,threadCount,
-                user.getName());
+                user.getName(),user.getProfile());
     }
 
     // 본인이 작성한 글 fetch

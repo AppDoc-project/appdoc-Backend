@@ -43,8 +43,6 @@ import java.util.UUID;
 public class AuthController {
     @Value("${file.dir}")
     private String path;
-    @Value("${server.add}")
-    private String address;
     private final AuthService authService;
     private final UserRepository userRepository;
 
@@ -225,8 +223,8 @@ public class AuthController {
     // 인증용 이미지 업로드
 
     // 이미지 등록하기
-    @PostMapping("/images")
-    public ArrayResponse<String> uploadImages(HttpServletResponse res, @RequestParam("files") List<MultipartFile> files) {
+    @PostMapping("/images/{baseUrl}")
+    public ArrayResponse<String> uploadImages(HttpServletResponse res, @RequestParam("files") List<MultipartFile> files,@PathVariable String baseUrl) {
         if (files.size()>5){
             throw new IllegalArgumentException("사진은 5개 까지만 전송할 수 있습니다");
         }
@@ -259,7 +257,7 @@ public class AuthController {
 
             try {
                 file.transferTo(new File(fullPath));
-                String imageUrl = address + "/" + uuid + "." + extension;
+                String imageUrl = "http://" + baseUrl + "/auth/image/" + uuid + "." + extension;
                 addresses.add(imageUrl);
             } catch (IOException e) {
                 // 파일 전송 중 오류 처리
