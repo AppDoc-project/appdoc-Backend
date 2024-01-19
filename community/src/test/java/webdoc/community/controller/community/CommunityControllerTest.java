@@ -105,12 +105,7 @@ public class CommunityControllerTest {
 
         postCreateRequest.setAddresses(
                 List.of(
-                        new PostCreateRequest.AddressAndPriority("sadsd",1),
-                        new PostCreateRequest.AddressAndPriority("sadsd",1),
-                        new PostCreateRequest.AddressAndPriority("sadsd",1),
-                        new PostCreateRequest.AddressAndPriority("sadsd",1),
-                        new PostCreateRequest.AddressAndPriority("sadsd",1),
-                        new PostCreateRequest.AddressAndPriority("sadsd",1)
+                        "a","b","c","d","e","f"
                 )
         );
 
@@ -514,12 +509,7 @@ public class CommunityControllerTest {
 
         postModifyRequest.setAddresses(
                 List.of(
-                        new PostModifyRequest.AddressAndPriority("sadsd",1),
-                        new PostModifyRequest.AddressAndPriority("sadsd",1),
-                        new PostModifyRequest.AddressAndPriority("sadsd",1),
-                        new PostModifyRequest.AddressAndPriority("sadsd",1),
-                        new PostModifyRequest.AddressAndPriority("sadsd",1),
-                        new PostModifyRequest.AddressAndPriority("sadsd",1)
+                        "A","b","c","d","e","f","g"
                 )
         );
 
@@ -562,7 +552,7 @@ public class CommunityControllerTest {
                 .communityId(1L)
                 .text("asdsds")
                 .title("안녕하세요")
-                .addressAndPriorities(List.of(new PostCreateRequest.AddressAndPriority("23232312",1)))
+                .addresses(List.of("a","B"))
                 .build();
     }
 
@@ -580,7 +570,7 @@ public class CommunityControllerTest {
                         .text("안녕")
                         .title("하세요")
                         .postId(5L)
-                        .addressAndPriorities(null)
+                        .addresses(null)
                         .build();
 
         return  request;

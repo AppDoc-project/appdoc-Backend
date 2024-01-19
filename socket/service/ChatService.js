@@ -36,6 +36,13 @@ const mapToRoomResponse = async (arr, isTutor, jwt) => {
       if (b.lastTime === null) return 1;
       return new Date(b.lastTime) - new Date(a.lastTime);
     });
+
+    response.forEach(e=>{
+        if(e.lastTime){
+            e.lastTime = dateFormat(e.lastTime);
+        }
+        
+    });
   
     return response;
   };
@@ -70,6 +77,9 @@ const mapToRoomResponse = async (arr, isTutor, jwt) => {
         response.push(temp);
     }
   
+    response.forEach(e=>{
+        e.createdAt = dateFormat(e.createdAt);
+    });
 
     return response;
 
@@ -287,3 +297,13 @@ const socketCount = (socket,name) => {
 // 참여자 수가 2보다 크거나 같으면 false, 그렇지 않으면 true
     return participantsCountInRoom == 2 ? true : false;
 }
+
+
+const dateFormat  = (dateString) => {
+    let date = new Date(dateString);
+    date.setHours(date.getHours() + 9);
+  
+    const formattedDate = `${date.getFullYear()}:${String(date.getMonth() + 1).padStart(2, '0')}:${String(date.getDate()).padStart(2, '0')}:${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  
+    return formattedDate;
+  };

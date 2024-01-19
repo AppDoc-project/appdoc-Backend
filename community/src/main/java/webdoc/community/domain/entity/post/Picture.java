@@ -14,10 +14,9 @@ import webdoc.community.domain.BaseEntity;
 @EqualsAndHashCode(of = "id")
 public class Picture extends BaseEntity {
 
-    public static Picture createPicture(String address, Integer priority){
+    public static Picture createPicture(String address){
         Picture picture = new Picture();
         picture.setAddress(address);
-        picture.setPriority(priority);
         return picture;
     }
 
@@ -35,8 +34,7 @@ public class Picture extends BaseEntity {
     @JoinColumn(nullable = false, name = "post_id")
     private Post post;
 
-    @Column(nullable = false)
-    private Integer priority;
+
 
 
 

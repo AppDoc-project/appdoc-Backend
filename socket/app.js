@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 require('dotenv').config({ path: `.env.${process.env.NODE_ENV || 'local'}` });
+const {devInit} = require("./devInit/devInit");
 const app = express();
 const connect = require("./schemas/index");
 const port = process.env.PORT;
@@ -34,3 +35,5 @@ const server = app.listen(port, () => {
 // 서버 오픈
 
 webSocket(server,app);
+
+devInit();

@@ -5,6 +5,7 @@ const InternalServerError = require("../exceptions/BindingException");
 
 
 module.exports.fetchUser = async (jwt) => {
+    console.log(`http://${process.env.authServer}/auth/server/user/my`);
     try {
         const ret = await axios.get(`http://${process.env.authServer}/auth/server/user/my`, {
             headers: { authorization: jwt }
@@ -13,11 +14,11 @@ module.exports.fetchUser = async (jwt) => {
         return ret.data;
 
     } catch (err) {
-
+        console.log(err);
         if (err.response) {
 
             const statusCode = err.response.status;
-            if (statusCode === 400) {
+            if (statusCode === 400 || statusCode === 401) {
                 // 400 에러 처리
                 throw new AuthenticationFailException("인증 실패");
             } else if (statusCode === 500) {
@@ -52,7 +53,7 @@ module.exports.fetchUserById = async(jwt,userId) => {
         if (err.response) {
 
             const statusCode = err.response.status;
-            if (statusCode === 400) {
+            if (statusCode === 401 ||statusCode === 400) {
                 // 400 에러 처리
                 throw new AuthenticationFailException("인증 실패");
             } else if (statusCode === 500) {

@@ -23,7 +23,7 @@ public class PostResponse {
     private final Integer likeCount;
     private final Integer threadCount;
     private final Integer mediaCount;
-    private final LocalDateTime createdAt;
+    private final String createdAt;
     private final Boolean isTutor;
     private final Long view;
     private final String communityName;

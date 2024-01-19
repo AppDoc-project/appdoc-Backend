@@ -13,6 +13,8 @@ import webdoc.community.domain.entity.user.response.TuteeProfileResponse;
 import webdoc.community.domain.entity.user.response.UserResponse;
 import webdoc.community.domain.entity.user.response.TutorProfileResponse;
 import webdoc.community.repository.*;
+import webdoc.community.utility.LocalDateTimeToString;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,36 +61,28 @@ public class ProfileService {
     }
 
     // 본인이 작성한 글 fetch
-    public List<PostResponse> ownPost(Long userId, int page, int limit,String jwt){
-        PageRequest pageRequest = PageRequest.of(page,limit, Sort.by(Sort.Direction.DESC,
-                "id"));
+    public List<PostResponse> ownPost(Long userId,String jwt){
+        List<Post> posts = postRepository.getPostByUserIdOrderByIdDesc(userId);
 
-        Slice<Post> posts = postRepository.getPostByUserId(userId,pageRequest);
-
-        return mapToPostResponse(posts.getContent(),jwt);
+        return mapToPostResponse(posts,jwt);
     }
 
-    //  본인이 작성한 댓글 페이징을 댓글 개수 기준으로 한다
-    public List<PostResponse> ownThread(Long userId, int page, int limit, String jwt){
-        PageRequest pageRequest = PageRequest.of(page,limit, Sort.by(Sort.Direction.DESC,
-                "id"));
-
+    //  본인이 작성한 댓글이 달린 글
+    public List<PostResponse> ownThread(Long userId, String jwt){
 
         // 내가 작성한 댓글이 담긴 게시글
-        Slice<Post> posts = postRepository.getPostsWithMyThread(userId,pageRequest);
+        List<Post> posts = postRepository.getPostsWithMyThread(userId);
 
-        return mapToPostResponse(posts.getContent(),jwt);
+        return mapToPostResponse(posts,jwt);
     }
 
     // 본인이 북마크한 게시글을 가져온다
-    public List<PostResponse> ownBookmark(Long userId, int page, int limit, String jwt){
-        PageRequest pageRequest = PageRequest.of(page,limit, Sort.by(Sort.Direction.DESC,
-                "id"));
+    public List<PostResponse> ownBookmark(Long userId, String jwt){
 
         // 내가 북마크한 게시글
-        Slice<Post> posts = postRepository.getBookmarkedPosts(userId,pageRequest);
+        List<Post> posts = postRepository.getBookmarkedPosts(userId);
 
-        return mapToPostResponse(posts.getContent(),jwt);
+        return mapToPostResponse(posts,jwt);
     }
 
 
@@ -119,7 +113,7 @@ public class ProfileService {
                             return new PostResponse(
                                     s.getId(),s.getUserId(),s.getTitle(),
                                     user.getNickName(),user.getProfile(),s.getText(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                                    s.getCreatedAt(),user.getIsTutor(),s.getView(),s.getCommunity().getName(),s.getCommunity().getId()
+                                    LocalDateTimeToString.convertToLocalDateTimeString(s.getCreatedAt()),user.getIsTutor(),s.getView(),s.getCommunity().getName(),s.getCommunity().getId()
                             );
                         }).collect(Collectors.toList());
     }

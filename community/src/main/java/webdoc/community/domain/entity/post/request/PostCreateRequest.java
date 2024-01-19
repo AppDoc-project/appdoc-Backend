@@ -25,24 +25,15 @@ public class PostCreateRequest {
     @NotNull
     private Long communityId;
     @Size(max = 5)
-    private List<AddressAndPriority> addresses = new ArrayList<>();
-    @Getter
-    @Setter
-    public static class AddressAndPriority {
-        public AddressAndPriority(String address, Integer priority){
-            this.address = address;
-            this.priority = priority;
-        }
-        private String address;
-        private Integer priority;
-    }
+    private List<String> addresses = new ArrayList<>();
+
 
     @Builder
-    private PostCreateRequest(String title,String text,Long communityId,List<AddressAndPriority> addressAndPriorities){
+    private PostCreateRequest(String title,String text,Long communityId,List<String> addresses){
         this.title = title;
         this.text = text;
         this.communityId = communityId;
-        this.addresses = addressAndPriorities;
+        this.addresses = addresses;
     }
 
 }

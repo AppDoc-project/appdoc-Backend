@@ -36,6 +36,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             " where p.title like %:keyword% and p.text like %:keword%")
     Slice<Post> getPostByContentAndTitleAndLimit(String keyword,PageRequest pageRequest);
 
+
     // 전체 게시판 스크롤 검색
     @Query("select distinct p from Post p" +  " join fetch p.community " +
             " where p.title like %:keyword% and p.id < :postId")
@@ -58,7 +59,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             " where p.text like %:keyword% and p.community.id = :communityId ")
     Slice<Post> getPostByCommunityAndContentAndLimit(String keyword,Long communityId,PageRequest pageRequest);
     @Query("select distinct p from Post p" +  " join fetch p.community " +
-            " where p.title like %:keyword% and p.text like %:keword% and p.community.id = :communityId")
+            " where (p.title like %:keyword% or p.text like %:keword%) and p.community.id = :communityId")
     Slice<Post> getPostByCommunityAndContentAndTitleAndLimit(String keyword,Long communityId,PageRequest pageRequest);
 
     // 게시판 별 이후 검색
@@ -70,24 +71,24 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             " where p.text like %:keyword% and p.community.id = :communityId and p.id < :postId")
     Slice<Post> getPostByCommunityAndContentAndLimitAndId(String keyword,Long communityId,Long postId,PageRequest pageRequest);
     @Query("select distinct p from Post p" +  " join fetch p.community " +
-            " where p.title like %:keyword% and p.text like %:keword% and p.community.id = :communityId and p.id < :postId")
+            " where (p.title like %:keyword% or p.text like %:keword%) and p.community.id = :communityId and p.id < :postId")
     Slice<Post> getPostByCommunityAndContentAndTitleAndLimitAndId(String keyword,Long communityId,Long postId,PageRequest pageRequest);
 
     // 자기가 쓴 게시글 수 확인
     int countPostsByUserId(Long userId);
 
     // 자기가 쓴 게시글
-    Slice<Post> getPostByUserId(Long userId, PageRequest pageRequest);
+    List<Post> getPostByUserIdOrderByIdDesc(Long userId);
 
     // 내가 쓴 댓글이 담긴 게시글
     @Query("select distinct p from Post p "+ " join p.threads t " +
-        " where t.userId = :userId")
-    Slice<Post> getPostsWithMyThread(Long userId,PageRequest pageRequest);
+        " where t.userId = :userId order by p.id desc")
+    List<Post> getPostsWithMyThread(Long userId);
 
     // 내가 북마크 한 게시글
     @Query("select distinct p from Post p" + " join p.bookmarks b " +
-        " where b.userId = :userId")
-    Slice<Post> getBookmarkedPosts(Long userId, PageRequest pageRequest);
+        " where b.userId = :userId order by p.id desc")
+    List<Post> getBookmarkedPosts(Long userId);
 
 
 }

@@ -32,6 +32,7 @@ import webdoc.community.domain.entity.user.response.UserResponse;
 import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
 import webdoc.community.domain.exceptions.UserBannedException;
 import webdoc.community.repository.*;
+import webdoc.community.utility.LocalDateTimeToString;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -171,10 +172,7 @@ public class CommunityService {
         if(request.getAddresses() != null){
             request.getAddresses()
                     .forEach(e->{
-                        if(!StringUtils.hasText(e.getAddress()) || e.getPriority() == null){
-                            throw new IllegalArgumentException("바인딩에 실패하였습니다");
-                        }
-                        Picture picture = Picture.createPicture(e.getAddress(),e.getPriority());
+                        Picture picture = Picture.createPicture(e);
                         post.addPictures(picture);
                     });
         }
@@ -207,10 +205,7 @@ public class CommunityService {
             pictures.clear();
             request.getAddresses()
                     .forEach(e->{
-                        if(!StringUtils.hasText(e.getAddress()) || e.getPriority() == null){
-                            throw new IllegalArgumentException("바인딩에 실패하였습니다");
-                        }
-                        Picture picture = Picture.createPicture(e.getAddress(),e.getPriority());
+                        Picture picture = Picture.createPicture(e);
                         post.addPictures(picture);
                     });
         }
@@ -233,7 +228,7 @@ public class CommunityService {
                             mapToChildThreadResponse(e.getChilds(),user),
                             e.getId(),
                             user.getId(),
-                            e.getCreatedAt(),
+                            LocalDateTimeToString.convertToLocalDateTimeString(e.getCreatedAt()),
                             e.getText(),
                             user.getNickName(),
                             user.getIsTutor(),
@@ -418,7 +413,7 @@ public class CommunityService {
                     return new ChildThreadResponse(
                         e.getId(),
                         user.getId(),
-                        e.getCreatedAt(),
+                        LocalDateTimeToString.convertToLocalDateTimeString(e.getCreatedAt()),
                         e.getText(),
                         user.getNickName(),
                         user.getIsTutor(),
@@ -441,7 +436,7 @@ public class CommunityService {
                             return new PostResponse(
                                     s.getId(),s.getUserId(),s.getTitle(),
                                     user.getNickName(),user.getProfile(),s.getText(),bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                                    s.getCreatedAt(),user.getIsTutor(),s.getView(),s.getCommunity().getName(),s.getCommunity().getId()
+                                    LocalDateTimeToString.convertToLocalDateTimeString(s.getCreatedAt()),user.getIsTutor(),s.getView(),s.getCommunity().getName(),s.getCommunity().getId()
                             );
                         }).collect(Collectors.toList());
     }
@@ -451,7 +446,7 @@ public class CommunityService {
     private PostDetailResponse mapToPostDetail(Post post,boolean myBookmark,String jwt){
         List<Integer> bltp = getBLTP(post.getId());
         List<String> pictures = post.getPictures()
-                .stream().sorted(Comparator.comparingInt(Picture::getPriority)
+                .stream().sorted(Comparator.comparingLong(Picture::getId)
                 ).map(Picture::getAddress).toList();
         UserResponse user = userService.fetchUserResponseFromAuthServer(
                 authServer+"/server/user/id/"+post.getUserId(),jwt,10_000,10_1000
@@ -462,7 +457,7 @@ public class CommunityService {
                 post.getId(),post.getUserId(),post.getTitle(),
                 user.getNickName(),user.getProfile(),
                 bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                post.getCreatedAt(),user.getIsTutor(),myBookmark,post.getText()
+                LocalDateTimeToString.convertToLocalDateTimeString(post.getCreatedAt()),user.getIsTutor(),myBookmark,post.getText()
                 ,post.getView(),pictures
 
         );

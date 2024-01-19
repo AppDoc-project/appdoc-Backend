@@ -48,17 +48,15 @@ public class PostConstruct {
         Random random = new Random();
 
         for (int communityId = 1; communityId <= 10; communityId++) {
-            for (int i = 0; i < 52; i++) {
-                List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
-                pictures.add(new PostCreateRequest.AddressAndPriority("Wwww", 1));
-                pictures.add(new PostCreateRequest.AddressAndPriority("wwwt", 2));
+            for (int i = 0; i < 7; i++) {
+
 
                 String text = generateRandomString(10);
                 String title = generateRandomString(10);
 
                 Long userId = (long) (random.nextInt(2) + 1); // 랜덤하게 1 또는 2 선택
 
-                PostCreateRequest request = postCreateRequest((long) communityId, pictures, text, title, userId);
+                PostCreateRequest request = postCreateRequest((long) communityId, List.of("sd","dsd"), text, title, userId);
 
                 communityService.createPost(request, userId);
             }
@@ -67,33 +65,42 @@ public class PostConstruct {
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void devThreadInit() {
-        Random random = new Random();
-        for (int i = 0 ; i < 52; i++){
-            for (int j = 0; j<20; j++){
-                String commentText = generateRandomString(11);
-                ThreadCreateRequest threadCreateRequest = threadCreateRequest(commentText, (long) (i+1));
-                Long userId = (long) (random.nextInt(2) + 1); // 랜덤하게 1 또는 2 선택
-                communityService.createThread(userId,threadCreateRequest);
-            }
-        }
-    }
+    public void devThreadInit(){
 
+        Random random = new Random();
+
+
+        for (int count = 1; count <= 10; count++){
+            String text = generateRandomString(10);
+            Long userId = (long) (random.nextInt(2) + 1); // 랜덤하게 1 또는 2 선택
+
+            ThreadCreateRequest request = threadCreateRequest(text, (long) count);
+            communityService.createThread(userId,request);
+
+        }
+
+
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void devThreadOfThreadInit() {
+    public void devBookmarkInit(){
+
         Random random = new Random();
-        for (int i = 0 ; i < 52; i++){
-            for (int j = 0; j<20; j++){
 
-                ThreadOfThreadCreateRequest threadOfThreadCreateRequest = threadOfThreadCreateRequest("안녕", (long) (i+1), (long) ((i)*20 + (j+1)));
-                Long userId = (long) (random.nextInt(2) + 1); // 랜덤하게 1 또는 2 선택
-                communityService.createThreadOfThread(threadOfThreadCreateRequest,userId);
 
-            }
+        for (int count = 1; count <= 10; count++){
+            Long userId = (long) (random.nextInt(2) + 1); // 랜덤하게 1 또는 2 선택
+            communityService.toggleBookmark(userId, (long) count);
+
         }
+
+
     }
+
+
+
+
 
 
 
@@ -119,13 +126,13 @@ public class PostConstruct {
                 .build();
 
     }
-    private PostCreateRequest postCreateRequest(Long communityId, List<PostCreateRequest.AddressAndPriority> list, String text, String title, Long userId){
+    private PostCreateRequest postCreateRequest(Long communityId, List<String> list, String text, String title, Long userId){
         PostCreateRequest request =
                 PostCreateRequest.builder()
                         .communityId(communityId)
                         .text(text)
                         .title(title)
-                        .addressAndPriorities(list)
+                        .addresses(list)
                         .build();
 
         return  request;
@@ -138,5 +145,7 @@ public class PostConstruct {
                 .text(text)
                 .build();
     }
+
+
 
 }

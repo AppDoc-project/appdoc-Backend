@@ -128,6 +128,7 @@ router.post("/",jwtAuthenticationFilter,chatCreateRequest,async(req,res,next)=>{
         if (user.id != senderId){
             throw new InvalidAccessException("비상적인 접근입니다");
         }
+        
         const roomSocket = req.app.get("io").of("/room");
         const outerSocket = req.app.get("io").of("/outer");
         

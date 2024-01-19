@@ -24,23 +24,14 @@ public class PostModifyRequest {
     @Size(max = 3000)
     private String text;
     @Size(max = 5)
-    private List<AddressAndPriority> addresses = new ArrayList<>();
-    @Getter
-    @Setter
-    public static class AddressAndPriority {
-        public AddressAndPriority(String address, Integer priority){
-            this.address = address;
-            this.priority = priority;
-        }
-        private String address;
-        private Integer priority;
-    }
+    private List<String> addresses = new ArrayList<>();
+
 
     @Builder
-    private PostModifyRequest(Long postId,String title,String text,List<AddressAndPriority> addressAndPriorities){
+    private PostModifyRequest(Long postId,String title,String text,List<String> addresses){
         this.title = title;
         this.text = text;
-        this.addresses = addressAndPriorities;
+        this.addresses = addresses;
         this.postId = postId;
     }
 

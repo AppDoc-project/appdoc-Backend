@@ -152,7 +152,7 @@ public class CommunityController {
         }
     }
 
-    // 대댓글을 작성하기
+    // 대댓글을 작성하기 : deprecated
 
     @PostMapping("/thread_thread")
     public CodeMessageResponse createThreadOfThread(@Validated @RequestBody ThreadOfThreadCreateRequest request,
@@ -172,7 +172,6 @@ public class CommunityController {
     }
 
     // 특정 게시글의 댓글 가져오기
-
     @GetMapping("/thread/{postId}")
     public ArrayResponse<ThreadResponse> getThreads(@PathVariable("postId")Long postId, HttpServletRequest req){
         try{
@@ -184,7 +183,7 @@ public class CommunityController {
         }
     }
 
-    // 전체 게시판 검색하기
+    // 전체 게시판 검색하기 : deprecated
     @GetMapping("/search")
     public ArrayResponse<PostResponse> searchFromEntirePosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId, @RequestParam int limit, @RequestParam String keyword,
                                                              @RequestParam PostSearchType postSearchType, HttpServletRequest req){
@@ -274,7 +273,7 @@ public class CommunityController {
             UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             communityService.deletePost(userResponse.getId(),postId);
             return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.SUCCESS);
-        }catch(NoSuchElementException | IllegalArgumentException e){
+        }catch(NoSuchElementException | IllegalStateException e){
             throw e;
         }catch(Exception e){
             throw new RuntimeException(e);
@@ -295,7 +294,7 @@ public class CommunityController {
         }
     }
 
-    // 글 신고하기
+    // 글 신고하기 : deprecated
     @PostMapping("/report/post")
     public CodeMessageResponse reportPost(@Validated @RequestBody ReportCreateRequest reportCreateRequest, BindingResult bindingResult,
                                           HttpServletResponse res){
@@ -319,7 +318,7 @@ public class CommunityController {
 
     }
 
-    // 댓글 신고하기
+    // 댓글 신고하기 : deprecated
     @PostMapping("/report/thread")
     public CodeMessageResponse reportThread(@Validated @RequestBody ReportCreateRequest reportCreateRequest, BindingResult bindingResult,
                                             HttpServletResponse res){

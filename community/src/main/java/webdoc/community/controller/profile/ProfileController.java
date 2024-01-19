@@ -20,13 +20,12 @@ import webdoc.community.service.ProfileService;
 @Slf4j
 @RequiredArgsConstructor
 public class ProfileController {
-
     private final ProfileService profileService;
-
 
     @GetMapping("/info")
     public ObjectResponse<CountResponse> fetchInfo(){
         try{
+
             UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
             if (userResponse.getIsTutor()){
@@ -35,18 +34,17 @@ public class ProfileController {
                 return new ObjectResponse<>(profileService.tuteeProfileInfo(userResponse),200);
             }
 
-
         }catch(Exception e){
             throw new RuntimeException(e);
         }
     }
 
     @GetMapping("/post")
-    public ArrayResponse<PostResponse> fetchOwnPost(@RequestParam int page, @RequestParam int limit, HttpServletRequest req){
+    public ArrayResponse<PostResponse> fetchOwnPost(HttpServletRequest req){
         try{
             String jwt = req.getHeader("Authorization");
             UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            return ArrayResponse.of(profileService.ownPost(userResponse.getId(),page,limit,jwt),200);
+            return ArrayResponse.of(profileService.ownPost(userResponse.getId(),jwt),200);
 
         }catch(Exception e){
             throw new RuntimeException(e);
@@ -54,11 +52,11 @@ public class ProfileController {
     }
 
     @GetMapping("/thread")
-    public ArrayResponse<PostResponse> fetchOwnThread(@RequestParam int page, @RequestParam int limit, HttpServletRequest req){
+    public ArrayResponse<PostResponse> fetchOwnThread(HttpServletRequest req){
         try{
             String jwt = req.getHeader("Authorization");
             UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            return ArrayResponse.of(profileService.ownThread(userResponse.getId(),page,limit,jwt),200);
+            return ArrayResponse.of(profileService.ownThread(userResponse.getId(),jwt),200);
 
         }catch(Exception e){
             throw new RuntimeException(e);
@@ -66,11 +64,11 @@ public class ProfileController {
     }
 
     @GetMapping("/bookmark")
-    public ArrayResponse<PostResponse> fetchOwnBookmark(@RequestParam int page, @RequestParam int limit, HttpServletRequest req){
+    public ArrayResponse<PostResponse> fetchOwnBookmark(HttpServletRequest req){
         try{
             String jwt = req.getHeader("Authorization");
             UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            return ArrayResponse.of(profileService.ownBookmark(userResponse.getId(),page,limit,jwt),200);
+            return ArrayResponse.of(profileService.ownBookmark(userResponse.getId(),jwt),200);
 
         }catch(Exception e){
             throw new RuntimeException(e);

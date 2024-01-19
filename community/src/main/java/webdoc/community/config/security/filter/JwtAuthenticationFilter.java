@@ -76,8 +76,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }catch(Exception e){
 
             e.printStackTrace();
-            response.setStatus(500);
-            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse(CommonMessageProvider.INTERNAL_SERVER_ERROR,500,ResponseCodeProvider.INTERNAL_SERVER_ERROR)));
+            response.setStatus(401);
+            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("로그인이 필요 합니다",401,408)));
             return;
         }
 

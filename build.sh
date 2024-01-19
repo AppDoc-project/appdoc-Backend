@@ -35,4 +35,18 @@ docker build --tag cualestunombre/back:redis .
 docker build --tag cualestunombre/local:redis -f Dockerfile.arm.dev  .
 docker push cualestunombre/local:redis
 docker push cualestunombre/back:redis
+cd ..
 
+cd ./socket
+docker build --tag cualestunombre/back:socket .
+docker build --tag cualestunombre/local:socket -f Dockerfile.arm.dev  .
+docker push cualestunombre/local:socket
+docker push cualestunombre/back:socket
+cd ..
+
+cd ./mongodb
+docker build --tag cualestunombre/back:mongodb .
+docker build --tag cualestunombre/local:mongodb -f Dockerfile.arm.dev .
+docker push cualestunombre/local:mongodb
+docker push cualestunombre/back:mongodb
+cd ..

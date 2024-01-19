@@ -49,23 +49,9 @@ class ProfileControllerTest {
                 .andExpect(status().isOk());
      }
 
-    @DisplayName("본인이 쓴 글을 가져올 때 limit를 명시해야 한다")
-    @Test
-    @WithMockCustomUser
-    void fetchOwnPostWithOutLimit() throws Exception {
-        mockMvc.perform(get("/community/profile/post?&page=0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
 
-    @DisplayName("본인이 쓴 글을 가져올 때 page를 명시해야 한다")
-    @Test
-    @WithMockCustomUser
-    void fetchOwnPostWithOutPage() throws Exception {
-        mockMvc.perform(get("/community/profile/post?&limit=0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
+
+
 
 
     @DisplayName("본인이 쓴 댓글이 담긴 글을 가져온다")
@@ -77,23 +63,8 @@ class ProfileControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("본인이 쓴 댓글이 담긴 글을 가져올 때 limit를 명시해야 한다")
-    @Test
-    @WithMockCustomUser
-    void fetchOwnThreadWithOutLimit() throws Exception {
-        mockMvc.perform(get("/community/profile/thread?&page=0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
 
-    @DisplayName("본인이 쓴 댓글이 담긴 글을 가져올 때 page를 명시해야 한다")
-    @Test
-    @WithMockCustomUser
-    void fetchOwnThreadWithOutPage() throws Exception {
-        mockMvc.perform(get("/community/profile/thread?&limit=0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
+
 
     @DisplayName("본인이 북마크한 글을 가져온다")
     @Test
@@ -104,23 +75,8 @@ class ProfileControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @DisplayName("본인이 북마크한 글을 가져올 때 limit를 명시해야 한다")
-    @Test
-    @WithMockCustomUser
-    void fetchOwnBookmarkWithOutLimit() throws Exception {
-        mockMvc.perform(get("/community/profile/bookmark?&page=0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
 
-    @DisplayName("본인이 북마크한 글을 가져올 때 page를 명시해야 한다")
-    @Test
-    @WithMockCustomUser
-    void fetchOwnBookmarkWithOutPage() throws Exception {
-        mockMvc.perform(get("/community/profile/bookmark?&limit=0"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
+
 
 
 

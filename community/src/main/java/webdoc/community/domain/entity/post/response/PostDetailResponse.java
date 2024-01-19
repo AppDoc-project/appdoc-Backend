@@ -21,7 +21,7 @@ public class PostDetailResponse {
     private final Integer likeCount;
     private final Integer threadCount;
     private final Integer mediaCount;
-    private final LocalDateTime createdAt;
+    private final String createdAt;
     private final Boolean isTutor;
 
     // 내가 북마크 눌렀는 지 여부

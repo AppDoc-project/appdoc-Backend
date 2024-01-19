@@ -31,6 +31,8 @@ import webdoc.community.domain.entity.user.response.UserResponse;
 import webdoc.community.domain.exceptions.ReportAlreadyExistsException;
 import webdoc.community.domain.exceptions.UserBannedException;
 import webdoc.community.repository.*;
+import webdoc.community.utility.LocalDateTimeToString;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -122,9 +124,8 @@ class CommunityServiceTest {
 
          communityRepository.save(com1);
 
-         List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
-         list.add(new PostCreateRequest.AddressAndPriority("www",1));
-         list.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
+         List<String> list = List.of("www","wwww");
+
 
          PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요","ㅋㅋㅋ");
 
@@ -148,10 +149,9 @@ class CommunityServiceTest {
                                  .contains(com1,"안녕하세요",1L);
 
          // 사진이 올바르게 저장됨
-         assertThat(pictures).extracting("address","priority")
+         assertThat(pictures).extracting("address")
                  .containsExactlyInAnyOrder(
-                         tuple("www",1),
-                         tuple("wwwt",2)
+                         "www","wwww"
                  );
 
       }
@@ -161,10 +161,7 @@ class CommunityServiceTest {
       void createPostWithInvalidCommunity(){
 
 
-          List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
-          list.add(new PostCreateRequest.AddressAndPriority(null,1));
-          list.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
-
+          List<String> list = List.of("www","wwww");
           PostCreateRequest request = postCreateRequest(1L,list,"안녕하세요","반가워요");
           when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
                   .thenReturn(
@@ -178,32 +175,7 @@ class CommunityServiceTest {
                   .isInstanceOf(NoSuchElementException.class);
        }
 
-      @DisplayName("우선 순위또는 주소가 없으면 게시글 등록에 실패한다")
-      @Test
-      void createPostWithoutAddressOrPriority(){
-          //given
-          Community com1 = Community
-                  .builder()
-                  .name("외과")
-                  .build();
 
-          when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
-                  .thenReturn(
-                          Optional.of(createUser())
-                  );
-          communityRepository.save(com1);
-
-          List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
-          list.add(new PostCreateRequest.AddressAndPriority(null,1));
-          list.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
-
-          PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요","반가워요");
-
-
-          //when + then
-          assertThatThrownBy(()->communityService.createPost(request,1L))
-                  .isInstanceOf(IllegalArgumentException.class);
-       }
 
        @DisplayName("게시판에서 특정 개수만큼 게시물을 가져온다")
        @Test
@@ -222,9 +194,7 @@ class CommunityServiceTest {
            UserResponse user = createUser();
            communityRepository.save(com1);
 
-           List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
-           pictures.add(new PostCreateRequest.AddressAndPriority("Wwww",1));
-           pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
+           List<String> list = List.of("www","wwww");
 
 
            PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
@@ -233,7 +203,7 @@ class CommunityServiceTest {
            PostCreateRequest request3 = postCreateRequest(com1.getId(),null,"네번째","ㅋㅋㅋㅋ");
            PostCreateRequest request4 = postCreateRequest(com1.getId(),null,"다섯번째","ㅋㅋㅋㅋ");
            PostCreateRequest request5 = postCreateRequest(com1.getId(),null,"여섯번째","ㅋㅋㅋㅋ");
-           PostCreateRequest request6 = postCreateRequest(com1.getId(),pictures,"일곱번째","ㅋㅋㅋㅋ");
+           PostCreateRequest request6 = postCreateRequest(com1.getId(),list,"일곱번째","ㅋㅋㅋㅋ");
 
 
            //when
@@ -270,11 +240,8 @@ class CommunityServiceTest {
             UserResponse user = createUser();
             communityRepository.save(com1);
 
-            List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
-            pictures.add(new PostCreateRequest.AddressAndPriority("Wwww",1));
-            pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
-
-            PostCreateRequest request = postCreateRequest(com1.getId(),pictures,"안녕하세요","ㅋㅋㅋ");
+            List<String> list = List.of("www","wwww");
+            PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요","ㅋㅋㅋ");
             Post post = communityService.createPost(request,user.getId());
 
 
@@ -295,7 +262,7 @@ class CommunityServiceTest {
                         post.getId(),post.getUserId(),post.getTitle(),
                             user.getNickName(),user.getProfile(),
                             post.getBookmarks().size(), post.getLikes().size(), post.getThreads().size(),
-                            post.getPictures().size(), post.getCreatedAt(),user.getIsTutor(),
+                            post.getPictures().size(), LocalDateTimeToString.convertToLocalDateTimeString(post.getCreatedAt()),user.getIsTutor(),
                             false,post.getText(),1L
                     );
          }
@@ -478,9 +445,7 @@ class CommunityServiceTest {
         communityRepository.save(com1);
         communityRepository.save(com2);
 
-        List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
-        pictures.add(new PostCreateRequest.AddressAndPriority("Wwww",1));
-        pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
+        List<String> list = List.of("www","wwww");
 
 
         PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
@@ -489,7 +454,7 @@ class CommunityServiceTest {
         PostCreateRequest request3 = postCreateRequest(com1.getId(),null,"네번째","잉?");
         PostCreateRequest request4 = postCreateRequest(com2.getId(),null,"다섯번째","ㅋㅋㅋㅋ");
         PostCreateRequest request5 = postCreateRequest(com2.getId(),null,"여섯번째","ㅋㅋㅋㅋ");
-        PostCreateRequest request6 = postCreateRequest(com2.getId(),pictures,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        PostCreateRequest request6 = postCreateRequest(com2.getId(),list,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
 
 
         //when
@@ -533,10 +498,7 @@ class CommunityServiceTest {
         communityRepository.save(com1);
         communityRepository.save(com2);
 
-        List<PostCreateRequest.AddressAndPriority> pictures = new ArrayList<>();
-        pictures.add(new PostCreateRequest.AddressAndPriority("Wwww",1));
-        pictures.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
-
+        List<String> list = List.of("www","wwww");
 
         PostCreateRequest request = postCreateRequest(com1.getId(),null,"안녕하세요","ㅋㅋㅋ");
         PostCreateRequest request1 = postCreateRequest(com1.getId(),null,"안녕","ㅋㅋㅋㅋ");
@@ -544,7 +506,7 @@ class CommunityServiceTest {
         PostCreateRequest request3 = postCreateRequest(com1.getId(),null,"네번째","잉?");
         PostCreateRequest request4 = postCreateRequest(com2.getId(),null,"다섯번째","ㅋㅋㅋㅋ");
         PostCreateRequest request5 = postCreateRequest(com2.getId(),null,"여섯번째","ㅋㅋㅋㅋ");
-        PostCreateRequest request6 = postCreateRequest(com2.getId(),pictures,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
+        PostCreateRequest request6 = postCreateRequest(com2.getId(),list,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
 
 
         //when
@@ -1028,9 +990,7 @@ class CommunityServiceTest {
         communityRepository.save(com1);
         UserResponse user = createUser();
 
-        List<PostCreateRequest.AddressAndPriority> list = new ArrayList<>();
-        list.add(new PostCreateRequest.AddressAndPriority("www",1));
-        list.add(new PostCreateRequest.AddressAndPriority("wwwt",2));
+        List<String> list = List.of("www","wwww");
 
         PostCreateRequest request6 = postCreateRequest(com1.getId(),list,"ㅋㅋ안녕","ㅋㅋㅋㅋ");
         Post post1 = communityService.createPost(request6,user.getId());
@@ -1039,10 +999,8 @@ class CommunityServiceTest {
 
 
         //when
-        List<PostModifyRequest.AddressAndPriority> modifyList = new ArrayList<>();
-        modifyList.add(new PostModifyRequest.AddressAndPriority("444",1));
-        modifyList.add(new PostModifyRequest.AddressAndPriority("w22",2));
-        PostModifyRequest request7 = postModifyRequest(post1.getId(),modifyList,"뭐해","난 바쁨");
+
+        PostModifyRequest request7 = postModifyRequest(post1.getId(),list = List.of("444","w22"),"뭐해","난 바쁨");
         communityService.modifyPost(request7,user.getId());
 
 
@@ -1055,10 +1013,10 @@ class CommunityServiceTest {
                 .containsExactly(user.getId(),post1.getId(),"난 바쁨","뭐해");
 
         // 사진이 올바르게 저장됨
-        assertThat(post.getPictures()).extracting("address","priority")
+        assertThat(post.getPictures()).extracting("address")
                 .containsExactlyInAnyOrder(
-                        tuple("444",1),
-                        tuple("w22",2)
+                        "444"
+                        ,"w22"
                 );
     }
 
@@ -1225,25 +1183,25 @@ class CommunityServiceTest {
 
 
 
-    private PostCreateRequest postCreateRequest(Long communityId, List<PostCreateRequest.AddressAndPriority> list,String text,String title){
+    private PostCreateRequest postCreateRequest(Long communityId, List<String> list,String text,String title){
         PostCreateRequest request =
                 PostCreateRequest.builder()
                         .communityId(communityId)
                         .text(text)
                         .title(title)
-                        .addressAndPriorities(list)
+                        .addresses(list)
                         .build();
 
         return  request;
     }
 
-    private PostModifyRequest postModifyRequest(Long postId,List<PostModifyRequest.AddressAndPriority> list, String text, String title){
+    private PostModifyRequest postModifyRequest(Long postId,List<String> list, String text, String title){
         PostModifyRequest request =
                 PostModifyRequest.builder()
                         .text(text)
                         .title(title)
                         .postId(postId)
-                        .addressAndPriorities(list)
+                        .addresses(list)
                         .build();
 
         return  request;
