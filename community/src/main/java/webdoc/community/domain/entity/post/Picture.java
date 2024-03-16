@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.parameters.P;
 import webdoc.community.domain.BaseEntity;
+/*
+* 사진 도메인 객체
+ */
 
 @Entity
 @Getter

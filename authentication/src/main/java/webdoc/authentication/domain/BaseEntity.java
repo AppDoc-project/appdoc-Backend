@@ -9,6 +9,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+/*
+ * 작성시점, 수정시점을 추가하는 기본 도메인 객체
+ */
 @MappedSuperclass
 @Getter
 @EntityListeners(AuditingEntityListener.class)

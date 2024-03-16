@@ -8,7 +8,9 @@ import lombok.Setter;
 import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 
 import java.util.List;
-
+/*
+* 레슨 정보 전달객체
+ */
 @Getter
 @Setter
 public class LessonInfoChangeRequest {

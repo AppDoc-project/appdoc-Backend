@@ -11,23 +11,29 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/*
+ * Redis 서비스
+ */
+
 @Component
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    @Transactional
+    // key로 데이터를 삽입
+
     public void setValues(String key, String data) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
         values.set(key, data);
     }
-    @Transactional
+    // 유효기간이 있는 데이터를 삽입
+
     public void setValues(String key, String data, Duration duration) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
         values.set(key, data, duration);
     }
 
+    // key로 데이터 가져오기
 
     public String getValues(String key) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
@@ -37,33 +43,17 @@ public class RedisService {
         return (String) values.get(key);
     }
 
-    @Transactional
+    // key로 value를 삭제
     public void deleteValues(String key) {
         redisTemplate.delete(key);
     }
 
-    @Transactional
+    // 특정 key에 대해 timeOut 설정
     public void expireValues(String key, int timeout) {
         redisTemplate.expire(key, timeout, TimeUnit.MILLISECONDS);
     }
 
-    @Transactional
-    public void setHashOps(String key, Map<String, String> data) {
-        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
-        values.putAll(key, data);
-    }
-
-
-    public String getHashOps(String key, String hashKey) {
-        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
-        return Boolean.TRUE.equals(values.hasKey(key, hashKey)) ? (String) redisTemplate.opsForHash().get(key, hashKey) : "";
-    }
-    @Transactional
-    public void deleteHashOps(String key, String hashKey) {
-        HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
-        values.delete(key, hashKey);
-    }
-
+    // 특정 value가 존재하는 지 확인
     public boolean checkExistsValue(String value) {
         return !value.equals("false");
     }

@@ -7,7 +7,9 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+* 게시글 상세 응답 객체
+ */
 @Getter
 @RequiredArgsConstructor
 @ToString
@@ -23,6 +25,10 @@ public class PostDetailResponse {
     private final Integer mediaCount;
     private final String createdAt;
     private final Boolean isTutor;
+
+    private final String  communityName;
+    private final Long communityId;
+    private final Boolean likeYN;
 
     // 내가 북마크 눌렀는 지 여부
     private final Boolean bookmarkYN;

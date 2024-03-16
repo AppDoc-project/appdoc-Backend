@@ -4,11 +4,9 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import webdoc.authentication.domain.BaseEntity;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+/*
+* 튜터, 튜티 상위 회원 도메인 객체
+ */
 
 @Entity
 @Getter
@@ -27,8 +25,6 @@ public abstract class User extends BaseEntity {
         this.contact = contact;
         this.role = role;
     }
-
-
 
     // role setter
     public void setRole(String role){

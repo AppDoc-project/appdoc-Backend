@@ -24,7 +24,9 @@ import webdoc.community.service.UserService;
 
 
 import java.io.IOException;
-
+/*
+* Spring Security 보안 설정 관리
+*/
 @Configuration
 public class SecurityConfig {
 
@@ -36,6 +38,9 @@ public class SecurityConfig {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    JwtProvider jwtProvider;
 
     @Value("${jwt.signing.key}")
     private String key;
@@ -49,7 +54,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(){
-        return new JwtAuthenticationFilter(key,objectMapper,authAddress,userService);
+        return new JwtAuthenticationFilter(key,objectMapper,authAddress,userService,jwtProvider);
     }
 
     @Bean
@@ -62,7 +67,13 @@ public class SecurityConfig {
                             .permitAll()
                             .requestMatchers("/community/images")
                             .permitAll()
+                            .requestMatchers("/community/init/**")
+                            .permitAll()
                             .requestMatchers("/error/**")
+                            .permitAll()
+                            .requestMatchers("/lesson/token")
+                            .permitAll()
+                            .requestMatchers("/actuator/**")
                             .permitAll()
                             .anyRequest().authenticated();
                 })

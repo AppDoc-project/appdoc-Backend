@@ -11,7 +11,9 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+* 게시글 생성 객체
+ */
 @Getter
 @Setter
 public class PostCreateRequest {

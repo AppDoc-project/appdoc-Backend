@@ -8,6 +8,12 @@ import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.response.UserResponse;
 import webdoc.authentication.service.AuthServerService;
 
+import java.util.List;
+
+/*
+ * 다른 서비스에게 인증 서비스 제공
+ */
+
 @RestController
 @RequestMapping("/auth/server")
 @Slf4j
@@ -15,6 +21,17 @@ import webdoc.authentication.service.AuthServerService;
 public class AuthServerController {
 
     private final AuthServerService authServerService;
+
+    // 특정 이름을 가진 강사를 fetch하는 api
+    @GetMapping("/tutor/{name}")
+    public List<UserResponse> fetchTutorsByName(@PathVariable String name){
+        try{
+            return authServerService.fetchTutorsByName(name);
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
 
     // id를 통해서 해당 유저의 정보를 fetch하는 api
     @GetMapping("/user/id/{id}")
@@ -46,5 +63,13 @@ public class AuthServerController {
         }catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+
+
+    // 모든 강사 리스트를 fetch하는 api
+    @GetMapping("/tutors")
+    public List<UserResponse> fetchAllTutors(){
+        return authServerService.fetchAllTutors();
     }
 }

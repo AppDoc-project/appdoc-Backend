@@ -1,3 +1,4 @@
+// 배열 응답 객체
 class ArrayResponse {
     constructor(data, httpStatus) {
       this.data = data;

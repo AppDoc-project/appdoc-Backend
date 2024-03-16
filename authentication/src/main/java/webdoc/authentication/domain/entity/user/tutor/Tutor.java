@@ -3,7 +3,6 @@ package webdoc.authentication.domain.entity.user.tutor;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
-import webdoc.authentication.domain.entity.SpecialityChange;
 import webdoc.authentication.domain.entity.TutorSpeciality;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
@@ -12,8 +11,9 @@ import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-
+/*
+* 튜터 도메인 객체
+ */
 @Entity
 @Getter
 @DiscriminatorValue("tutor")
@@ -24,8 +24,6 @@ public class Tutor extends User {
     @OneToMany(fetch =  FetchType.LAZY, mappedBy = "tutor",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<TutorSpeciality> specialities = new ArrayList<>();
 
-    @OneToMany(fetch =  FetchType.LAZY, mappedBy = "tutor",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<SpecialityChange> changeRequests = new ArrayList<>();
 
     @Column(nullable = false,length = 3000)
     @Enumerated(EnumType.STRING)
@@ -35,12 +33,7 @@ public class Tutor extends User {
 
     }
 
-    public void setChangeRequests(Set<Specialities> specialities){
-        List<SpecialityChange> specialityChanges = SpecialityChange.convertTutorSpeciality(
-                new ArrayList<>(specialities), this
-        );
-        this.changeRequests.addAll(specialityChanges);
-    }
+
 
     public void setSelfDescription(String selfDescription){
         this.selfDescription = selfDescription;
@@ -103,7 +96,6 @@ public class Tutor extends User {
         super(name,email,password,contact,role);
         this.authenticationProcess = authenticationProcess;
         this.authenticationAddress = authenticationAddress;
-        this.specialities = specialities;
         this.selfDescription = selfDescription;
     }
 

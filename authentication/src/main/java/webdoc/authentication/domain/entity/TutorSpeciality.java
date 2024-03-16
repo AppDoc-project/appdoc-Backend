@@ -8,7 +8,9 @@ import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+/*
+* 튜터 전공과목 도메인 객체
+ */
 @Entity
 @Getter
 public class TutorSpeciality extends BaseEntity {

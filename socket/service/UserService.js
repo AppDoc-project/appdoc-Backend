@@ -1,7 +1,9 @@
 const axios = require("axios");
 const AuthenticationFailException = require("../exceptions/AuthenticationFailException");
 const InternalServerError = require("../exceptions/BindingException");
-
+/*
+* 인증 서비스로 부터 인증 정보를 확인하는 서비스
+*/ 
 
 
 module.exports.fetchUser = async (jwt) => {

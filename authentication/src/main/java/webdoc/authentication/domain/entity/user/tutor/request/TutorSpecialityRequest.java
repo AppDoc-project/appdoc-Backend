@@ -8,6 +8,9 @@ import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 
 import java.util.List;
 
+/*
+* 튜터 전공과목 설정 객체
+ */
 @Getter
 @Setter
 public class TutorSpecialityRequest{

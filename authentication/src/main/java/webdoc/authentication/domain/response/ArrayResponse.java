@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+/*
+ * 배열 응답 객체
+ */
 @Getter
 @RequiredArgsConstructor
 public class ArrayResponse<T> {

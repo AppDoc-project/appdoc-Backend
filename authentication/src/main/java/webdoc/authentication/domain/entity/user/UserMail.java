@@ -8,6 +8,9 @@ import webdoc.authentication.domain.BaseEntity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/*
+* 튜터, 튜티 상위 회원 도메인 객체
+ */
 @Entity
 @Getter
 @Inheritance(strategy = InheritanceType.JOINED)

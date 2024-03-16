@@ -7,6 +7,17 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 50MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: springbank0625@gmail.com
+    password: kmifvgcjnwatbfgk
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+          auth: true
 
   jpa:
     hibernate:
@@ -19,71 +30,118 @@ spring:
           lob:
             non_contextual_creation: true
         show_sql: true
-
 jwt:
   signing:
     key: 1920123119201231192012311920123112312321a
 
+logging:
+  level:
+    root: info
+
+agora:
+  id: c980d1cddfc548579e6503150f4d7005
+  certificate: 84b8019b3cb64989ad1d402c77332cb3
+
+rabbitmq:
+  queue:
+    name: queue
+  exchange:
+    name: exchange
+  routing:
+    key : key
+
+management:
+  server:
+    port: 8040
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 
 ---
 
-# application-operation.yml
+# application-operation.yml : 운영 환경
+server:
+  url: https://beatmate.zapto.org
 spring:
+  rabbitmq:
+    host: rabbit
+    port: 5672
+    username: guest
+    password: guest
   config:
     activate:
       on-profile: operation
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
   datasource:
-    url: jdbc:mysql://database-1.codehjwdlrgz.ap-northeast-2.rds.amazonaws.com:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://172.27.0.146:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
-    password: rootroot
-server:
-  add: http://Docker-spring-env.eba-a3d2ew9y.ap-northeast-2.elasticbeanstalk.com/community/image
+    password: root
+  data:
+    redis:
+      host: redis
+      port: 6379
 
+# 파일이 저장되는 위치
 file:
-  dir: /usr/src/app/community/upload/image
-
+  dir: /Users/woo/src/app/community/upload/image
+# 인증 서버 url
 authentication:
-  server: http://Docker-spring-env.eba-a3d2ew9y.ap-northeast-2.elasticbeanstalk.com/auth
+  server: http://authentication:8080/auth
 
 
 
 ---
 
-# application-dev.yml
+# application-dev.yml : 도커 개발용 환경
+server:
+  url: http://localhost
 spring:
+  rabbitmq:
+    host: rabbit
+    port: 5672
+    username: guest
+    password: guest
   config:
     activate:
       on-profile: dev
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   datasource:
     url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: root
+  data:
+    redis:
+      host: redis
+      port: 6379
 
 file:
-  dir: /usr/src/app/community/upload/image
+  dir: /Users/woo/src/app/community/upload/image
 
 
 authentication:
   server: http://authentication:8080/auth
 
-logging:
-  level: # 적용할 곳과 레벨을 지정합니다.
-    root: warn
-  file:
-    path: /usr/src/app/community
 ---
 
-# application-local.dev.yml
+
+# application-local.dev.yml : 도커x 개발 환경
+server:
+  url: http://localhost:8081
 spring:
   config:
     activate:
       on-profile: local-dev
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
   jpa:
     hibernate:
       ddl-auto: create
@@ -91,9 +149,14 @@ spring:
     url: jdbc:mysql://localhost:3306/myapp1?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: Opsueaxqx1578!
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+
 file:
   dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/upload/image
-
 
 
 authentication:
@@ -101,8 +164,15 @@ authentication:
 
 ---
 
-# application-test.yml
+# application-test.yml : 테스트 환경
+server:
+  url: http://localhost:8081
 spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
   config:
     activate:
       on-profile: test
@@ -114,7 +184,10 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 
   datasource:

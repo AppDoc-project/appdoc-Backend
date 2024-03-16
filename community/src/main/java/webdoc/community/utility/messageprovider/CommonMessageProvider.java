@@ -1,6 +1,8 @@
 package webdoc.community.utility.messageprovider;
 
 public class CommonMessageProvider {
+
+    public final static String NOT_FOUND = "해당 자원이 서버에 존재하지 않습니다";
     public final static String INTERNAL_SERVER_ERROR = "서버 내부 에러가 발생하였습니다";
 
     public final static String INVALID_ACCESS = "비정상적인 접근입니다";
@@ -16,6 +18,8 @@ public class CommonMessageProvider {
     public final static String LIKE_EXISTS = "좋아요를 이미 눌렀습니다";
 
     public final static String REPORT_EXISTS = "이미 신고 하였습니다";
+
+    public final static String RESERVATION_EXISTS = "겹치는 예약이 존재합니다";
 
     public final static String USER_BANNED = "접근이 금지된 유저입니다";
 

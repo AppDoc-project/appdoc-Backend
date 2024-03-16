@@ -8,7 +8,9 @@ import webdoc.authentication.domain.entity.user.UserMail;
 import webdoc.authentication.domain.entity.user.tutee.request.TuteeCreateRequest;
 
 import java.time.LocalDateTime;
-
+/*
+* 튜티 회원가입 도메인 객체
+ */
 @Entity
 @Getter
 @DiscriminatorValue("tutee")

@@ -129,7 +129,7 @@ class CommunityServiceTest {
 
          PostCreateRequest request = postCreateRequest(com1.getId(),list,"안녕하세요","ㅋㅋㅋ");
 
-         when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+         when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                  .thenReturn(
                          Optional.of(createUser())
                  );
@@ -163,7 +163,7 @@ class CommunityServiceTest {
 
           List<String> list = List.of("www","wwww");
           PostCreateRequest request = postCreateRequest(1L,list,"안녕하세요","반가워요");
-          when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+          when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                   .thenReturn(
                           Optional.of(createUser())
                   );
@@ -187,7 +187,7 @@ class CommunityServiceTest {
                    .build();
 
 
-           when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+           when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                    .thenReturn(
                            Optional.of(createUser())
                    );
@@ -216,8 +216,8 @@ class CommunityServiceTest {
            Post post7 = communityService.createPost(request6,user.getId());
 
            //then
-           List<PostResponse> list1 = communityService.getPostsWithLimit(com1.getId(),5,"");
-           List<PostResponse> list2 = communityService.getPostsWithLimitAndIdAfter(com1.getId(),post7.getId(),5,"");
+           List<PostResponse> list1 = communityService.getPostsWithLimit(com1.getId(),5);
+           List<PostResponse> list2 = communityService.getPostsWithLimitAndIdAfter(com1.getId(),post7.getId(),5);
            assertThat(list1).hasSize(5);
            assertThat(list2).hasSize(5);
            list2.forEach(System.out::println);
@@ -232,7 +232,7 @@ class CommunityServiceTest {
                     .name("외과")
                     .build();
 
-            when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+            when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                     .thenReturn(
                             Optional.of(createUser())
                     );
@@ -247,7 +247,7 @@ class CommunityServiceTest {
 
 
             //when
-            PostDetailResponse response = communityService.getCertainPost(post.getId(),user.getId(),"");
+            PostDetailResponse response = communityService.getCertainPost(post.getId(),user.getId());
 
 
             //then
@@ -275,7 +275,7 @@ class CommunityServiceTest {
                      .builder()
                      .name("외과")
                      .build();
-             when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+             when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                      .thenReturn(
                              Optional.of(createUser())
                      );
@@ -319,7 +319,7 @@ class CommunityServiceTest {
                        .builder()
                        .name("외과")
                        .build();
-               when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+               when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                        .thenReturn(
                                Optional.of(createUser())
                        );
@@ -356,7 +356,7 @@ class CommunityServiceTest {
                         .build();
 
                 UserResponse user = createUser();
-                when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                         .thenReturn(
                                 Optional.of(createUser())
                         );
@@ -387,7 +387,7 @@ class CommunityServiceTest {
                          .build();
 
                  UserResponse user = createUser();
-                 when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+                 when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                          .thenReturn(
                                  Optional.of(createUser())
                          );
@@ -416,7 +416,7 @@ class CommunityServiceTest {
 
 
                  //when
-                 List<ThreadResponse> threadResponses = communityService.getThreadByPostId(post.getId(),"");
+                 List<ThreadResponse> threadResponses = communityService.getThreadByPostId(post.getId());
                  //then
                  assertThat(threadResponses).hasSize(3);
               }
@@ -436,7 +436,7 @@ class CommunityServiceTest {
                 .build();
 
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -467,8 +467,8 @@ class CommunityServiceTest {
         Post post7 = communityService.createPost(request6,user.getId());
 
         //then
-        List<PostResponse> list1 = communityService.entireSearchPost(5,"안녕", PostSearchType.CONTENT,"");
-        List<PostResponse> list2 = communityService.entireSearchPostAfter(5,"ㅋ",post7.getId(),PostSearchType.TITLEANDCONTENT,"");
+        List<PostResponse> list1 = communityService.entireSearchPost(5,"안녕", PostSearchType.CONTENT);
+        List<PostResponse> list2 = communityService.entireSearchPostAfter(5,"ㅋ",post7.getId(),PostSearchType.TITLEANDCONTENT);
         assertThat(list1).hasSize(4);
         assertThat(list2).hasSize(5);
         list1.forEach(System.out::println);
@@ -489,7 +489,7 @@ class CommunityServiceTest {
                 .build();
 
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -519,8 +519,8 @@ class CommunityServiceTest {
         Post post7 = communityService.createPost(request6,user.getId());
 
         //then
-        List<PostResponse> list1 = communityService.communitySearchPost(5,"안녕", com1.getId(), PostSearchType.CONTENT,"");
-        List<PostResponse> list2 = communityService.communitySearchPostAfter(5,post7.getId(),"ㅋ",com2.getId(),PostSearchType.TITLE,"");
+        List<PostResponse> list1 = communityService.communitySearchPost(5,"안녕", com1.getId(), PostSearchType.CONTENT);
+        List<PostResponse> list2 = communityService.communitySearchPostAfter(5,post7.getId(),"ㅋ",com2.getId(),PostSearchType.TITLE);
         assertThat(list1).hasSize(3);
         assertThat(list2).hasSize(2);
         list1.forEach(System.out::println);
@@ -531,7 +531,7 @@ class CommunityServiceTest {
     void enrollLike(){
         //given
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -564,7 +564,7 @@ class CommunityServiceTest {
     void enrollLikeDuplicate(){
         //given
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -596,7 +596,7 @@ class CommunityServiceTest {
     void failWhenEnrollLikeWithInvalidPost(){
         //given
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -620,7 +620,7 @@ class CommunityServiceTest {
     void toggleBookmark(){
         //given
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -652,7 +652,7 @@ class CommunityServiceTest {
     void toggleBookmarkTwice(){
         //given
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -684,7 +684,7 @@ class CommunityServiceTest {
     @Test
     void deletePost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -714,7 +714,7 @@ class CommunityServiceTest {
     @Test
     void cannotDeleteIfNotMyPost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -748,7 +748,7 @@ class CommunityServiceTest {
                 .builder()
                 .name("외과")
                 .build();
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -777,7 +777,7 @@ class CommunityServiceTest {
                 .builder()
                 .name("외과")
                 .build();
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -813,7 +813,7 @@ class CommunityServiceTest {
                 .builder()
                 .name("외과")
                 .build();
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -845,7 +845,7 @@ class CommunityServiceTest {
     @Test
     void reportPost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -883,7 +883,7 @@ class CommunityServiceTest {
     @Test
     void reportDuplicatedPost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -915,7 +915,7 @@ class CommunityServiceTest {
     @Test
     void modifyPost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -950,7 +950,7 @@ class CommunityServiceTest {
     @Test
     void noModifyWhenNotOwnPost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -977,7 +977,7 @@ class CommunityServiceTest {
     @Test
     void modifyPostsPictures(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -1035,7 +1035,7 @@ class CommunityServiceTest {
     @Test
     void bannedPostCreate(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -1063,7 +1063,7 @@ class CommunityServiceTest {
     @Test
     void bannedModifyPost(){
         //given
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -1106,7 +1106,7 @@ class CommunityServiceTest {
                 .builder()
                 .name("외과")
                 .build();
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -1136,7 +1136,7 @@ class CommunityServiceTest {
                 .builder()
                 .name("외과")
                 .build();
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );

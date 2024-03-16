@@ -1,5 +1,7 @@
 package webdoc.community.domain.entity.user;
-
+/*
+* 전공 관련 enum 객체
+ */
 public enum Specialities {
     PIANO("피아노"), GUITAR("기타"), VOCAL("보컬"),
     DRUM("드럼"),BASS("베이스"), MUSIC_THEORY("음악이론"),

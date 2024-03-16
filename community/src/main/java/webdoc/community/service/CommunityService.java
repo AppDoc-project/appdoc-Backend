@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -39,6 +40,10 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 
+
+/*
+ * 커뮤니티 서비스
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -54,6 +59,8 @@ public class CommunityService {
     private final PictureRepository pictureRepository;
     private final BookmarkRepository bookmarkRepository;
     private final BannedRepository bannedRepository;
+
+    // 모든 커뮤니티 리스트를 반환
 
     public List<CommunityResponse> getAllCommunities(){
         return
@@ -83,7 +90,7 @@ public class CommunityService {
 
     }
 
-    // 댓글의 댓글 작성
+    // 댓글의 댓글 작성 : deprecated
     @Transactional
     public Thread createThreadOfThread(ThreadOfThreadCreateRequest request,Long userId){
         Long postId = request.getPostId();
@@ -114,7 +121,7 @@ public class CommunityService {
 
 
     // 게시판의 게시글 불러오기 처음 fetch할 때 사용 : 최신순
-    public List<PostResponse> getPostsWithLimit(Long communityId, Integer limit, String jwt){
+    public List<PostResponse> getPostsWithLimit(Long communityId, Integer limit){
         communityRepository.findById(communityId)
                 .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
 
@@ -122,12 +129,12 @@ public class CommunityService {
                 "id"));
         Slice<Post> page = postRepository.getPostByCommunityAndLimit(communityId,pageRequest);
 
-        return mapToPostResponse(page.getContent(),jwt);
+        return mapToPostResponse(page.getContent());
     }
 
     // 게시판의 게시글 불러오기 이후 fetch에서 사용 : 최신순
     @Transactional
-    public List<PostResponse> getPostsWithLimitAndIdAfter(Long communityId,Long postId,Integer limit,String jwt){
+    public List<PostResponse> getPostsWithLimitAndIdAfter(Long communityId,Long postId,Integer limit){
 
         communityRepository.findById(communityId)
                 .orElseThrow(()->new NoSuchElementException("해당하는 게시판이 없습니다"));
@@ -138,18 +145,20 @@ public class CommunityService {
 
         Slice<Post> page = postRepository.getPostByCommunityAndLimitAndId(communityId,postId,pageRequest);
 
-        return mapToPostResponse(page.getContent(),jwt);
+        return mapToPostResponse(page.getContent());
     }
 
 
     // 특정 글 불러오기
     @Transactional
-    public PostDetailResponse getCertainPost(Long postId,Long userId,String jwt){
+    public PostDetailResponse getCertainPost(Long postId,Long userId){
         Post post = postRepository.getCertainPost(postId).orElseThrow(()->new NoSuchElementException("해당하는 게시물이 없습니다"));
         post.viewPlus();
 
         boolean bookmarkYN = bookmarkRepository.findBookmarkByPostIdAndUserId(postId, userId).orElse(null) != null;
-        return mapToPostDetail(post,bookmarkYN,jwt);
+        boolean likeYN = likeRepository.findLikeByUserIdAndPostId(userId, postId).orElse(null) != null;
+
+        return mapToPostDetail(post,bookmarkYN,likeYN);
     }
 
 
@@ -216,13 +225,13 @@ public class CommunityService {
 
     // 특정 게시글 댓글 불러오기
 
-    public List<ThreadResponse> getThreadByPostId(long postId,String jwt){
+    public List<ThreadResponse> getThreadByPostId(long postId){
         List<Thread> threads = threadRepository.getThreadByPostId(postId);
 
         return threads.stream()
                 .map(e->{
                     UserResponse user = userService.fetchUserResponseFromAuthServer(
-                            authServer+"/server/user/id/"+e.getUserId(),jwt,10_000,10_1000
+                            authServer+"/server/user/id/"+e.getUserId(),10_000,10_1000
                     ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
                     return new ThreadResponse(
                             mapToChildThreadResponse(e.getChilds(),user),
@@ -237,8 +246,8 @@ public class CommunityService {
                 }).collect(Collectors.toList());
     }
 
-    // 게시글 전체 검색 & 처음 검색에서 사용
-    public List<PostResponse> entireSearchPost(Integer limit, String keyword, PostSearchType searchType , String jwt){
+    // 게시글 전체 검색 & 처음 검색에서 사용 : deprecated
+    public List<PostResponse> entireSearchPost(Integer limit, String keyword, PostSearchType searchType){
         PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
                 "id"));
 
@@ -252,11 +261,11 @@ public class CommunityService {
             page = postRepository.getPostByContentAndTitleAndLimit(keyword,pageRequest);
         }
 
-        return mapToPostResponse(page.getContent(),jwt);
+        return mapToPostResponse(page.getContent());
     }
 
-    // 게시글 전체 검색 & 이후 검색에서 사용
-    public List<PostResponse> entireSearchPostAfter(Integer limit, String keyword,Long postId, PostSearchType searchType , String jwt){
+    // 게시글 전체 검색 & 이후 검색에서 사용 : deprecated
+    public List<PostResponse> entireSearchPostAfter(Integer limit, String keyword,Long postId, PostSearchType searchType ){
         PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
                 "id"));
         Slice<Post> page;
@@ -268,11 +277,11 @@ public class CommunityService {
             page = postRepository.getPostByContentAndTitleAndLimitAndId(keyword,postId,pageRequest);
         }
 
-        return mapToPostResponse(page.getContent(),jwt);
+        return mapToPostResponse(page.getContent());
     }
 
     // 게시판 별 검색 & 처음 검색에서 사용
-    public List<PostResponse> communitySearchPost(Integer limit, String keyword,Long communityId, PostSearchType searchType , String jwt){
+    public List<PostResponse> communitySearchPost(Integer limit, String keyword,Long communityId, PostSearchType searchType){
         PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
                 "id"));
         communityRepository.findById(communityId)
@@ -287,11 +296,11 @@ public class CommunityService {
             page = postRepository.getPostByCommunityAndContentAndTitleAndLimit(keyword,communityId,pageRequest);
         }
 
-        return mapToPostResponse(page.getContent(),jwt);
+        return mapToPostResponse(page.getContent());
     }
 
     // 게시판 별 검색 & 처음 검색에서 사용
-    public List<PostResponse> communitySearchPostAfter(Integer limit, Long postId ,String keyword,Long communityId, PostSearchType searchType , String jwt){
+    public List<PostResponse> communitySearchPostAfter(Integer limit, Long postId ,String keyword,Long communityId, PostSearchType searchType){
         PageRequest pageRequest = PageRequest.of(0,limit, Sort.by(Sort.Direction.DESC,
                 "id"));
         communityRepository.findById(communityId)
@@ -306,7 +315,7 @@ public class CommunityService {
             page = postRepository.getPostByCommunityAndContentAndTitleAndLimitAndId(keyword,communityId,postId,pageRequest);
         }
 
-        return mapToPostResponse(page.getContent(),jwt);
+        return mapToPostResponse(page.getContent());
     }
 
     // 게시글 좋아요
@@ -368,7 +377,7 @@ public class CommunityService {
 
     }
 
-    // 댓글 신고
+    // 댓글 신고 : deprecated
     @Transactional
     public ThreadReport reportThread(Long userId, ReportCreateRequest request){
         Thread thread = threadRepository.findById(request.getId())
@@ -387,7 +396,7 @@ public class CommunityService {
         return threadReport;
     }
 
-    // 게시글 신고
+    // 게시글 신고 : deprecated
     @Transactional
     public PostReport reportPost(Long userId, ReportCreateRequest request){
         Post post = postRepository.findById(request.getId())
@@ -424,12 +433,12 @@ public class CommunityService {
 
     // 불러온 게시물 리스트를 응답객체로 변환하기
 
-    private List<PostResponse> mapToPostResponse(List<Post> list,String jwt){
+    private List<PostResponse> mapToPostResponse(List<Post> list){
         return
                 list.stream()
                         .map(s->{
                             UserResponse user = userService.fetchUserResponseFromAuthServer(
-                                    authServer+"/server/user/id/"+s.getUserId(),jwt,10_000,10_1000
+                                    authServer+"/server/user/id/"+s.getUserId(),10_000,10_1000
                             ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
 
                             List<Integer> bltp = getBLTP(s.getId());
@@ -443,13 +452,13 @@ public class CommunityService {
 
     // 불러온 게시물을 응답객체로 반환하기
 
-    private PostDetailResponse mapToPostDetail(Post post,boolean myBookmark,String jwt){
+    private PostDetailResponse mapToPostDetail(Post post,boolean myBookmark,boolean myLike){
         List<Integer> bltp = getBLTP(post.getId());
         List<String> pictures = post.getPictures()
                 .stream().sorted(Comparator.comparingLong(Picture::getId)
                 ).map(Picture::getAddress).toList();
         UserResponse user = userService.fetchUserResponseFromAuthServer(
-                authServer+"/server/user/id/"+post.getUserId(),jwt,10_000,10_1000
+                authServer+"/server/user/id/"+post.getUserId(),10_000,10_1000
         ).orElseThrow(()->new RuntimeException("서버에러가 발생하였습니다"));
 
 
@@ -457,7 +466,9 @@ public class CommunityService {
                 post.getId(),post.getUserId(),post.getTitle(),
                 user.getNickName(),user.getProfile(),
                 bltp.get(0),bltp.get(1),bltp.get(2),bltp.get(3),
-                LocalDateTimeToString.convertToLocalDateTimeString(post.getCreatedAt()),user.getIsTutor(),myBookmark,post.getText()
+                LocalDateTimeToString.convertToLocalDateTimeString(post.getCreatedAt()),user.getIsTutor(),
+                post.getCommunity().getName(),post.getCommunity().getId(),
+                myLike,myBookmark,post.getText()
                 ,post.getView(),pictures
 
         );
@@ -475,6 +486,7 @@ public class CommunityService {
         return List.of(bookmark,like,thread,picture);
 
     }
+
 
 
 

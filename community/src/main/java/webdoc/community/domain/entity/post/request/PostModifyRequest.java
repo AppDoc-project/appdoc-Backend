@@ -9,7 +9,9 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+* 게시글 수정 객체
+ */
 @Getter
 @Setter
 public class PostModifyRequest {

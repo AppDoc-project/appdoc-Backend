@@ -4,7 +4,7 @@ const InternalServerException = require("../../exceptions/BindingException");
 const {fetchUser} = require("../../service/UserService");
 const ResponseCodeProvider = require("../../utility/ResponseCodeProvider");
 
-// 로그인을 위한 필터
+// 로그인을 위한 미들웨어
 module.exports = async (req, res, next) => {
     try{
         req.decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);

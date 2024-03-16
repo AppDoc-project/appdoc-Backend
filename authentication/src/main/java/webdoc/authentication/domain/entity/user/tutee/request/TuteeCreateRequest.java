@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-
+/*
+* 튜티 계정 생성 객체
+ */
 @Getter
 @Setter
 public class TuteeCreateRequest {

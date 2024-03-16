@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+/*
+* 신고 생성 객체 : deprecated
+ */
 @Getter
 @Setter
 public class ReportCreateRequest {

@@ -26,7 +26,9 @@ import webdoc.authentication.utility.generator.UUIDGenerator;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
-
+/*
+* 유저 인증  서비스
+ */
 
 @Service
 @RequiredArgsConstructor
@@ -171,8 +173,7 @@ public class AuthService{
         if(tuteeMail.getCode().equals(dto.getCode())
                 && tuteeMail.getExpirationDateTime().isAfter(time)){
             userMailRepository.delete(tuteeMail);
-            Tutee tutee = Tutee.tuteeMailToTutee(tuteeMail);
-            userRepository.save(tutee);
+            userRepository.save(Tutee.tuteeMailToTutee(tuteeMail));
         // 인증 시간 초과
         }else if(tuteeMail.getExpirationDateTime().isBefore(time)){
             throw new TimeOutException("인증 시간을 초과하였습니다");

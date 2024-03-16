@@ -7,7 +7,9 @@ import webdoc.community.domain.entity.user.Specialities;
 
 
 import java.util.List;
-
+/*
+* 인증서버로 부터 받아오는 유저 객체
+ */
 @Getter
 @Setter
 public class UserResponse {

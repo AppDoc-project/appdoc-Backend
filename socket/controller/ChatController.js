@@ -5,9 +5,10 @@ const roomCreateRequest = require("../request/RoomCreateRequest");
 const chatCreateRequest = require("../request/ChatCreateRequest");
 const chatFetchRequest = require("../request/ChatFetchRequest");
 const chatCheckRequest = require("../request/ChatCheckRequest");
+const chatReadRequest = require("../request/ChatReadRequest");
 const InternalServerException = require("../exceptions/InternalServerException");
 const AlreadyExistException = require("../exceptions/AlreadyExistException");
-const {createChatRoom, createChat,fetchChatRooms,fetchChats,sendChatToSocket,checkChats,sendChatToOuterSocket} = require("../service/ChatService");
+const {createChatRoom, createChat,fetchChatRooms,fetchChats,sendChatToSocket,checkChats,sendChatToOuterSocket,readChat} = require("../service/ChatService");
 const CodeMessageResponse = require("../response/CodeMessageResponse");
 const CommonMessageProvider = require("../utility/CommonMessageProvider");
 const ResponseCodeProvider = require("../utility/ResponseCodeProvider");
@@ -85,6 +86,27 @@ router.get("/room",jwtAuthenticationFilter,async(req,res,next)=>{
 
 });
 
+// 특정 채팅을 읽음 처리하는 컨트롤러 로직
+router.post("/read",jwtAuthenticationFilter,chatReadRequest,async(req,res,next)=>{
+    const {chatId,roomId} = req.body;
+    try{
+        await readChat(chatId,roomId,req.user.id);
+        res.send(new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200,ResponseCodeProvider.REQUEST_SUCCESS));
+    }catch(err){
+
+        if (err instanceof AlreadyExistException || err instanceof InvalidAccessException ){
+
+            next(err);
+
+        }else{
+
+            next(new InternalServerException("서버 에러가 발생하였습니다",err));
+
+        }
+    }
+
+});
+
 
 
 // 채팅 방을 만드는 컨트롤러 로직
@@ -129,8 +151,8 @@ router.post("/",jwtAuthenticationFilter,chatCreateRequest,async(req,res,next)=>{
             throw new InvalidAccessException("비상적인 접근입니다");
         }
         
-        const roomSocket = req.app.get("io").of("/room");
-        const outerSocket = req.app.get("io").of("/outer");
+        const roomSocket = req.app.get("io").of("/chat/socket");
+        const outerSocket = req.app.get("io").of("/chat/outer");
         
 
         // 몽고 DB에 데이터 저장
@@ -138,7 +160,7 @@ router.post("/",jwtAuthenticationFilter,chatCreateRequest,async(req,res,next)=>{
 
 
         // 소켓으로 상대방에게 메세지 전달
-        await sendChatToSocket(user.id,senderId,ret.createdAt,ret.roomId,text,roomSocket,jwt);
+        await sendChatToSocket(user.id,senderId,ret.createdAt,ret.roomId,text,roomSocket,jwt,ret.chatId);
 
         // 상대방 외부소켓에 메세지 전달
         await sendChatToOuterSocket(receiverId,senderId,ret.createdAt,ret.roomId,text,outerSocket,jwt);

@@ -8,7 +8,9 @@ import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 import webdoc.authentication.domain.entity.user.tutor.request.TutorCreateRequest;
 
 import java.time.LocalDateTime;
-
+/*
+* 튜터 회원가입 도메인 객체
+ */
 @Entity
 @Getter
 @DiscriminatorValue("tutor")

@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+/*
+* 대댓글 응답객체 : deprecated
+ */
 @Getter
 @RequiredArgsConstructor
 @ToString

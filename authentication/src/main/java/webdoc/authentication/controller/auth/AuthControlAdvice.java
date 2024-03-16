@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import webdoc.authentication.domain.exceptions.EmailDuplicationException;
+import webdoc.authentication.domain.exceptions.HasReservationOrLessonException;
 import webdoc.authentication.domain.exceptions.WrongPasswordException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.domain.exceptions.TimeOutException;
@@ -16,6 +17,9 @@ import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import java.util.NoSuchElementException;
+/*
+ * 예외처리 Controller Advice
+ */
 @Slf4j
 @RestControllerAdvice(assignableTypes = {AuthController.class, AuthServerController.class, AuthSettingController.class})
 public class AuthControlAdvice {
@@ -23,7 +27,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(EmailDuplicationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse emailExists(EmailDuplicationException e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.EMAIL_EXISTS,400, ResponseCodeProvider.EMAIL_EXISTS);
     }
 
@@ -31,7 +35,7 @@ public class AuthControlAdvice {
     @ExceptionHandler({HttpMessageNotReadableException.class,IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse typeMismatch(Exception e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.BINDING_FAILURE,400,ResponseCodeProvider.BINDING_FAILURE);
     }
 
@@ -39,7 +43,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CodeMessageResponse serverError(Exception e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.INTERNAL_SERVER_ERROR,500,ResponseCodeProvider.INTERNAL_SERVER_ERROR);
     }
 
@@ -47,7 +51,7 @@ public class AuthControlAdvice {
     @ExceptionHandler({NoSuchElementException.class, IllegalStateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse invalidAccess(Exception e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(CommonMessageProvider.INVALID_ACCESS,400,ResponseCodeProvider.INVALID_ACCESS);
     }
 
@@ -55,7 +59,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(TimeOutException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse timeOut(TimeOutException e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.VALIDATION_EXPIRED,400,ResponseCodeProvider.VALIDATION_EXPIRED);
     }
 
@@ -63,7 +67,7 @@ public class AuthControlAdvice {
     @ExceptionHandler(AuthenticationServiceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse wrongCode(AuthenticationServiceException e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.WRONG_CODE,400,ResponseCodeProvider.WRONG_CODE);
     }
 
@@ -71,8 +75,16 @@ public class AuthControlAdvice {
     @ExceptionHandler(WrongPasswordException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public CodeMessageResponse wrongPassword(WrongPasswordException e){
-        log.info("에러 메시지: {}", e.getMessage(), e);
+        log.error("에러 메시지: {}", e.getMessage(), e);
         return new CodeMessageResponse(AuthMessageProvider.WRONG_PASSWORD,400,ResponseCodeProvider.WRONG_CODE);
+    }
+
+    // 예약 또는 레슨이 존재하는 경우
+    @ExceptionHandler(HasReservationOrLessonException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public CodeMessageResponse wrongPassword(HasReservationOrLessonException e){
+        log.error("에러 메시지: {}", e.getMessage(), e);
+        return new CodeMessageResponse(CommonMessageProvider.CANNOT_SIGN_OUT,400,ResponseCodeProvider.ALREADY_EXISTS);
     }
 
 

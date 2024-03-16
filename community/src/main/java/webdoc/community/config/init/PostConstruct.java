@@ -16,12 +16,15 @@ import java.util.List;
 import java.util.Random;
 
 
-
+/*
+* 개발환경용 초기화 데이터
+*/
 
 @RequiredArgsConstructor
 public class PostConstruct {
     private final CommunityRepository communityRepository;
     private final CommunityService communityService;
+
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
@@ -40,13 +43,15 @@ public class PostConstruct {
         communityRepository.saveAll(List.of(
                 piano,guitar,vocal,drum,bass,composition,windInst,stringInst,keyboardInst,freeBoard
         ));
-
     }
+
+
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void devPostInit() {
-        Random random = new Random();
 
+        Random random = new Random();
         for (int communityId = 1; communityId <= 10; communityId++) {
             for (int i = 0; i < 7; i++) {
 
@@ -63,12 +68,15 @@ public class PostConstruct {
         }
     }
 
+
+
+
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void devThreadInit(){
 
-        Random random = new Random();
 
+        Random random = new Random();
 
         for (int count = 1; count <= 10; count++){
             String text = generateRandomString(10);
@@ -78,6 +86,10 @@ public class PostConstruct {
             communityService.createThread(userId,request);
 
         }
+
+
+
+
 
 
     }
@@ -94,6 +106,9 @@ public class PostConstruct {
             communityService.toggleBookmark(userId, (long) count);
 
         }
+
+
+
 
 
     }

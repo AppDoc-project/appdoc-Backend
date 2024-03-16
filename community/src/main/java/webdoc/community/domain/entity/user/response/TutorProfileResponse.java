@@ -3,10 +3,11 @@ package webdoc.community.domain.entity.user.response;
 import lombok.Getter;
 import lombok.Setter;
 import webdoc.community.domain.entity.user.Specialities;
-import webdoc.community.domain.response.CountResponse;
 
 import java.util.List;
-
+/*
+* 튜터 프로필 응답객체
+ */
 @Getter
 @Setter
 public class TutorProfileResponse extends CountResponse {

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const { Schema } = mongoose;
 
-
+// 채팅 메세지 및 채팅방 스키마 정의
 const messageSchema = new Schema({
     content: {
         type: String,
@@ -15,6 +15,10 @@ const messageSchema = new Schema({
     senderId: {
         type: Number,
         required: true,
+    },
+    isRead:{
+        type: Boolean,
+        required: true
     }
 });
 
@@ -25,18 +29,6 @@ const roomSchema = new Schema({
         required: true,
     },
     tutorId: {
-        type: Number,
-        required: true,
-    },
-    totalMessageCount: {
-        type: Number,
-        required: true,
-    },
-    tuteeReadMessageCount: {
-        type: Number,
-        required: true,
-    },
-    tutorReadMessageCount: {
         type: Number,
         required: true,
     },

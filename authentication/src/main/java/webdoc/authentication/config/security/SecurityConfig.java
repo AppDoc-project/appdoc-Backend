@@ -27,6 +27,9 @@ import webdoc.authentication.service.RedisService;
 
 import java.io.IOException;
 
+/*
+ * Spring Security 보안 설정 관리
+ */
 @Configuration
 public class SecurityConfig {
     @Autowired
@@ -68,10 +71,15 @@ public class SecurityConfig {
                     auth
                             .requestMatchers("/test")
                             .authenticated()
+                            .requestMatchers("/auth/server/tutors")
+                            .permitAll()
+                            .requestMatchers("/auth/server/tutor/**")
+                            .permitAll()
                             .requestMatchers("/auth/server/**")
                             .authenticated()
                             .requestMatchers("/auth/setting/**")
                             .authenticated()
+
                             .requestMatchers("/error/**")
                             .permitAll()
                             .anyRequest()

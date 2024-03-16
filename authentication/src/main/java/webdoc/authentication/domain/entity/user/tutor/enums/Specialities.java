@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
-
+/*
+* 튜터 전공과목 ENUM
+ */
 public enum Specialities {
     PIANO("피아노"), GUITAR("기타"), VOCAL("보컬"),
     DRUM("드럼"),BASS("베이스"), MUSIC_THEORY("음악이론"),

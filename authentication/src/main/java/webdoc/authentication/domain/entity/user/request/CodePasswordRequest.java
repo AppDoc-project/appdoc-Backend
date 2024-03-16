@@ -4,6 +4,9 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
+/*
+ * 비밀번호 재설정 요청 객체
+ */
 @Getter
 @Setter
 public class CodePasswordRequest {

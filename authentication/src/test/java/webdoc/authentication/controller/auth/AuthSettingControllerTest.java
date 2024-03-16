@@ -168,40 +168,7 @@ public class AuthSettingControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
-    @DisplayName("튜터 전공을 변경한다")
-    @Test
-    @WithMockCustomUser
-    void changeSpecialities() throws Exception {
-        TutorSpecialityRequest request
-                = tutorSpecialityRequest("adsdsd",List.of(Specialities.DRUM,Specialities.COMPOSITION));
 
-        mockMvc.perform(patch("/auth/setting/speciality")
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is2xxSuccessful());
-     }
-
-    @DisplayName("튜터 전공변경은 값검증을 수행한다")
-    @Test
-    @WithMockCustomUser
-    void changeSpecialitiesWithInvalid() throws Exception {
-        TutorSpecialityRequest request
-                = tutorSpecialityRequest("adsdsd",null);
-
-        mockMvc.perform(patch("/auth/setting/speciality")
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is4xxClientError());
-
-        request = tutorSpecialityRequest("Sdasd",List.of(Specialities.DRUM,Specialities.DRUM));
-        mockMvc.perform(patch("/auth/setting/speciality")
-                        .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
-                .andExpect(status().is2xxSuccessful());
-    }
 
     @DisplayName("회원탈퇴를 수행한다")
     @Test

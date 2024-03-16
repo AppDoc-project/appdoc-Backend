@@ -7,7 +7,9 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/*
+* 댓글 응답객체
+ */
 @Getter
 @RequiredArgsConstructor
 @ToString

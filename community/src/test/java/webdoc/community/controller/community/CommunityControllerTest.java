@@ -20,6 +20,8 @@ import webdoc.community.domain.entity.report.request.ReportCreateRequest;
 import webdoc.community.securityConfig.WithMockCustomUser;
 import webdoc.community.domain.entity.post.request.PostCreateRequest;
 import webdoc.community.service.CommunityService;
+import webdoc.community.service.TutorProfileService;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,10 +43,12 @@ public class CommunityControllerTest {
     @MockBean
     CommunityService communityService;
 
+
     @DisplayName("게시글을 불러온다")
     @Test
     @WithMockCustomUser
     void fetchPostsFirst() throws Exception {
+
 
         mockMvc.perform(get("/community/post?scroll=false&limit=5&communityId=1"))
                 .andDo(print())
@@ -65,7 +69,7 @@ public class CommunityControllerTest {
     @Test
     @WithMockCustomUser
     void fetchPostsWithInvalidCommunityId() throws Exception {
-        when(communityService.getPostsWithLimit(any(),any(),any())).thenThrow(new NoSuchElementException(""));
+        when(communityService.getPostsWithLimit(any(),any())).thenThrow(new NoSuchElementException(""));
         mockMvc.perform(get("/community/post?limit=5&communityId=1"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
@@ -147,7 +151,7 @@ public class CommunityControllerTest {
      @Test
      @WithMockCustomUser
      void fetchCertainPostWithInvalidPostId() throws Exception {
-         when(communityService.getCertainPost(any(),any(),any())).thenThrow(new NoSuchElementException(""));
+         when(communityService.getCertainPost(any(),any())).thenThrow(new NoSuchElementException(""));
          mockMvc.perform(get("/community/post/4"))
                  .andDo(print())
                  .andExpect(status().is4xxClientError());

@@ -4,7 +4,9 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import webdoc.community.domain.BaseEntity;
-
+/*
+* 신고 도메인 객체
+ */
 @Entity
 @Getter
 @Setter(value = AccessLevel.PRIVATE)

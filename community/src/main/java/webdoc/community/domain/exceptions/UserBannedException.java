@@ -5,8 +5,10 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/*
+ * 정지가 되어서 발생하는 예외 : deprecated
+ */
 @Getter
-@Setter
 public class UserBannedException extends RuntimeException{
 
     private LocalDateTime untilWhen;

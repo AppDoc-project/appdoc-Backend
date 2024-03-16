@@ -7,7 +7,9 @@ import webdoc.community.domain.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+ * 댓글 도메인 객체
+ */
 @Entity
 @Getter
 @Setter(value = AccessLevel.PRIVATE)

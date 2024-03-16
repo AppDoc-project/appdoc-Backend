@@ -12,4 +12,6 @@ public class CommonMessageProvider {
     public final static String REQUEST_SUCCESS = "요청이 성공하였습니다";
 
     public final static String BINDING_FAILURE = "값 검증에 실패하였습니다";
+
+    public final static String CANNOT_SIGN_OUT = "예약 또는 레슨이 존재해서 탈퇴할 수 없습니다";
 }

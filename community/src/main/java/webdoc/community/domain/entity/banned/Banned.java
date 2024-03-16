@@ -5,11 +5,12 @@ import lombok.*;
 import webdoc.community.domain.BaseEntity;
 
 import java.time.LocalDateTime;
-
+/*
+* 정지 도메인 객체 : deprecated
+*/
 @Entity
 @Getter
 @EqualsAndHashCode(of = "id")
-@Setter(value = AccessLevel.PRIVATE)
 public class Banned extends BaseEntity {
 
     protected Banned(){}

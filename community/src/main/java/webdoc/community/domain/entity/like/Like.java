@@ -5,13 +5,15 @@ import lombok.*;
 import webdoc.community.domain.BaseEntity;
 import webdoc.community.domain.entity.post.Post;
 
+/*
+ * 좋아요 도메인 객체
+ */
 @Entity(name = "choose")
 @EqualsAndHashCode(of = "id")
 @Getter
 @Setter(value = AccessLevel.PRIVATE)
 public class Like extends BaseEntity {
     protected Like(){}
-
     public static Like createLike(Long userId,Post post){
         return Like.builder()
                 .userId(userId)
@@ -29,13 +31,9 @@ public class Like extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
-
     @Column(nullable = false)
     private Long userId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id",nullable = false)
     private Post post;
-
-
 }

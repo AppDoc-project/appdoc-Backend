@@ -1,5 +1,7 @@
 package webdoc.authentication.domain.entity.user.tutor.enums;
-
+/*
+* 인증 상태 정보 ENUM
+ */
 public enum AuthenticationProcess {
     AUTHENTICATION_DENIED("인증 거부"),
     AUTHENTICATION_SUCCESS("인증 성공"),

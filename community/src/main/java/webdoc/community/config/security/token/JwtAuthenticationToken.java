@@ -8,6 +8,9 @@ import webdoc.community.domain.entity.user.response.UserResponse;
 import java.util.Collection;
 import java.util.List;
 
+/*
+* spring security 인증 토큰
+ */
 @RequiredArgsConstructor
 public class JwtAuthenticationToken implements Authentication {
     private final UserResponse userResponse;

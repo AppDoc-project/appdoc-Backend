@@ -6,9 +6,10 @@ const CodeMessageResponse = require("../../response/CodeMessageResponse")
 const CommonMessageProvider = require("../../utility/CommonMessageProvider");
 const ResponseCodeProvider = require("../../utility/ResponseCodeProvider");
 
+// 예외를 최종 처리하는 미들웨어 
 module.exports = (err, req, res, next) => {
 
-    console.error(err);
+    console.log(err);
 
     
     if (err instanceof AuthenticationFailException){

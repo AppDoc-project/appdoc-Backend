@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import webdoc.community.domain.entity.community.Community;
 import webdoc.community.domain.entity.community.CommunityResponse;
 import webdoc.community.domain.entity.like.request.CreateRequestWithPostId;
 import webdoc.community.domain.entity.post.enums.PostSearchType;
@@ -27,27 +29,28 @@ import webdoc.community.domain.exceptions.UserBannedException;
 import webdoc.community.domain.response.CodeMessageResponse;
 import webdoc.community.domain.response.ArrayResponse;
 import webdoc.community.domain.response.ObjectResponse;
+import webdoc.community.repository.CommunityRepository;
 import webdoc.community.service.CommunityService;
 import webdoc.community.utility.messageprovider.CommonMessageProvider;
 import webdoc.community.utility.messageprovider.ResponseCodeProvider;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
+/*
+* 커뮤니티 관련 응답 처리
+*/
 @RestController
 @RequestMapping("/community")
 @Slf4j
 @RequiredArgsConstructor
 public class CommunityController {
-
     @Value("${file.dir}")
     private String path;
 
-
+    @Value("${server.url}")
+    private String url;
     private final CommunityService communityService;
 
     // 게시판 목록 가져오기
@@ -105,12 +108,12 @@ public class CommunityController {
     public ArrayResponse<PostResponse> getPosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId,
                                                 @RequestParam(required = true) int limit, @RequestParam Long communityId,HttpServletRequest req){
         try{
-            String jwt = req.getHeader("Authorization");
+
             if (!scroll){
-                return ArrayResponse.of(communityService.getPostsWithLimit(communityId, limit,jwt),200);
+                return ArrayResponse.of(communityService.getPostsWithLimit(communityId, limit),200);
             }else{
                 if (postId == null) throw new IllegalArgumentException("postId를 명시해야 합니다");
-                return ArrayResponse.of(communityService.getPostsWithLimitAndIdAfter(communityId,postId,limit,jwt),200);
+                return ArrayResponse.of(communityService.getPostsWithLimitAndIdAfter(communityId,postId,limit),200);
             }
         }catch(NoSuchElementException | IllegalArgumentException e){
             throw e;
@@ -125,8 +128,7 @@ public class CommunityController {
     public ObjectResponse<PostDetailResponse> getCertainPost(HttpServletRequest req,@PathVariable("postId") Long postId){
         try{
             UserResponse user = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            String jwt = req.getHeader("Authorization");
-            return new ObjectResponse<>(communityService.getCertainPost(postId,user.getId(),jwt),200);
+            return new ObjectResponse<>(communityService.getCertainPost(postId,user.getId()),200);
         }catch(NoSuchElementException e){
             throw e;
         }catch (Exception e){
@@ -175,8 +177,7 @@ public class CommunityController {
     @GetMapping("/thread/{postId}")
     public ArrayResponse<ThreadResponse> getThreads(@PathVariable("postId")Long postId, HttpServletRequest req){
         try{
-            String jwt = req.getHeader("Authorization");
-            List<ThreadResponse> threadResponses = communityService.getThreadByPostId(postId,jwt);
+            List<ThreadResponse> threadResponses = communityService.getThreadByPostId(postId);
             return new ArrayResponse<>(threadResponses,200,threadResponses.size());
         }catch(Exception e){
             throw new RuntimeException(e);
@@ -188,13 +189,12 @@ public class CommunityController {
     public ArrayResponse<PostResponse> searchFromEntirePosts(@RequestParam boolean scroll, @RequestParam(required = false) Long postId, @RequestParam int limit, @RequestParam String keyword,
                                                              @RequestParam PostSearchType postSearchType, HttpServletRequest req){
         try{
-            String jwt = req.getHeader("Authorization");
             if (!scroll){
 
-                return ArrayResponse.of(communityService.entireSearchPost(limit,keyword,postSearchType,jwt),200);
+                return ArrayResponse.of(communityService.entireSearchPost(limit,keyword,postSearchType),200);
             }else{
                 if (postId == null) throw new IllegalArgumentException("postId를 명시해야 합니다");
-                return ArrayResponse.of(communityService.entireSearchPostAfter(limit,keyword,postId,postSearchType,jwt),200);
+                return ArrayResponse.of(communityService.entireSearchPostAfter(limit,keyword,postId,postSearchType),200);
             }
         }catch (IllegalArgumentException e){
             throw e;
@@ -208,13 +208,13 @@ public class CommunityController {
     public ArrayResponse<PostResponse> searchFromCommunity(@PathVariable Long communityId,@RequestParam boolean scroll, @RequestParam(required = false) Long postId
             ,@RequestParam int limit, @RequestParam String keyword, @RequestParam PostSearchType postSearchType, HttpServletRequest req){
         try{
-            String jwt = req.getHeader("Authorization");
+
             if (!scroll){
 
-                return ArrayResponse.of(communityService.communitySearchPost(limit,keyword,communityId,postSearchType,jwt),200);
+                return ArrayResponse.of(communityService.communitySearchPost(limit,keyword,communityId,postSearchType),200);
             }else{
                 if (postId == null) throw new IllegalArgumentException("postId를 명시해야 합니다");
-                return ArrayResponse.of(communityService.communitySearchPostAfter(limit,postId,keyword,communityId,postSearchType,jwt),200);
+                return ArrayResponse.of(communityService.communitySearchPostAfter(limit,postId,keyword,communityId,postSearchType),200);
             }
         }catch(IllegalArgumentException e){
             throw e;
@@ -302,7 +302,6 @@ public class CommunityController {
             throw new IllegalArgumentException("바인딩 실패");
         }
 
-
         try{
             UserResponse userResponse = (UserResponse) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             communityService.reportPost(userResponse.getId(),reportCreateRequest);
@@ -348,8 +347,8 @@ public class CommunityController {
 
 
     // 이미지 등록하기
-    @PostMapping("/images/{baseUrl}")
-    public ArrayResponse<String> uploadImages(HttpServletResponse res, @RequestParam("files") List<MultipartFile> files,@PathVariable String baseUrl) {
+    @PostMapping("/images")
+    public ArrayResponse<String> uploadImages(HttpServletResponse res, @RequestParam("files") List<MultipartFile> files) {
         if (files.size()>5){
             throw new IllegalArgumentException("사진은 5개 까지만 전송할 수 있습니다");
         }
@@ -382,7 +381,7 @@ public class CommunityController {
 
             try {
                 file.transferTo(new File(fullPath));
-                String imageUrl = "http://" + baseUrl + "/community/image"+"/" + uuid + "." + extension;
+                String imageUrl =  url + "/community/image"+"/" + uuid + "." + extension;
                 addresses.add(imageUrl);
             } catch (IOException e) {
                 // 파일 전송 중 오류 처리
@@ -392,6 +391,7 @@ public class CommunityController {
 
         return new ArrayResponse<>(addresses,200,addresses.size());
     }
+
 
 
 

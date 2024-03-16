@@ -6,7 +6,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.*;
 import webdoc.community.domain.entity.post.Post;
-
+/*
+* 게시글 신고 도메인 객체
+ */
 @Entity
 @Getter
 @Setter(value = AccessLevel.PRIVATE)

@@ -2,7 +2,9 @@ package webdoc.community.domain.response;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
+/*
+ * code, message 응답객체
+ */
 @Getter
 @RequiredArgsConstructor
 public class CodeMessageResponse {

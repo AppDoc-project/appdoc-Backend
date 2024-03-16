@@ -28,6 +28,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/*
+ *  로그인 필터
+ */
 @RequiredArgsConstructor
 public class InitialAuthenticationFilter extends OncePerRequestFilter {
     private final AuthService service;
@@ -40,6 +43,7 @@ public class InitialAuthenticationFilter extends OncePerRequestFilter {
 
 
 
+    // 로그인 로직
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
         response.setCharacterEncoding("UTF-8");

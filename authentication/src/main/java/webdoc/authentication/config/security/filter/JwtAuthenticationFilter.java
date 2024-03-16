@@ -19,6 +19,7 @@ import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
 import webdoc.authentication.service.RedisService;
+import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -26,6 +27,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/*
+ *  JWT 인증 필터
+ */
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final String signingKey;
@@ -45,12 +49,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 signingKey.getBytes(StandardCharsets.UTF_8)
         );
 
-
+        // JWT가 없으면 계속 진행
         if (!StringUtils.hasText(jwt)){
             filterChain.doFilter(request,response);
             return;
         }
 
+        // JWT 파싱
         try{
             claims = Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -59,10 +64,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .getBody();
 
         }catch (RuntimeException e){
-            e.printStackTrace();
             response.setCharacterEncoding("UTF-8");
-            response.setStatus(400);
-            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
+            response.setStatus(401);
+            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("로그인이 필요합니다",401, ResponseCodeProvider.AUTHENTICATION_NOT_PROVIDED)));
             return ;
         }
 
@@ -75,8 +79,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if(user == null || token==null || expireTime.isBefore(LocalDateTime.now()) || !jwt.equals(token)){
             response.setCharacterEncoding("UTF-8");
-            response.setStatus(400);
-            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("유효하지 않은 jwt 토큰입니다",400,400)));
+            response.setStatus(401);
+            response.getWriter().write(mapper.writeValueAsString(new CodeMessageResponse("로그인이 필요합니다",401,ResponseCodeProvider.AUTHENTICATION_NOT_PROVIDED)));
             return;
         }
 

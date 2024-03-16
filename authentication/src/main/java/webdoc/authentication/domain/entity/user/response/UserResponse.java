@@ -6,7 +6,9 @@ import lombok.Setter;
 import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 
 import java.util.List;
-
+/*
+* 다른 서비스에게 인증 정보 응답 객체
+ */
 @Getter
 @Setter
 public class UserResponse {

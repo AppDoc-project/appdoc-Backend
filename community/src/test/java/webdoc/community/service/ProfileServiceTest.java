@@ -63,7 +63,7 @@ class ProfileServiceTest {
         PostCreateRequest request1 = postCreateRequest(com1.getId(),null,"하이","헤이");
         PostCreateRequest request2 = postCreateRequest(com1.getId(),null,"핫","하하");
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -128,7 +128,7 @@ class ProfileServiceTest {
          PostCreateRequest request5 = postCreateRequest(com1.getId(),null,"하이","헤이");
          PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"핫","하하");
 
-         when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+         when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                  .thenReturn(
                          Optional.of(createUser())
                  );
@@ -161,8 +161,8 @@ class ProfileServiceTest {
 
 
          // when
-         List<PostResponse> postResponses = profileService.ownPost(userResponse.getId(),"");
-         List<PostResponse> postResponses1 = profileService.ownPost(userResponse.getId(),"");
+         List<PostResponse> postResponses = profileService.ownPost(userResponse.getId());
+         List<PostResponse> postResponses1 = profileService.ownPost(userResponse.getId());
 
 //         // then
 //         assertThat(postResponses).hasSize(5);
@@ -203,7 +203,7 @@ class ProfileServiceTest {
         PostCreateRequest request5 = postCreateRequest(com1.getId(),null,"하이","헤이");
         PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"핫","하하");
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -242,8 +242,8 @@ class ProfileServiceTest {
 
 
         // when
-        List<PostResponse> postResponses = profileService.ownThread(userResponse.getId(),"");
-        List<PostResponse> postResponses1 = profileService.ownThread(userResponse.getId(),"");
+        List<PostResponse> postResponses = profileService.ownThread(userResponse.getId());
+        List<PostResponse> postResponses1 = profileService.ownThread(userResponse.getId());
 
 //        // then
 //        assertThat(postResponses).hasSize(3);
@@ -284,7 +284,7 @@ class ProfileServiceTest {
         PostCreateRequest request5 = postCreateRequest(com1.getId(),null,"하이","헤이");
         PostCreateRequest request6 = postCreateRequest(com1.getId(),null,"핫","하하");
 
-        when(userService.fetchUserResponseFromAuthServer(any(),any(),any(),any()))
+        when(userService.fetchUserResponseFromAuthServer(any(),any(),any()))
                 .thenReturn(
                         Optional.of(createUser())
                 );
@@ -312,8 +312,8 @@ class ProfileServiceTest {
         communityService.toggleBookmark(userResponse.getId(),post6.getId());
 
         // when
-        List<PostResponse> postResponses = profileService.ownBookmark(userResponse.getId(),"");
-        List<PostResponse> postResponses1 = profileService.ownBookmark(userResponse.getId(),"");
+        List<PostResponse> postResponses = profileService.ownBookmark(userResponse.getId());
+        List<PostResponse> postResponses1 = profileService.ownBookmark(userResponse.getId());
 
         // then
 //        assertThat(postResponses).hasSize(5);

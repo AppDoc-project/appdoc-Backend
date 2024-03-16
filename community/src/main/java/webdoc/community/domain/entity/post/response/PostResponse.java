@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-
+/*
+* 게시글 응답 객체
+ */
 
 @Getter
 @RequiredArgsConstructor

@@ -6,7 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
+/*
+* 대댓글 생성 객체 : deprecated
+ */
 @Getter
 @Setter
 public class ThreadOfThreadCreateRequest {

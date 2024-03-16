@@ -8,7 +8,9 @@ import lombok.*;
 import webdoc.community.domain.entity.post.Thread;
 import webdoc.community.domain.entity.report.request.ReportCreateRequest;
 import webdoc.community.repository.ThreadRepository;
-
+/*
+ * 댓글 신고 도메인 객체
+ */
 @Entity
 @Getter
 @Setter(value = AccessLevel.PRIVATE)

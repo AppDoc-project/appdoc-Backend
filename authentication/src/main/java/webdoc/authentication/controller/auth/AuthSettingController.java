@@ -1,16 +1,20 @@
 package webdoc.authentication.controller.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.request.*;
-import webdoc.authentication.domain.entity.user.tutor.request.TutorSpecialityRequest;
+import webdoc.authentication.domain.entity.user.tutor.Tutor;
+import webdoc.authentication.domain.entity.user.tutor.enums.AuthenticationProcess;
+import webdoc.authentication.domain.exceptions.HasReservationOrLessonException;
 import webdoc.authentication.domain.exceptions.WrongPasswordException;
 import webdoc.authentication.domain.response.CodeMessageResponse;
 import webdoc.authentication.repository.UserRepository;
@@ -19,17 +23,26 @@ import webdoc.authentication.utility.messageprovider.CommonMessageProvider;
 import webdoc.authentication.utility.messageprovider.ResponseCodeProvider;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+/*
+* 유저 정보 설정 관련 응답 처리
+ */
 @RestController
 @RequestMapping("/auth/setting")
 @Slf4j
 @RequiredArgsConstructor
 public class AuthSettingController {
+
+    @Value("${server.url}")
+    private String url;
+
     private final SettingService settingService;
     private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
 
     @Value("${file.dir}")
     private String path;
@@ -123,36 +136,21 @@ public class AuthSettingController {
         }
     }
 
-    @PatchMapping("/speciality")
-    public CodeMessageResponse changeSpeciality(@Validated @RequestBody TutorSpecialityRequest request, BindingResult bindingResult){
 
-        if(bindingResult.hasErrors()){
-            throw new IllegalArgumentException("값 검증에 실패하였습니다");
-        }
-
-        try{
-            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            settingService.changeSpecialities(user.getId(),request.getAuthenticationAddress(), new HashSet<>(request.getSpecialities()));
-            return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
-        }catch(NoSuchElementException e){
-            throw e;
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
-
-    }
 
     @PostMapping("/removal")
-    public CodeMessageResponse deleteAccount(@Validated @RequestBody AccountClosureRequest request, BindingResult bindingResult){
+    public CodeMessageResponse deleteAccount(@Validated @RequestBody AccountClosureRequest request, BindingResult bindingResult,
+                                             HttpServletRequest req){
         if (bindingResult.hasErrors()){
             throw new IllegalArgumentException("값 검증에 실패하였습니다");
         }
 
         try{
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            settingService.deleteAccount(user.getId(),request.getPassword());
+            String jwt = req.getHeader("Authorization");
+            settingService.deleteAccount(user.getId(),request.getPassword(),jwt);
             return new CodeMessageResponse(CommonMessageProvider.REQUEST_SUCCESS,200, ResponseCodeProvider.SUCCESS);
-        }catch(NoSuchElementException | WrongPasswordException e){
+        }catch(NoSuchElementException | WrongPasswordException| HasReservationOrLessonException e){
             throw e;
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -161,8 +159,8 @@ public class AuthSettingController {
 
 
 
-    @PostMapping("/image/{baseUrl}")
-    public CodeMessageResponse postProfile(@RequestParam("file") MultipartFile file,@PathVariable String baseUrl){
+    @PostMapping("/image")
+    public CodeMessageResponse postProfile(@RequestParam("file") MultipartFile file){
 
             if (file.isEmpty()) {
                 throw new IllegalArgumentException("바인딩 실패");
@@ -192,7 +190,7 @@ public class AuthSettingController {
 
             try {
                 file.transferTo(new File(fullPath));
-                imageUrl = "http://" + baseUrl+ "/auth/image" + "/" + uuid + "." + extension;
+                imageUrl = url + "/auth/image" + "/" + uuid + "." + extension;
             } catch (IOException e) {
                 // 파일 전송 중 오류 처리
                 throw new RuntimeException(e);
@@ -203,4 +201,18 @@ public class AuthSettingController {
     }
 
 
+
+    Tutor createTutor(String email,  String password,String name,String contact, String selfDescription){
+        return
+                Tutor.builder()
+                        .authenticationAddress("http://hello/sdas")
+                        .authenticationProcess(AuthenticationProcess.AUTHENTICATION_SUCCESS)
+                        .email(email)
+                        .name(name)
+                        .password(password)
+                        .role("ROLE_TUTOR")
+                        .contact(contact)
+                        .selfDescription(selfDescription).build();
+
+    }
 }

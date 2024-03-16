@@ -23,49 +23,66 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: true
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          lob:
-            non_contextual_creation: true
-        show_sql: true
+
 
 jwt:
   signing:
     key: 1920123119201231192012311920123112312321a
 
+logging:
+  level:
+    root: INFO
+
+management:
+  server:
+    port: 8030
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 ---
 
 # application-operation.yml
+server:
+  url: https://beatmate.zapto.org
+
+
 spring:
   config:
     activate:
       on-profile: operation
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   datasource:
-    url: jdbc:mysql://database-1.codehjwdlrgz.ap-northeast-2.rds.amazonaws.com:3306/myapp?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://172.27.0.146:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
-    password: rootroot
-server:
-  add: http://Docker-spring-env.eba-a3d2ew9y.ap-northeast-2.elasticbeanstalk.com/auth/image
+    password: root
+  data:
+    redis:
+      host: redis
+      port: 6379
+community:
+  server: http://community:8081
+
+
 file:
-  dir: /usr/src/app/authentication/upload/image
+  dir: /Users/woo/src/app/authentication/upload/image
 
 ---
 
 # application-dev.yml
-
+server:
+  url: http://localhost
+  http: tr
 spring:
   config:
     activate:
       on-profile: dev
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   datasource:
     url: jdbc:mysql://mysql:3306/myapp?useUnicode=true&characterEncoding=UTF-8
     username: root
@@ -75,18 +92,19 @@ spring:
       host: redis
       port: 6379
 
+community:
+  server: http://community:8081
+
+
 file:
-  dir: /usr/src/app/authentication/upload/image
-logging:
-  level: # 적용할 곳과 레벨을 지정합니다.
-    root: warn
-  file:
-    path: /usr/src/app/authentication
+  dir: /Users/woo/src/app/authentication/upload/image
+
 
 ---
 
 # application-local.dev.yml
-
+server:
+  url: http://localhost:8080
 spring:
   config:
     activate:
@@ -102,6 +120,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+community:
+  server: http://localhost:8081
+
 file:
   dir: /Users/woo/Desktop/code/appdoc/appdoc-Backend/authentication/upload/image
 
@@ -111,6 +133,9 @@ file:
 ---
 
 # application-test.yml
+server:
+  url: http://localhost:8080
+
 spring:
   config:
     activate:
@@ -130,5 +155,6 @@ spring:
 file:
   dir: /Users/woo/Desktop/code/appdoc-Backend/authentication/upload/image
 
-
+community:
+  server: http://localhost:8081
 

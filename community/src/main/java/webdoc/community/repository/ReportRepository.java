@@ -7,7 +7,9 @@ import webdoc.community.domain.entity.report.Report;
 import webdoc.community.domain.entity.report.ThreadReport;
 
 import java.util.Optional;
-
+/*
+ * 신고 repository : deprecated
+ */
 public interface ReportRepository extends JpaRepository<Report, Long> {
     @Query("select r from ThreadReport r where r.userId =:userId and r.thread.id = :threadId")
     Optional<ThreadReport> findThreadReportByUserIdAndThreadId(Long userId, Long threadId);

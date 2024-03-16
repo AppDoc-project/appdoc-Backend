@@ -10,7 +10,9 @@ import webdoc.community.domain.entity.post.request.PostModifyRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+* 게시글 도메인 객체
+ */
 @Entity
 @Getter
 @Setter(value = AccessLevel.PRIVATE)

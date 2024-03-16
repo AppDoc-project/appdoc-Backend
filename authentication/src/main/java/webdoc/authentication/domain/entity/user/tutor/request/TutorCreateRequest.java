@@ -8,7 +8,9 @@ import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
 
 import java.time.LocalDate;
 import java.util.List;
-
+/*
+* 튜터 생성객체
+ */
 @Getter
 @Setter
 public class TutorCreateRequest {

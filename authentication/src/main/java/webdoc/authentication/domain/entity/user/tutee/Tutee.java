@@ -9,7 +9,9 @@ import webdoc.authentication.domain.entity.user.User;
 
 import java.time.LocalDate;
 import java.util.Objects;
-
+/*
+* 튜티 도메인 객체
+ */
 @Entity
 @Getter
 @DiscriminatorValue("tutee")

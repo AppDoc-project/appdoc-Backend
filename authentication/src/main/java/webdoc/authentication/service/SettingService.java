@@ -7,15 +7,19 @@ import org.springframework.transaction.annotation.Transactional;
 import webdoc.authentication.domain.entity.user.User;
 import webdoc.authentication.domain.entity.user.tutee.Tutee;
 import webdoc.authentication.domain.entity.user.tutor.Tutor;
-import webdoc.authentication.domain.entity.user.tutor.enums.Specialities;
+import webdoc.authentication.domain.exceptions.HasReservationOrLessonException;
 import webdoc.authentication.domain.exceptions.WrongPasswordException;
 import webdoc.authentication.repository.UserRepository;
 import java.util.NoSuchElementException;
-import java.util.Set;
+
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+
+/*
+*  인증 정보 설정 서비스
+ */
 public class SettingService {
     private final UserRepository userRepository;
 
@@ -23,6 +27,9 @@ public class SettingService {
 
     private final RedisService redisService;
 
+    private final ReservationService reservationService;
+
+    private final LessonService lessonService;
     // 비밀번호 변경
 
     public void changePassword(String currentPassword, String changedPassword,Long userId){
@@ -88,26 +95,19 @@ public class SettingService {
         user.setProfile(profile);
     }
 
-    // 자격 변경
 
-    public void changeSpecialities(Long userId,String authenticationAddress, Set<Specialities> specialitiesList){
-
-        Tutor tutor = (Tutor) userRepository
-                .findUserById(userId)
-                .stream().filter(e->e instanceof Tutor)
-                .findAny()
-                .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
-
-        tutor.setAuthenticationAddress(authenticationAddress);
-        tutor.setChangeRequests(specialitiesList);
-
-    }
 
     // 회원 탈퇴
-    public void deleteAccount(Long userId, String password){
+    public void deleteAccount(Long userId, String password,String jwt){
         User user = userRepository.findUserById(userId)
                 .orElseThrow(()->new NoSuchElementException("id에 해당하는 회원이 없습니다"));
         if (passwordEncoder.matches(password, user.getPassword())){
+            boolean hasReservation = reservationService.hasLeftReservation(jwt,userId,10_000,10_000);
+            boolean hasLesson = lessonService.hasLeftLesson(jwt,userId,10_000,10_000);
+
+            if(hasLesson || hasReservation ){
+                throw new HasReservationOrLessonException("탈퇴할 수 없습니다");
+            }
             userRepository.delete(user);
             redisService.deleteValues(user.getEmail());
 
