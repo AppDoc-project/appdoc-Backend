@@ -65,7 +65,6 @@ public class RedisService {
 
 
     // sorted set을 추가
-    @Transactional
     public void addToSortedSet(String key, String value, double score) {
         ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
 

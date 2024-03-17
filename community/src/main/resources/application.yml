@@ -23,20 +23,10 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: true
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          lob:
-            non_contextual_creation: true
-        show_sql: true
+
 jwt:
   signing:
     key: 1920123119201231192012311920123112312321a
-
-logging:
-  level:
-    root: info
 
 agora:
   id: c980d1cddfc548579e6503150f4d7005

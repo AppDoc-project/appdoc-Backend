@@ -3,11 +3,11 @@
 <configuration scan="true" scanPeriod="60 seconds">
 
     <!-- log file path -->
-    <property name="LOG_PATH" value="/Users/woo/src/app/community/logs"/>
+    <property name="LOG_PATH" value="/Users/woo/src/app/authentication/logs"/>
     <!-- log file name -->
-    <property name="LOG_FILE_NAME" value="community_log"/>
+    <property name="LOG_FILE_NAME" value="authentication_log"/>
     <!-- err log file name -->
-    <property name="ERR_LOG_FILE_NAME" value="community_err_log"/>
+    <property name="ERR_LOG_FILE_NAME" value="authentication_err_log"/>
     <!-- pattern -->
     <property name="LOG_PATTERN"
               value="%-5level %d{yy-MM-dd HH:mm:ss}[%thread]  \n%msg%n"/>
@@ -84,14 +84,11 @@
         </layout>
     </appender>
 
-
-
-    <logger name="webdoc.community" level="INFO" additivity="false">
+    <logger name="webdoc.authentication" level="INFO" additivity="false">
         <appender-ref ref="FILE"/>
         <appender-ref ref="Error"/>
         <appender-ref ref="LOGSTASH"/>
     </logger>
-
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
